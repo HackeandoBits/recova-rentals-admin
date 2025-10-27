@@ -11,7 +11,8 @@ class NoOverlapRule implements ValidationRule
 {
     public function __construct(
         protected $startAt,
-        protected ?int $ignoreId = null
+        protected ?int $ignoreId = null,
+        protected int $minutes = 60, // <- buffer (por defecto 60)
     ) {}
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
@@ -26,15 +27,22 @@ class NoOverlapRule implements ValidationRule
             return;
         }
 
+        // Expande el rango con buffer
+        $bufStart = $start->copy()->subMinutes($this->minutes);
+        $bufEnd   = $end->copy()->addMinutes($this->minutes);
+
         $q = Interview::query()
-            ->where('end_at', '>', $start)
-            ->where('start_at', '<', $end)
+            // solapa si: start_at < bufEnd  y  end_at > bufStart
+            ->where('start_at', '<', $bufEnd)
+            ->where('end_at', '>', $bufStart)
             ->where('status', '!=', 'cancelled');
 
-        if ($this->ignoreId) $q->where('id', '!=', $this->ignoreId);
+        if ($this->ignoreId) {
+            $q->where('id', '!=', $this->ignoreId);
+        }
 
         if ($q->exists()) {
-            $fail('Existe otra reunión que se solapa con el período seleccionado.');
+            $fail("Existe otra reunión dentro de {$this->minutes} minutos del período seleccionado.");
         }
     }
 }

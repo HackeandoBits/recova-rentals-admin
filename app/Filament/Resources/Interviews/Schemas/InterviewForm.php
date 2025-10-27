@@ -36,7 +36,7 @@ class InterviewForm
                         }
                     },
                     // 2) no solapamiento con otras entrevistas (no canceladas)
-                    fn ($get, $record) => new NoOverlapRule($get('start_at'), $record?->id),
+                    fn ($get, $record) => new NoOverlapRule($get('start_at'), $record?->id,60),
                 ]),
 
             Select::make('status')
