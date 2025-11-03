@@ -2,8 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GoogleAuthController;
-use App\Models\Interview;
-use Illuminate\Support\Facades\DB;
 
 Route::get('/', function () {
     return view('welcome');
