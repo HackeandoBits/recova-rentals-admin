@@ -8,15 +8,24 @@ use Illuminate\Support\Facades\Hash;
 
 class AdminUserSeeder extends Seeder
 {
+    /**
+     * Crea/actualiza al dueño como único admin que necesitamos para las pruebas.
+     * Email: recovarentals@gmail.com
+     * Password: Peluk@2025
+     */
     public function run(): void
     {
+        // Elimina cualquier admin ficticio anterior si existiera
+        User::where('email', 'admin@recova.com')->delete();
+
+        // Upsert del dueño
         User::updateOrCreate(
-            ['email' => 'admin@recova.com'],
+            ['email' => 'recovarentals@gmail.com'],
             [
-                'name'      => 'Admin Recova',
-                'password'  => Hash::make('recova123'),
-                'is_admin'  => true,        // asegurate de tener esta columna
-                'email_verified_at' => now()
+                'name'              => 'Recova Rentals Owner',
+                'is_admin'          => true,           // asegura rol admin
+                'email_verified_at' => now(),          // verificado
+                'password'          => Hash::make('recova123'),
             ]
         );
     }

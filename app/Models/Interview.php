@@ -7,7 +7,7 @@ use Illuminate\Validation\ValidationException;
 
 class Interview extends Model
 {
-    protected $fillable = ['title','start_at','end_at','status'];
+    protected $fillable = ['title','start_at','end_at','status', 'google_event_id'];
     protected $casts = ['start_at' => 'datetime', 'end_at' => 'datetime'];
 
     protected static function booted(): void
