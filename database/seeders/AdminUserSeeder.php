@@ -25,7 +25,7 @@ class AdminUserSeeder extends Seeder
                 'name'              => 'Recova Rentals Owner',
                 'is_admin'          => true,           // asegura rol admin
                 'email_verified_at' => now(),          // verificado
-                'password'          => Hash::make('Peluk@2025'),
+                'password'          => Hash::make('recova123'),
             ]
         );
     }
