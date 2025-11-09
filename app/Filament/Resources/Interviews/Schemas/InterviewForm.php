@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Interviews\Schemas;
 
 use App\Rules\NoOverlapRule;
+use App\Rules\NoOverlapWithBlocks;
 use Carbon\Carbon;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
@@ -28,21 +29,21 @@ class InterviewForm
                 ->seconds(false)
                 ->required()
                 ->rules([
-                    // 1) fin > inicio
-                    fn ($get) => function (string $attribute, $value, \Closure $fail) use ($get) {
+                    // fin > inicio (una sola vez)
+                    fn($get) => function (string $attribute, $value, \Closure $fail) use ($get) {
                         $start = $get('start_at');
                         if ($start && $value && Carbon::parse($value)->lte(Carbon::parse($start))) {
                             $fail('La hora de fin debe ser posterior al inicio.');
                         }
                     },
-                    // 2) no solapamiento con otras entrevistas (no canceladas)
-                    fn ($get, $record) => new NoOverlapRule($get('start_at'), $record?->id,60),
+                    fn($get, $record) => new NoOverlapRule($get('start_at'), $record?->id, 60),
+                    fn($get) => new NoOverlapWithBlocks($get('start_at'), (int) env('OWNER_CAL_USER_ID', 1)),
                 ]),
 
             Select::make('status')
                 ->label('Estado')
                 ->options([
-                    'pending'   => 'Pendiente',
+                    'pending' => 'Pendiente',
                     'confirmed' => 'Confirmada',
                     'cancelled' => 'Cancelada',
                 ])
