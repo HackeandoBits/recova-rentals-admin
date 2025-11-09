@@ -4,11 +4,13 @@ namespace App\Services;
 
 use App\Models\GoogleToken;
 use App\Models\Interview;
+use App\Models\CalendarBlock;
 use Google\Client as GoogleClient;
 use Google\Service\Calendar as GoogleCalendar;
-use Google\Service\Calendar\Event;
+use Google\Service\Calendar\Event as GoogleEvent;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
+
 
 class GoogleCalendarService
 {
@@ -50,9 +52,9 @@ class GoogleCalendarService
 
         // Cargar token actual al cliente
         $client->setAccessToken([
-            'access_token'  => $token->access_token,
+            'access_token' => $token->access_token,
             'refresh_token' => $token->refresh_token,
-            'expires_in'    => $token->expires_at
+            'expires_in' => $token->expires_at
                 ? max(0, now()->diffInSeconds($token->expires_at, false))
                 : 3600,
         ]);
@@ -65,23 +67,23 @@ class GoogleCalendarService
                 // Persistir nuevos datos si llegaron
                 $token->update([
                     'access_token' => $new['access_token'] ?? $token->access_token,
-                    'expires_at'   => isset($new['expires_in'])
+                    'expires_at' => isset($new['expires_in'])
                         ? now()->addSeconds((int) $new['expires_in'])
                         : $token->expires_at,
                 ]);
 
                 // Reinyectar al cliente con los datos actualizados
                 $client->setAccessToken([
-                    'access_token'  => $token->access_token,
+                    'access_token' => $token->access_token,
                     'refresh_token' => $token->refresh_token,
-                    'expires_in'    => $token->expires_at
+                    'expires_in' => $token->expires_at
                         ? max(0, now()->diffInSeconds($token->expires_at, false))
                         : 3600,
                 ]);
             } catch (\Throwable $e) {
                 Log::warning('Google token refresh failed', [
                     'user_id' => $userId,
-                    'error'   => $e->getMessage(),
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
@@ -102,17 +104,17 @@ class GoogleCalendarService
 
         // Asegurar tipos datetime (por si vienen como string)
         $startAt = $i->start_at instanceof \Carbon\Carbon ? $i->start_at : \Carbon\Carbon::parse($i->start_at);
-        $endAt   = $i->end_at   instanceof \Carbon\Carbon ? $i->end_at   : \Carbon\Carbon::parse($i->end_at);
+        $endAt = $i->end_at instanceof \Carbon\Carbon ? $i->end_at : \Carbon\Carbon::parse($i->end_at);
 
         $tz = config('app.timezone', 'UTC');
 
-        $payload = new Event([
+        $payload = new GoogleEvent([
             'summary' => $i->title ?? 'Entrevista',
-            'start'   => [
+            'start' => [
                 'dateTime' => $startAt->toRfc3339String(),
                 'timeZone' => $tz,
             ],
-            'end'     => [
+            'end' => [
                 'dateTime' => $endAt->toRfc3339String(),
                 'timeZone' => $tz,
             ],
@@ -137,7 +139,7 @@ class GoogleCalendarService
         Interview $i,
         string $calendarId = 'primary'
     ): void {
-        if (! $i->google_event_id) {
+        if (!$i->google_event_id) {
             return;
         }
 
@@ -166,4 +168,65 @@ class GoogleCalendarService
         $ownerId = (int) config('owner.calendar_user_id', 1);
         $this->deleteInterviewEvent($ownerId, $i, $calendarId);
     }
+
+    /** Crea/actualiza evento en el calendario del OWNER para representar un CalendarBlock. */
+    public function upsertBlock(CalendarBlock $block): ?GoogleEvent
+    {
+        $service = $this->forOwner();
+        $calendarId = 'primary';
+
+
+        $event = new GoogleEvent([
+            'summary' => '[BLOCK] ' . ($block->title ?: 'Bloqueo'),
+            'description' => trim(($block->reason ?: '') . "\nKind: {$block->kind}"),
+            'start' => $block->is_all_day
+                ? ['date' => $block->starts_at->toDateString(), 'timeZone' => config('app.timezone')]
+                : ['dateTime' => $block->starts_at->toIso8601String(), 'timeZone' => config('app.timezone')],
+            'end' => $block->is_all_day
+                ? ['date' => $block->ends_at->toDateString(), 'timeZone' => config('app.timezone')]
+                : ['dateTime' => $block->ends_at->toIso8601String(), 'timeZone' => config('app.timezone')],
+            'colorId' => '11', // rojo
+        ]);
+
+
+        try {
+            if ($block->google_event_id) {
+                $event = $service->events->update($calendarId, $block->google_event_id, $event);
+            } else {
+                $event = $service->events->insert($calendarId, $event);
+            }
+            $block->update([
+                'google_event_id' => $event->id,
+                'sync_status' => 'synced',
+                'synced_at' => now(),
+                'last_error' => null,
+            ]);
+            return $event;
+        } catch (\Throwable $e) {
+            $block->update([
+                'sync_status' => 'failed',
+                'last_error' => $e->getMessage(),
+            ]);
+            report($e);
+            return null;
+        }
+    }
+
+
+    public function deleteBlockEvent(CalendarBlock $block): void
+    {
+        if (!$block->google_event_id)
+            return;
+        try {
+            $this->forOwner()->events->delete('primary', $block->google_event_id);
+        } catch (\Throwable $e) {
+            report($e); // si ya no existe en google, ignorar
+        }
+        $block->update([
+            'google_event_id' => null,
+            'sync_status' => 'pending',
+            'synced_at' => null,
+        ]);
+    }
 }
+
