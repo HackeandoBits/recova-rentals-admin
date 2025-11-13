@@ -2,8 +2,8 @@
 
 namespace App\Observers;
 
-use App\Models\CalendarBlock;
 use App\Jobs\SyncSingleBlockJob;
+use App\Models\CalendarBlock;
 
 class CalendarBlockObserver
 {

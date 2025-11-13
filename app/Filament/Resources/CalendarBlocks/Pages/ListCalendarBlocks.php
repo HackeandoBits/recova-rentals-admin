@@ -34,7 +34,7 @@ class ListCalendarBlocks extends ListRecords
                         ->label('Modo de creación')
                         ->options([
                             'range' => 'Por rango de fechas',
-                            'days'  => 'Por días de la semana (próximas N semanas)',
+                            'days' => 'Por días de la semana (próximas N semanas)',
                         ])
                         ->inline()
                         ->default('range')
@@ -81,16 +81,16 @@ class ListCalendarBlocks extends ListRecords
                     TimePicker::make('desde_hora_r')
                         ->label('Hora inicio')
                         ->seconds(false)
-                        ->required(fn ($get) => $get('mode') === 'range' && !((bool) $get('all_day_r')))
-                        ->visible(fn ($get) => $get('mode') === 'range' && !((bool) $get('all_day_r')))
-                        ->dehydrated(fn ($get) => $get('mode') === 'range' && !((bool) $get('all_day_r'))),
+                        ->required(fn ($get) => $get('mode') === 'range' && ! ((bool) $get('all_day_r')))
+                        ->visible(fn ($get) => $get('mode') === 'range' && ! ((bool) $get('all_day_r')))
+                        ->dehydrated(fn ($get) => $get('mode') === 'range' && ! ((bool) $get('all_day_r'))),
                     TimePicker::make('hasta_hora_r')
                         ->label('Hora fin')
                         ->seconds(false)
                         ->rule('after:desde_hora_r')
-                        ->required(fn ($get) => $get('mode') === 'range' && !((bool) $get('all_day_r')))
-                        ->visible(fn ($get) => $get('mode') === 'range' && !((bool) $get('all_day_r')))
-                        ->dehydrated(fn ($get) => $get('mode') === 'range' && !((bool) $get('all_day_r'))),
+                        ->required(fn ($get) => $get('mode') === 'range' && ! ((bool) $get('all_day_r')))
+                        ->visible(fn ($get) => $get('mode') === 'range' && ! ((bool) $get('all_day_r')))
+                        ->dehydrated(fn ($get) => $get('mode') === 'range' && ! ((bool) $get('all_day_r'))),
 
                     // --- Campos del modo DÍAS ---
                     ToggleButtons::make('dias')
@@ -124,16 +124,16 @@ class ListCalendarBlocks extends ListRecords
                     TimePicker::make('desde_hora_d')
                         ->label('Hora inicio')
                         ->seconds(false)
-                        ->required(fn ($get) => $get('mode') === 'days' && !((bool) $get('all_day_d')))
-                        ->visible(fn ($get) => $get('mode') === 'days' && !((bool) $get('all_day_d')))
-                        ->dehydrated(fn ($get) => $get('mode') === 'days' && !((bool) $get('all_day_d'))),
+                        ->required(fn ($get) => $get('mode') === 'days' && ! ((bool) $get('all_day_d')))
+                        ->visible(fn ($get) => $get('mode') === 'days' && ! ((bool) $get('all_day_d')))
+                        ->dehydrated(fn ($get) => $get('mode') === 'days' && ! ((bool) $get('all_day_d'))),
                     TimePicker::make('hasta_hora_d')
                         ->label('Hora fin')
                         ->seconds(false)
                         ->rule('after:desde_hora_d')
-                        ->required(fn ($get) => $get('mode') === 'days' && !((bool) $get('all_day_d')))
-                        ->visible(fn ($get) => $get('mode') === 'days' && !((bool) $get('all_day_d')))
-                        ->dehydrated(fn ($get) => $get('mode') === 'days' && !((bool) $get('all_day_d'))),
+                        ->required(fn ($get) => $get('mode') === 'days' && ! ((bool) $get('all_day_d')))
+                        ->visible(fn ($get) => $get('mode') === 'days' && ! ((bool) $get('all_day_d')))
+                        ->dehydrated(fn ($get) => $get('mode') === 'days' && ! ((bool) $get('all_day_d'))),
 
                     // Motivo (aplica a ambos modos)
                     TextInput::make('reason')
@@ -141,42 +141,42 @@ class ListCalendarBlocks extends ListRecords
                         ->maxLength(255),
                 ])
                 ->action(function (array $data) {
-                    $now  = now();
+                    $now = now();
                     $rows = [];
 
                     if ($data['mode'] === 'range') {
                         // —— MODO RANGO ——
-                        $desde  = Carbon::parse($data['desde'])->startOfDay();
-                        $hasta  = Carbon::parse($data['hasta'])->endOfDay();
+                        $desde = Carbon::parse($data['desde'])->startOfDay();
+                        $hasta = Carbon::parse($data['hasta'])->endOfDay();
                         $allDay = (bool) ($data['all_day_r'] ?? false);
 
                         for ($cursor = $desde->copy(); $cursor->lte($hasta); $cursor = $cursor->addDay()) {
                             $start = $allDay
                                 ? $cursor->copy()->startOfDay()
                                 : $cursor->copy()->setTimeFromTimeString($data['desde_hora_r']);
-                            $end   = $allDay
+                            $end = $allDay
                                 ? $cursor->copy()->endOfDay()
                                 : $cursor->copy()->setTimeFromTimeString($data['hasta_hora_r']);
 
                             if ($end->gt($start)) {
                                 $rows[] = [
-                                    'title'         => 'Bloqueo',
-                                    'kind'          => 'manual',
-                                    'is_all_day'    => $allDay,
-                                    'starts_at'     => $start,
-                                    'ends_at'       => $end,
-                                    'reason'        => $data['reason'] ?? null,
+                                    'title' => 'Bloqueo',
+                                    'kind' => 'manual',
+                                    'is_all_day' => $allDay,
+                                    'starts_at' => $start,
+                                    'ends_at' => $end,
+                                    'reason' => $data['reason'] ?? null,
                                     'owner_user_id' => (int) env('OWNER_CAL_USER_ID', 1),
-                                    'sync_status'   => 'pending',
-                                    'created_at'    => $now,
-                                    'updated_at'    => $now,
+                                    'sync_status' => 'pending',
+                                    'created_at' => $now,
+                                    'updated_at' => $now,
                                 ];
                             }
                         }
                     } else {
                         // —— MODO DÍAS (PRÓXIMAS N SEMANAS) ——
                         $semanas = (int) ($data['semanas'] ?? 4);
-                        $allDay  = (bool) ($data['all_day_d'] ?? false);
+                        $allDay = (bool) ($data['all_day_d'] ?? false);
 
                         // Usuario elige 1..7 (L..D). Carbon usa 0..6 (D..S) ⇒ 7→0.
                         $diasElegidos = collect($data['dias'] ?? [])
@@ -189,36 +189,37 @@ class ListCalendarBlocks extends ListRecords
                                 ->warning()
                                 ->duration(4000)
                                 ->send();
+
                             return;
                         }
 
                         $startWindow = now()->startOfDay();
-                        $endWindow   = $startWindow->copy()->addWeeks($semanas)->endOfDay();
+                        $endWindow = $startWindow->copy()->addWeeks($semanas)->endOfDay();
 
                         for ($cursor = $startWindow->copy(); $cursor->lte($endWindow); $cursor = $cursor->addDay()) {
-                            if (!$diasElegidos->contains($cursor->dayOfWeek)) {
+                            if (! $diasElegidos->contains($cursor->dayOfWeek)) {
                                 continue;
                             }
 
                             $start = $allDay
                                 ? $cursor->copy()->startOfDay()
                                 : $cursor->copy()->setTimeFromTimeString($data['desde_hora_d']);
-                            $end   = $allDay
+                            $end = $allDay
                                 ? $cursor->copy()->endOfDay()
                                 : $cursor->copy()->setTimeFromTimeString($data['hasta_hora_d']);
 
                             if ($end->gt($start)) {
                                 $rows[] = [
-                                    'title'         => 'Bloqueo',
-                                    'kind'          => 'manual',
-                                    'is_all_day'    => $allDay,
-                                    'starts_at'     => $start,
-                                    'ends_at'       => $end,
-                                    'reason'        => $data['reason'] ?? null,
+                                    'title' => 'Bloqueo',
+                                    'kind' => 'manual',
+                                    'is_all_day' => $allDay,
+                                    'starts_at' => $start,
+                                    'ends_at' => $end,
+                                    'reason' => $data['reason'] ?? null,
                                     'owner_user_id' => (int) env('OWNER_CAL_USER_ID', 1),
-                                    'sync_status'   => 'pending',
-                                    'created_at'    => $now,
-                                    'updated_at'    => $now,
+                                    'sync_status' => 'pending',
+                                    'created_at' => $now,
+                                    'updated_at' => $now,
                                 ];
                             }
                         }
@@ -230,6 +231,7 @@ class ListCalendarBlocks extends ListRecords
                             ->warning()
                             ->duration(4000)
                             ->send();
+
                         return;
                     }
 

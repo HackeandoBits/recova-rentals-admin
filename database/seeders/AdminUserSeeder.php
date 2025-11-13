@@ -22,10 +22,10 @@ class AdminUserSeeder extends Seeder
         User::updateOrCreate(
             ['email' => 'recovarentals@gmail.com'],
             [
-                'name'              => 'Recova Rentals Owner',
-                'is_admin'          => true,           // asegura rol admin
+                'name' => 'Recova Rentals Owner',
+                'is_admin' => true,           // asegura rol admin
                 'email_verified_at' => now(),          // verificado
-                'password'          => Hash::make('recova123'),
+                'password' => Hash::make('recova123'),
             ]
         );
     }

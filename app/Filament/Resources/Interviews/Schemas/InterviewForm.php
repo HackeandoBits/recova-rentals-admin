@@ -30,14 +30,14 @@ class InterviewForm
                 ->required()
                 ->rules([
                     // fin > inicio (una sola vez)
-                    fn($get) => function (string $attribute, $value, \Closure $fail) use ($get) {
+                    fn ($get) => function (string $attribute, $value, \Closure $fail) use ($get) {
                         $start = $get('start_at');
                         if ($start && $value && Carbon::parse($value)->lte(Carbon::parse($start))) {
                             $fail('La hora de fin debe ser posterior al inicio.');
                         }
                     },
-                    fn($get, $record) => new NoOverlapRule($get('start_at'), $record?->id, 60),
-                    fn($get) => new NoOverlapWithBlocks($get('start_at'), (int) env('OWNER_CAL_USER_ID', 1)),
+                    fn ($get, $record) => new NoOverlapRule($get('start_at'), $record?->id, 60),
+                    fn ($get) => new NoOverlapWithBlocks($get('start_at'), (int) env('OWNER_CAL_USER_ID', 1)),
                 ]),
 
             Select::make('status')

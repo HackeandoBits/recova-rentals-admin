@@ -10,6 +10,7 @@ class GoogleSyncBlocks extends Command
 {
     // Uso: php artisan google:sync-blocks --since=2025-11-01
     protected $signature = 'google:sync-blocks {--since= : ISO date (YYYY-MM-DD) para limitar los bloques a sincronizar}';
+
     protected $description = 'Sincroniza CalendarBlocks activos con el Google Calendar del OWNER (primary).';
 
     public function handle(GoogleCalendarService $google)
@@ -33,6 +34,7 @@ class GoogleSyncBlocks extends Command
         });
 
         $this->info("Total procesados: {$count}");
+
         return self::SUCCESS;
     }
 }

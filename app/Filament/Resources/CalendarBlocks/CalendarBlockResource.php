@@ -21,8 +21,11 @@ class CalendarBlockResource extends Resource
 
     // Navegación (mismos tipos que tu InterviewResource)
     protected static UnitEnum|string|null $navigationGroup = 'Agenda';
+
     protected static BackedEnum|string|null $navigationIcon = Heroicon::OutlinedNoSymbol;
+
     protected static ?string $navigationLabel = 'Bloques de agenda';
+
     protected static ?string $recordTitleAttribute = 'title';
 
     public static function form(Schema $schema): Schema
@@ -43,9 +46,9 @@ class CalendarBlockResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListCalendarBlocks::route('/'),
+            'index' => ListCalendarBlocks::route('/'),
             'create' => CreateCalendarBlock::route('/create'),
-            'edit'   => EditCalendarBlock::route('/{record}/edit'),
+            'edit' => EditCalendarBlock::route('/{record}/edit'),
         ];
     }
 }

@@ -47,6 +47,7 @@ class CalendarBlock extends Model
         if ($edgeAllowed) {
             return $this->starts_at < $end && $this->ends_at > $start;
         }
+
         return $this->starts_at <= $end && $this->ends_at >= $start;
     }
 }

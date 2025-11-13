@@ -2,11 +2,11 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use App\Models\Interview;
-use App\Observers\InterviewObserver;
 use App\Models\CalendarBlock;
+use App\Models\Interview;
 use App\Observers\CalendarBlockObserver;
+use App\Observers\InterviewObserver;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {

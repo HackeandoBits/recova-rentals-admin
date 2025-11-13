@@ -20,12 +20,15 @@ class SyncSingleBlockJob implements ShouldQueue
     }
 
     public $tries = 3;                          // reintentos
+
     public $backoff = [10, 30, 90];             // backoff escalonado (segundos)
 
     public function handle(GoogleCalendarService $google): void
     {
         $block = CalendarBlock::withTrashed()->find($this->blockId);
-        if (!$block) return;
+        if (! $block) {
+            return;
+        }
 
         if ($this->delete || $block->canceled_at) {
             $google->deleteBlockEvent($block);

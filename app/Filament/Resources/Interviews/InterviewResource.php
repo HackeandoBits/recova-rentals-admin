@@ -11,9 +11,9 @@ use App\Models\Interview;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;  
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use UnitEnum;                          
+use UnitEnum;
 
 class InterviewResource extends Resource
 {
@@ -21,7 +21,9 @@ class InterviewResource extends Resource
 
     // Navegación (tipos deben coincidir con la clase base)
     protected static UnitEnum|string|null $navigationGroup = 'Agenda';
+
     protected static BackedEnum|string|null $navigationIcon = Heroicon::OutlinedCalendarDays;
+
     protected static ?string $navigationLabel = 'Reuniones';
 
     protected static ?string $recordTitleAttribute = 'title';
@@ -44,9 +46,9 @@ class InterviewResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListInterviews::route('/'),
+            'index' => ListInterviews::route('/'),
             'create' => CreateInterview::route('/create'),
-            'edit'   => EditInterview::route('/{record}/edit'),
+            'edit' => EditInterview::route('/{record}/edit'),
         ];
     }
 }

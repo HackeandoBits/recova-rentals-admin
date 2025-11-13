@@ -22,10 +22,10 @@ class CalendarBlockForm
             Select::make('kind')
                 ->label('Tipo')
                 ->options([
-                    'manual'        => 'Manual',
+                    'manual' => 'Manual',
                     'mantenimiento' => 'Mantenimiento',
-                    'feriado'       => 'Feriado',
-                    'otro'          => 'Otro',
+                    'feriado' => 'Feriado',
+                    'otro' => 'Otro',
                 ])
                 ->default('manual')
                 ->native(false),

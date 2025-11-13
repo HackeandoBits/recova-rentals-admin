@@ -20,6 +20,7 @@ class SyncBlocksRangeJob implements ShouldQueue
     }
 
     public $tries = 3;
+
     public $backoff = [10, 30, 90];
 
     public function handle(GoogleCalendarService $google): void

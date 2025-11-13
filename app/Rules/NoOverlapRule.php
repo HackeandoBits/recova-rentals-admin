@@ -17,19 +17,22 @@ class NoOverlapRule implements ValidationRule
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if (blank($this->startAt) || blank($value)) return;
+        if (blank($this->startAt) || blank($value)) {
+            return;
+        }
 
         $start = Carbon::parse($this->startAt);
-        $end   = Carbon::parse($value);
+        $end = Carbon::parse($value);
 
         if ($end->lessThanOrEqualTo($start)) {
             $fail('La hora de fin debe ser posterior al inicio.');
+
             return;
         }
 
         // Expande el rango con buffer
         $bufStart = $start->copy()->subMinutes($this->minutes);
-        $bufEnd   = $end->copy()->addMinutes($this->minutes);
+        $bufEnd = $end->copy()->addMinutes($this->minutes);
 
         $q = Interview::query()
             // solapa si: start_at < bufEnd  y  end_at > bufStart

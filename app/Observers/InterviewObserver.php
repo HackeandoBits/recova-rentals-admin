@@ -21,11 +21,12 @@ class InterviewObserver
         // Si pasó a "cancelled" => eliminar de Google y borrar vínculo
         if ($i->isDirty('status') && $i->status === 'cancelled') {
             $this->syncDelete($i);
+
             return;
         }
 
         // Si cambió título/horarios/estado (no cancelado) => upsert
-        if ($i->wasChanged(['title','start_at','end_at','status'])) {
+        if ($i->wasChanged(['title', 'start_at', 'end_at', 'status'])) {
             $this->syncUpsert($i);
         }
     }
@@ -39,7 +40,9 @@ class InterviewObserver
     protected function syncUpsert(Interview $i): void
     {
         try {
-            if ($i->status === 'cancelled') return;
+            if ($i->status === 'cancelled') {
+                return;
+            }
 
             /** @var GoogleCalendarService $svc */
             $svc = app(GoogleCalendarService::class);
@@ -62,7 +65,9 @@ class InterviewObserver
     protected function syncDelete(Interview $i): void
     {
         try {
-            if (! $i->google_event_id) return;
+            if (! $i->google_event_id) {
+                return;
+            }
 
             /** @var GoogleCalendarService $svc */
             $svc = app(GoogleCalendarService::class);

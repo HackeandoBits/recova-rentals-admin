@@ -10,19 +10,19 @@ use Illuminate\Support\Carbon;
 class NoOverlapWithBlocks implements ValidationRule
 {
     public function __construct(
-        protected string|null $startAt,           // ← lo inyectamos desde el form
+        protected ?string $startAt,           // ← lo inyectamos desde el form
         protected ?int $ownerUserId = null,
     ) {}
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if (!$this->startAt || !$value) {
+        if (! $this->startAt || ! $value) {
             return;
         }
 
         // No hacemos conversiones de TZ: comparamos en la misma base que guardás en DB.
         $start = Carbon::parse($this->startAt);
-        $end   = Carbon::parse($value);
+        $end = Carbon::parse($value);
 
         if ($end->lte($start)) {
             return; // otra regla ya marca "fin > inicio"
@@ -34,7 +34,7 @@ class NoOverlapWithBlocks implements ValidationRule
             ->whereNull('canceled_at')
             ->where('owner_user_id', $ownerId)
             ->where('starts_at', '<', $end)
-            ->where('ends_at',   '>', $start)
+            ->where('ends_at', '>', $start)
             ->exists();
 
         if ($overlaps) {

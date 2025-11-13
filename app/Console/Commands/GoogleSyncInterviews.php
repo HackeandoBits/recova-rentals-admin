@@ -25,6 +25,7 @@ class GoogleSyncInterviews extends Command
         }
         if (! $userId) {
             $this->error('Debe indicar --owner o --userId=');
+
             return self::FAILURE;
         }
 
@@ -44,6 +45,7 @@ class GoogleSyncInterviews extends Command
                         $svc->deleteInterviewEvent($userId, $i);
                         $i->forceFill(['google_event_id' => null])->saveQuietly();
                     }
+
                     return;
                 }
 
@@ -59,6 +61,7 @@ class GoogleSyncInterviews extends Command
 
         $this->newLine();
         $this->info("Listo. Entrevistas sincronizadas: {$count}");
+
         return self::SUCCESS;
     }
 }

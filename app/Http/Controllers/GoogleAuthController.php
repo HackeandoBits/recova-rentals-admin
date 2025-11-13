@@ -34,7 +34,7 @@ class GoogleAuthController extends Controller
 
         $extra = [
             'access_type' => 'offline',
-            'prompt'      => $hasToken ? 'none' : 'consent',
+            'prompt' => $hasToken ? 'none' : 'consent',
             // 'include_granted_scopes' => 'true', // opcional
         ];
 
@@ -72,9 +72,9 @@ class GoogleAuthController extends Controller
         GoogleToken::updateOrCreate(
             ['user_id' => $userId],
             [
-                'access_token'  => $googleUser->token,
+                'access_token' => $googleUser->token,
                 'refresh_token' => $googleUser->refreshToken ?? null, // sólo llega la 1ª vez con consent
-                'expires_at'    => $googleUser->expiresIn
+                'expires_at' => $googleUser->expiresIn
                     ? now()->addSeconds($googleUser->expiresIn)
                     : null,
             ]

@@ -2,20 +2,36 @@
 
 namespace App\Models;
 
-use App\Models\CalendarBlock;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 
 class Interview extends Model
 {
-    protected $fillable = ['title', 'start_at', 'end_at', 'status', 'google_event_id'];
+    /**
+     * Los campos que vienen de AMBOS modelos
+     */
+    protected $fillable = [
+        'title',
+        'start_at',
+        'end_at',
+        'status',
+        'google_event_id',
+        'booking_id',
+        'channel',
+        'location_note',
+    ];
 
-    // Estos casts devuelven Carbon, así podemos usar ->toDateString() y comparaciones.
     protected $casts = [
         'start_at' => 'datetime',
         'end_at' => 'datetime',
     ];
 
+    /**
+     * Toda tu lógica de validación de solapamiento
+     * (Esto está perfecto, no se toca)
+     */
     protected static function booted(): void
     {
         static::saving(function (Interview $i) {
@@ -26,12 +42,12 @@ class Interview extends Model
                 ]);
             }
 
-            // 2) No solapar con otras entrevistas (borde-borde permitido)
+            // 2) No solapar con otras entrevistas
             $conflict = static::query()
-                ->when($i->exists, fn($q) => $q->where('id', '!=', $i->id))
+                ->when($i->exists, fn ($q) => $q->where('id', '!=', $i->id))
                 ->where('status', '!=', 'cancelled')
-                ->where('end_at', '>', $i->start_at) // estricto
-                ->where('start_at', '<', $i->end_at)   // estricto
+                ->where('end_at', '>', $i->start_at)
+                ->where('start_at', '<', $i->end_at)
                 ->exists();
 
             if ($conflict) {
@@ -40,7 +56,7 @@ class Interview extends Model
                 ]);
             }
 
-            // 3) No solapar con Calendar Blocks (borde-borde permitido)
+            // 3) No solapar con Calendar Blocks
             $ownerId = (int) env('OWNER_CAL_USER_ID', 1);
 
             $blocked = CalendarBlock::query()
@@ -56,5 +72,53 @@ class Interview extends Model
                 ]);
             }
         });
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relaciones (Robadas de Appointment)
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * La reserva (pedido del cliente) asociada a esta reunión.
+     */
+    public function booking(): BelongsTo
+    {
+        return $this->belongsTo(Booking::class);
+    }
+
+    /**
+     * El miembro del staff asignado a esta reunión.
+     */
+    public function assignee(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_user_id');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Scopes (Robados de Appointment)
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Filtra reuniones para un usuario en un rango de tiempo.
+     */
+    public function scopeForUserBetween($q, int $userId, $from, $to)
+    {
+        return $q->where('assigned_user_id', $userId)
+            ->where('starts_at', '<', $to)
+            ->where('ends_at', '>', $from);
+    }
+
+    /**
+     * Filtra reuniones en una fecha específica.
+     */
+    public function scopeOnDate($q, Carbon|string $date)
+    {
+        $d = Carbon::parse($date);
+
+        return $q->whereDate('starts_at', $d->toDateString());
     }
 }

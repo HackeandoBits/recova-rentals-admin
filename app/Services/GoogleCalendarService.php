@@ -2,15 +2,14 @@
 
 namespace App\Services;
 
+use App\Models\CalendarBlock;
 use App\Models\GoogleToken;
 use App\Models\Interview;
-use App\Models\CalendarBlock;
 use Google\Client as GoogleClient;
 use Google\Service\Calendar as GoogleCalendar;
 use Google\Service\Calendar\Event as GoogleEvent;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
-
 
 class GoogleCalendarService
 {
@@ -20,6 +19,7 @@ class GoogleCalendarService
     public function forUser(int $userId): GoogleCalendar
     {
         $client = $this->clientWithFreshToken($userId);
+
         return new GoogleCalendar($client);
     }
 
@@ -29,6 +29,7 @@ class GoogleCalendarService
     public function forOwner(): GoogleCalendar
     {
         $ownerId = (int) config('owner.calendar_user_id', 1);
+
         return $this->forUser($ownerId);
     }
 
@@ -39,7 +40,7 @@ class GoogleCalendarService
     {
         $token = GoogleToken::where('user_id', $userId)->firstOrFail();
 
-        $client = new GoogleClient();
+        $client = new GoogleClient;
         $client->setClientId(Config::get('services.google.client_id'));
         $client->setClientSecret(Config::get('services.google.client_secret'));
         $client->setRedirectUri(Config::get('services.google.redirect'));
@@ -123,11 +124,13 @@ class GoogleCalendarService
         if ($i->google_event_id) {
             // update
             $updated = $cal->events->update($calendarId, $i->google_event_id, $payload);
+
             return $updated->getId();
         }
 
         // create
         $created = $cal->events->insert($calendarId, $payload);
+
         return $created->getId();
     }
 
@@ -139,7 +142,7 @@ class GoogleCalendarService
         Interview $i,
         string $calendarId = 'primary'
     ): void {
-        if (!$i->google_event_id) {
+        if (! $i->google_event_id) {
             return;
         }
 
@@ -155,6 +158,7 @@ class GoogleCalendarService
         string $calendarId = 'primary'
     ): string {
         $ownerId = (int) config('owner.calendar_user_id', 1);
+
         return $this->upsertInterviewEvent($ownerId, $i, $calendarId);
     }
 
@@ -175,10 +179,9 @@ class GoogleCalendarService
         $service = $this->forOwner();
         $calendarId = 'primary';
 
-
         $event = new GoogleEvent([
-            'summary' => '[BLOCK] ' . ($block->title ?: 'Bloqueo'),
-            'description' => trim(($block->reason ?: '') . "\nKind: {$block->kind}"),
+            'summary' => '[BLOCK] '.($block->title ?: 'Bloqueo'),
+            'description' => trim(($block->reason ?: '')."\nKind: {$block->kind}"),
             'start' => $block->is_all_day
                 ? ['date' => $block->starts_at->toDateString(), 'timeZone' => config('app.timezone')]
                 : ['dateTime' => $block->starts_at->toIso8601String(), 'timeZone' => config('app.timezone')],
@@ -187,7 +190,6 @@ class GoogleCalendarService
                 : ['dateTime' => $block->ends_at->toIso8601String(), 'timeZone' => config('app.timezone')],
             'colorId' => '11', // rojo
         ]);
-
 
         try {
             if ($block->google_event_id) {
@@ -201,6 +203,7 @@ class GoogleCalendarService
                 'synced_at' => now(),
                 'last_error' => null,
             ]);
+
             return $event;
         } catch (\Throwable $e) {
             $block->update([
@@ -208,15 +211,16 @@ class GoogleCalendarService
                 'last_error' => $e->getMessage(),
             ]);
             report($e);
+
             return null;
         }
     }
 
-
     public function deleteBlockEvent(CalendarBlock $block): void
     {
-        if (!$block->google_event_id)
+        if (! $block->google_event_id) {
             return;
+        }
         try {
             $this->forOwner()->events->delete('primary', $block->google_event_id);
         } catch (\Throwable $e) {
@@ -229,4 +233,3 @@ class GoogleCalendarService
         ]);
     }
 }
-
