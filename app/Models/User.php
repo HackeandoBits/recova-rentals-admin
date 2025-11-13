@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Filament\Panel;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
@@ -50,5 +51,10 @@ class User extends Authenticatable
     public function canAccessPanel(Panel $panel): bool
     {
         return (bool) $this->is_admin; // solo admins entran al panel
+    }
+
+    public function googleToken(): HasOne
+    {
+        return $this->hasOne(GoogleToken::class, 'user_id', 'id');
     }
 }

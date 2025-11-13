@@ -17,7 +17,7 @@ return new class extends Migration {
             $table->string('reason')->nullable();
             $table->unsignedBigInteger('owner_user_id')->default((int) env('OWNER_CAL_USER_ID', 1));
 
-            // Sync Google
+            // Sincronización con Google Calendar
             $table->string('google_event_id')->nullable()->index();
             $table->enum('sync_status', ['pending', 'synced', 'failed'])->default('pending');
             $table->timestamp('synced_at')->nullable();
@@ -30,7 +30,10 @@ return new class extends Migration {
             $table->softDeletes();
             $table->timestamps();
 
-            $table->index(['owner_user_id','starts_at', 'ends_at']);
+            // === Índices optimizados ===
+            // Reemplaza el antiguo (starts_at, ends_at)
+            $table->index(['owner_user_id', 'starts_at'], 'calendar_blocks_owner_starts_idx');
+            $table->index(['owner_user_id', 'ends_at'], 'calendar_blocks_owner_ends_idx');
         });
     }
 
