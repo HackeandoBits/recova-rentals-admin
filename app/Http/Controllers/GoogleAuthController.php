@@ -23,8 +23,9 @@ class GoogleAuthController extends Controller
         // Guardamos el user_id del usuario que va a vincular
         $request->session()->put('oauth_user_id', Auth::id());
 
-        // Si ya tiene token, evitamos re-pedir consentimiento (prompt=none)
-        $hasToken = GoogleToken::where('user_id', Auth::id())->exists();
+        // Estado actual del token del usuario
+        $existing = GoogleToken::where('user_id', Auth::id())->first();
+        $hasToken = (bool) $existing;
 
         $scopes = [
             'openid', 'email', 'profile',
@@ -32,10 +33,16 @@ class GoogleAuthController extends Controller
             'https://www.googleapis.com/auth/calendar.readonly',
         ];
 
+        // ¿Querés forzar consentimiento? /google/redirect?force=1
+        $force = (bool) $request->boolean('force');
+
+        // Si no tenemos refresh_token guardado, forzamos consentimiento para que Google lo emita
+        $needsRefreshToken = ! $existing || empty($existing->refresh_token);
+
         $extra = [
-            'access_type' => 'offline',
-            'prompt' => $hasToken ? 'none' : 'consent',
-            // 'include_granted_scopes' => 'true', // opcional
+            'access_type'            => 'offline',            // necesario para refresh_token
+            'include_granted_scopes' => 'true',
+            'prompt'                 => ($force || $needsRefreshToken) ? 'consent' : 'none',
         ];
 
         return Socialite::driver('google')
@@ -68,17 +75,35 @@ class GoogleAuthController extends Controller
             }
         }
 
-        // Guardar/actualizar tokens
-        GoogleToken::updateOrCreate(
-            ['user_id' => $userId],
-            [
-                'access_token' => $googleUser->token,
-                'refresh_token' => $googleUser->refreshToken ?? null, // sólo llega la 1ª vez con consent
-                'expires_at' => $googleUser->expiresIn
-                    ? now()->addSeconds($googleUser->expiresIn)
-                    : null,
-            ]
-        );
+        // Tokens y metadatos
+        $access  = $googleUser->token;
+        $refresh = $googleUser->refreshToken ?? null; // puede venir null si Google decide no reenviarlo
+        $expires = $googleUser->expiresIn ?? 3600;
+
+        $record = GoogleToken::firstOrNew(['user_id' => $userId]);
+
+        $payload = [
+            'access_token' => $access,
+            // Normalizamos expiración en UTC
+            'expires_at'   => now('UTC')->addSeconds((int) $expires),
+            // (Opcional si tu tabla tiene estas columnas)
+            'google_user_id' => method_exists($googleUser, 'getId') ? $googleUser->getId() : null,
+            'google_email'   => method_exists($googleUser, 'getEmail') ? $googleUser->getEmail() : null,
+            'id_token'       => $googleUser->id_token ?? null,
+            'scopes'         => json_encode([
+                'openid', 'email', 'profile',
+                'https://www.googleapis.com/auth/calendar.events',
+                'https://www.googleapis.com/auth/calendar.readonly',
+            ], JSON_UNESCAPED_SLASHES),
+            'revoked'        => false,
+        ];
+
+        // No pisar un refresh_token válido con null
+        if (! empty($refresh)) {
+            $payload['refresh_token'] = $refresh;
+        }
+
+        $record->fill($payload)->save();
 
         // Aseguramos sesión del usuario (por si se perdió)
         if (! Auth::check()) {
