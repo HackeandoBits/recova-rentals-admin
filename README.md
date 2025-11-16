@@ -156,6 +156,24 @@ GOOGLE_REDIRECT_URI=http://localhost:8000/auth/google/callback
 QUEUE_CONNECTION=database
 ```
 
+### Nueva variable de entorno: `OWNER_CAL_TZ`
+
+**¿Qué es?**  
+Zona horaria (IANA) usada para construir el payload de Google Calendar (start/end).  
+No cambia la TZ global de Laravel; solo afecta la sincronización con Google.
+
+**Valor recomendado (AR):**
+```dotenv
+OWNER_CAL_TZ=America/Argentina/Buenos_Aires
+```
+
+**Después de agregarla o cambiarla:**
+php artisan config:clear
+# si usan cache:
+php artisan config:cache
+# si hay workers:
+php artisan queue:restart
+
 ### Migraciones
 
 * `create_google_tokens_table`
