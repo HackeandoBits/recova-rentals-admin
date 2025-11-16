@@ -40,5 +40,9 @@ return [
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect' => env('GOOGLE_REDIRECT_URI', env('APP_URL', 'http://localhost:8000') . '/auth/google/callback'),
     ],
+    
+    'google_calendar' => [
+        'timezone' => env('OWNER_CAL_TZ', 'America/Argentina/Buenos_Aires'),
+    ],
 
 ];
