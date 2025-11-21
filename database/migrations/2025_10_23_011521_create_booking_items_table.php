@@ -15,13 +15,16 @@ return new class extends Migration
             $table->id();
             $table->foreignId('booking_id')->constrained('bookings')->cascadeOnDelete();
 
-            // Polimórfico manual (compatible con morphTo)
-            $table->string('product_type');            // App\Models\Item | App\Models\Combo
+            // 1. SOLUCIÓN AL ERROR: Agregamos un default para que no falle
+            $table->string('product_type')->default('equipment');
+
             $table->unsignedBigInteger('product_id');
 
             // Snapshot
             $table->string('name');
-            $table->string('category');
+
+            $table->string('category')->nullable();
+
             $table->text('description')->nullable();
 
             $table->unsignedInteger('quantity')->default(1);
