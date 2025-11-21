@@ -51,13 +51,17 @@ class CalendarBlockForm
             DateTimePicker::make('starts_at')
                 ->label('Desde')
                 ->seconds(false)
-                ->required(),
+                ->required()
+                // No permitir bloquear días anteriores al día actual
+                ->minDate(fn () => Carbon::today()),
 
             DateTimePicker::make('ends_at')
                 ->label('Hasta')
                 ->seconds(false)
                 ->required()
-                ->rule('after:starts_at'),
+                ->rule('after:starts_at')
+                // La fecha mínima de fin es el inicio (si existe) o, en su defecto, hoy
+                ->minDate(fn (callable $get) => $get('starts_at') ?? Carbon::today()),
         ])->columns(2);
     }
 }

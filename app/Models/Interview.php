@@ -35,6 +35,15 @@ class Interview extends Model
     protected static function booted(): void
     {
         static::saving(function (Interview $i) {
+            // 0) No permitir entrevistas en días anteriores al día actual
+            $today = Carbon::now()->startOfDay();
+
+            if ($i->start_at && $i->start_at->lt($today)) {
+                throw ValidationException::withMessages([
+                    'start_at' => 'La entrevista no puede agendarse antes del día actual.',
+                ]);
+            }
+
             // 1) Fin > inicio
             if ($i->end_at && $i->start_at && $i->end_at->lte($i->start_at)) {
                 throw ValidationException::withMessages([
@@ -44,7 +53,7 @@ class Interview extends Model
 
             // 2) No solapar con otras entrevistas
             $conflict = static::query()
-                ->when($i->exists, fn ($q) => $q->where('id', '!=', $i->id))
+                ->when($i->exists, fn($q) => $q->where('id', '!=', $i->id))
                 ->where('status', '!=', 'cancelled')
                 ->where('end_at', '>', $i->start_at)
                 ->where('start_at', '<', $i->end_at)

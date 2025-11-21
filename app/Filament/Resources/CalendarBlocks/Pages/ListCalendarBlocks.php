@@ -63,13 +63,19 @@ class ListCalendarBlocks extends ListRecords
                         ->label('Desde')
                         ->required()
                         ->visible(fn ($get) => $get('mode') === 'range')
-                        ->dehydrated(fn ($get) => $get('mode') === 'range'),
+                        ->dehydrated(fn ($get) => $get('mode') === 'range')
+                        // No permitir seleccionar fechas anteriores a hoy
+                        ->minDate(fn () => Carbon::today()),
                     DatePicker::make('hasta')
                         ->label('Hasta')
                         ->required()
                         ->rule('after_or_equal:desde')
                         ->visible(fn ($get) => $get('mode') === 'range')
-                        ->dehydrated(fn ($get) => $get('mode') === 'range'),
+                        ->dehydrated(fn ($get) => $get('mode') === 'range')
+                        // La fecha mínima de fin es "desde" o, en su defecto, hoy
+                        ->minDate(fn (callable $get) => $get('desde')
+                            ? Carbon::parse($get('desde'))
+                            : Carbon::today()),
                     ToggleButtons::make('all_day_r')
                         ->label('Día completo')
                         ->options([0 => 'No', 1 => 'Sí'])
@@ -146,9 +152,15 @@ class ListCalendarBlocks extends ListRecords
 
                     if ($data['mode'] === 'range') {
                         // —— MODO RANGO ——
+                        $today = now()->startOfDay();
                         $desde = Carbon::parse($data['desde'])->startOfDay();
                         $hasta = Carbon::parse($data['hasta'])->endOfDay();
                         $allDay = (bool) ($data['all_day_r'] ?? false);
+
+                        // Asegurarnos de no generar bloques antes de hoy
+                        if ($desde->lt($today)) {
+                            $desde = $today->copy();
+                        }
 
                         for ($cursor = $desde->copy(); $cursor->lte($hasta); $cursor = $cursor->addDay()) {
                             $start = $allDay

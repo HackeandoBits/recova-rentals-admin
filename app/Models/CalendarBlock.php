@@ -6,6 +6,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Validation\ValidationException;
 
 class CalendarBlock extends Model
 {
@@ -35,6 +36,27 @@ class CalendarBlock extends Model
         'synced_at' => 'immutable_datetime',
         'canceled_at' => 'immutable_datetime',
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (CalendarBlock $block) {
+            // 0) No permitir bloques en días anteriores al día actual
+            $today = CarbonImmutable::now()->startOfDay();
+
+            if ($block->starts_at && $block->starts_at->lt($today)) {
+                throw ValidationException::withMessages([
+                    'starts_at' => 'El bloqueo de agenda no puede crearse antes del día actual.',
+                ]);
+            }
+
+            // 1) Fin > inicio
+            if ($block->ends_at && $block->starts_at && $block->ends_at->lte($block->starts_at)) {
+                throw ValidationException::withMessages([
+                    'ends_at' => 'La hora de fin debe ser posterior al inicio.',
+                ]);
+            }
+        });
+    }
 
     public function scopeActive($q)
     {
