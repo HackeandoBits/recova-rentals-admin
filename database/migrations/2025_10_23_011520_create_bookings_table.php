@@ -16,11 +16,11 @@ return new class extends Migration
             $table->string('customer_name');
             $table->string('customer_email');
             $table->string('customer_phone')->nullable();
-            $table->date('event_date');
+            $table->date('event_date')->nullable();
             $table->enum('meeting_type', ['none', 'virtual', 'whatsapp', 'in_person'])->default('none');
             $table->date('meeting_date')->nullable();
             $table->string('meeting_time_note')->nullable();
-            $table->string('service_type', 120);
+            $table->string('service_type', 120)->nullable();
             $table->text('notes')->nullable();
             $table->enum('status', ['pending', 'confirmed', 'cancelled'])->default('pending');
             $table->foreignId('created_by_user_id')->nullable()->constrained('users')->nullOnDelete();
