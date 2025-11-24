@@ -25,7 +25,14 @@ class InterviewObserver
             return;
         }
 
-        // Si cambió título/horarios/estado (no cancelado) => upsert
+        // Si pasó de 'confirmed' a 'pending' => eliminar de Google
+        if ($i->isDirty('status') && $i->status === 'pending' && $i->google_event_id) {
+            $this->syncDelete($i);
+
+            return;
+        }
+
+        // Si cambió título/horarios/estado (no cancelado ni pending) => upsert
         if ($i->wasChanged(['title', 'start_at', 'end_at', 'status'])) {
             $this->syncUpsert($i);
         }
@@ -40,7 +47,8 @@ class InterviewObserver
     protected function syncUpsert(Interview $i): void
     {
         try {
-            if ($i->status === 'cancelled') {
+            // Solo sincronizar si el estado es 'confirmed'
+            if ($i->status !== 'confirmed') {
                 return;
             }
 

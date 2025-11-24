@@ -3,7 +3,6 @@
 namespace App\Jobs;
 
 use App\Models\CalendarBlock;
-use App\Services\GoogleCalendarService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -23,14 +22,14 @@ class SyncBlocksRangeJob implements ShouldQueue
 
     public $backoff = [10, 30, 90];
 
-    public function handle(GoogleCalendarService $google): void
+    public function handle(): void
     {
         CalendarBlock::active()
             ->where('ends_at', '>=', $this->sinceDate)
             ->orderBy('id')
-            ->chunkById(100, function ($blocks) use ($google) {
+            ->chunkById(100, function ($blocks) {
                 foreach ($blocks as $b) {
-                    $google->upsertBlock($b);
+                    dispatch(new SyncSingleBlockJob($b->id));
                 }
             });
     }
