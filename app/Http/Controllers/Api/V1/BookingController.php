@@ -111,7 +111,7 @@ class BookingController extends Controller
         foreach ($interviews as $interview) {
             $meetingStart = Carbon::parse($interview->start_at);
 
-            // Bloquear 3 slots de 30min (1h reunión + 30min buffer)
+            // Bloquear 6 slots de 30min (1h reunión + 30min buffer)
             for ($i = -3; $i < 3; $i++) {
                 $blockedTime = $meetingStart->copy()->addMinutes($i * 30);
                 $blockedSlots[] = $blockedTime->format('H:i');
