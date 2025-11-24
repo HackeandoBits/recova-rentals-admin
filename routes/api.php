@@ -15,4 +15,7 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     // El endpoint que recibirá el POST del cliente
     Route::post('/bookings', [BookingController::class, 'store']);
 
+    // Endpoint para consultar horarios ocupados por fecha
+    Route::get('/bookings/occupied-time-slots', [BookingController::class, 'getOccupiedTimeSlots']);
+
 });

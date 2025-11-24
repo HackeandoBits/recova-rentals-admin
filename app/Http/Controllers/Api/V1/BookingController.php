@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Interview;
+use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -84,5 +86,46 @@ class BookingController extends Controller
 
             return response()->json(['error' => 'Error interno al procesar el pedido'], 500);
         }
+    }
+     /**
+     * Obtiene los slots de tiempo ocupados para una fecha específica
+     * 
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getOccupiedTimeSlots(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'date' => 'required|date',
+        ]);
+        
+        $date = Carbon::parse($validated['date']);
+        
+        // ⚠️ CORRECCIÓN: Consultar INTERVIEWS en lugar de BOOKINGS
+        $interviews = Interview::where('status', '!=', 'cancelled')
+            ->whereDate('start_at', $date)
+            ->get();
+        
+        $blockedSlots = [];
+        
+        foreach ($interviews as $interview) {
+            $meetingStart = Carbon::parse($interview->start_at);
+            
+            // Bloquear 3 slots de 30min (1h reunión + 30min buffer)
+            for ($i = 0; $i < 3; $i++) {
+                $blockedTime = $meetingStart->copy()->addMinutes($i * 30);
+                $blockedSlots[] = $blockedTime->format('H:i');
+            }
+        }
+        
+        // Eliminar duplicados y ordenar
+        $blockedSlots = array_unique($blockedSlots);
+        sort($blockedSlots);
+        
+        return response()->json([
+            'date' => $date->format('Y-m-d'),
+            'blocked_slots' => array_values($blockedSlots),
+            'count' => count($blockedSlots),
+        ]);
     }
 }
