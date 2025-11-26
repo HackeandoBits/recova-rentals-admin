@@ -19,6 +19,23 @@ class InterviewForm
                 ->label('Título')
                 ->maxLength(120),
 
+            Forms\Components\Section::make('Detalles del Pedido')
+                ->schema([
+                    Forms\Components\Placeholder::make('customer')
+                        ->label('Cliente')
+                        ->content(fn ($record) => $record?->booking ? "{$record->booking->customer_name} ({$record->booking->customer_email})" : 'N/A'),
+                    
+                    Forms\Components\Placeholder::make('items')
+                        ->label('Items Solicitados')
+                        ->content(fn ($record) => $record?->booking?->items->map(fn($item) => "{$item->quantity}x {$item->name}")->join(', ') ?? 'N/A'),
+
+                    Forms\Components\Placeholder::make('notes')
+                        ->label('Notas del Cliente')
+                        ->content(fn ($record) => $record?->booking?->notes ?? 'N/A'),
+                ])
+                ->collapsible()
+                ->collapsed(),
+
             DateTimePicker::make('start_at')
                 ->label('Inicio')
                 ->seconds(false)

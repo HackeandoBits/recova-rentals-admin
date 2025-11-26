@@ -17,6 +17,12 @@ class InterviewsTable
             ->columns([
                 TextColumn::make('title')
                     ->searchable(),
+                TextColumn::make('booking.customer_name')
+                    ->label('Cliente')
+                    ->searchable(),
+                TextColumn::make('booking.customer_phone')
+                    ->label('Teléfono')
+                    ->searchable(),
                 TextColumn::make('start_at')
                     ->dateTime()
                     ->sortable(),
@@ -38,6 +44,17 @@ class InterviewsTable
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->actions([
+                Tables\Actions\Action::make('whatsapp')
+                    ->label('WhatsApp')
+                    ->icon('heroicon-o-chat-bubble-left-right')
+                    ->color('success')
+                    ->url(fn ($record) => $record->booking && $record->booking->customer_phone
+                        ? 'https://wa.me/'.preg_replace('/[^0-9]/', '', $record->booking->customer_phone)
+                        : null, shouldOpenInNewTab: true)
+                    ->visible(fn ($record) => $record->booking && $record->booking->customer_phone),
+                EditAction::make(),
             ])
             ->filters([
                 //

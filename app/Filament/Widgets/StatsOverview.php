@@ -15,47 +15,29 @@ class StatsOverview extends BaseWidget
 
     protected function getStats(): array
     {
-        $startOfMonth = Carbon::now()->startOfMonth();
-        $endOfMonth = Carbon::now()->endOfMonth();
+        $pedidosPendientes = \App\Models\Booking::where('status', 'pending')->count();
 
-        $baseQuery = Interview::query()
-            ->whereBetween('start_at', [$startOfMonth, $endOfMonth]);
-
-        $totalReservas = (clone $baseQuery)
+        $reunionesHoy = Interview::whereDate('start_at', Carbon::today())
             ->where('status', '!=', 'cancelled')
             ->count();
 
-        $confirmadas = (clone $baseQuery)
-            ->where('status', 'confirmed')
-            ->count();
-
-        $pendientes = (clone $baseQuery)
-            ->where('status', 'pending')
-            ->count();
-
-        // TODO: reemplazar por cálculo real de ingresos (Bookings / montos)
-        $ingresosEstimados = 12450;
+        $pedidosMes = \App\Models\Booking::whereBetween('created_at', [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])->count();
 
         return [
-            Stat::make('Total Reservas', $totalReservas)
-                ->description('Este mes')
-                ->icon('heroicon-o-calendar-days')
+            Stat::make('Pedidos Pendientes', $pedidosPendientes)
+                ->description('Requieren atención')
+                ->icon('heroicon-o-inbox-stack')
+                ->color($pedidosPendientes > 0 ? 'danger' : 'success'),
+
+            Stat::make('Reuniones Hoy', $reunionesHoy)
+                ->description('Agenda del día')
+                ->icon('heroicon-o-calendar')
                 ->color('primary'),
 
-            Stat::make('Confirmadas', $confirmadas)
-                ->description('Listas para ejecutar')
-                ->icon('heroicon-o-check-circle')
-                ->color('success'),
-
-            Stat::make('Pendientes', $pendientes)
-                ->description('Esperando confirmación')
-                ->icon('heroicon-o-exclamation-circle')
-                ->color('warning'),
-
-            Stat::make('Ingresos', '$' . number_format($ingresosEstimados, 0, ',', '.'))
-                ->description('Estimado mensual')
-                ->icon('heroicon-o-currency-dollar')
-                ->color('pink'),
+            Stat::make('Nuevos Pedidos (Mes)', $pedidosMes)
+                ->description('Total este mes')
+                ->icon('heroicon-o-chart-bar')
+                ->color('info'),
         ];
     }
 }

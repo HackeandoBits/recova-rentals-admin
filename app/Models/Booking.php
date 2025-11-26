@@ -30,8 +30,8 @@ class Booking extends Model
         return $this->belongsTo(User::class, 'created_by_user_id');
     }
 
-    public function appointments()
+    public function interviews()
     {
-        return $this->hasMany(Appointment::class);
+        return $this->hasMany(Interview::class);
     }
 }
