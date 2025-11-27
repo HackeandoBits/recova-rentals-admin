@@ -54,7 +54,8 @@ class InterviewForm
                         ->schema([
                             TextInput::make('name')
                                 ->label('Producto')
-                                ->required(),
+                                ->required()
+                                ->datalist(\App\Models\InterviewItem::query()->distinct()->pluck('name')->toArray()),
                             TextInput::make('quantity')
                                 ->label('Cantidad')
                                 ->numeric()
@@ -74,7 +75,14 @@ class InterviewForm
                 ->seconds(false)
                 ->required()
                 // No permitir entrevistas en días anteriores al día actual
-                ->minDate(fn () => Carbon::today()),
+                ->minDate(fn () => Carbon::today())
+                ->live()
+                ->afterStateUpdated(function ($state, callable $set) {
+                    if ($state) {
+                        $start = Carbon::parse($state);
+                        $set('end_at', $start->copy()->addHour()->toDateTimeString());
+                    }
+                }),
 
             DateTimePicker::make('end_at')
                 ->label('Fin')
