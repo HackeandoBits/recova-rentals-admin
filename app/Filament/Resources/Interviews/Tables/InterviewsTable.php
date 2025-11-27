@@ -71,6 +71,49 @@ class InterviewsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->actions([
+                \Filament\Tables\Actions\ViewAction::make()
+                    ->label('Ver Detalles')
+                    ->infolist([
+                        \Filament\Infolists\Components\Section::make('Información de la Reunión')
+                            ->schema([
+                                \Filament\Infolists\Components\TextEntry::make('title')
+                                    ->label('Título'),
+                                \Filament\Infolists\Components\TextEntry::make('status')
+                                    ->label('Estado')
+                                    ->badge()
+                                    ->color(fn (string $state): string => match ($state) {
+                                        'pending' => 'warning',
+                                        'confirmed' => 'success',
+                                        'cancelled' => 'danger',
+                                        default => 'gray',
+                                    }),
+                                \Filament\Infolists\Components\TextEntry::make('start_at')
+                                    ->label('Inicio')
+                                    ->dateTime(),
+                                \Filament\Infolists\Components\TextEntry::make('end_at')
+                                    ->label('Fin')
+                                    ->dateTime(),
+                                \Filament\Infolists\Components\TextEntry::make('customer_name')
+                                    ->label('Cliente'),
+                                \Filament\Infolists\Components\TextEntry::make('customer_phone')
+                                    ->label('Teléfono')
+                                    ->url(fn ($record) => $record->customer_phone ? 'https://wa.me/'.preg_replace('/[^0-9]/', '', $record->customer_phone) : null, true)
+                                    ->color('success'),
+                                \Filament\Infolists\Components\TextEntry::make('customer_email')
+                                    ->label('Email'),
+                                \Filament\Infolists\Components\TextEntry::make('order_notes')
+                                    ->label('Notas')
+                                    ->columnSpanFull(),
+                                \Filament\Infolists\Components\TextEntry::make('items_summary')
+                                    ->label('Items Solicitados')
+                                    ->state(fn ($record) => $record->items->map(fn ($item) => "• {$item->quantity}x {$item->name}")->join('<br>'))
+                                    ->html()
+                                    ->visible(fn ($record) => $record->items()->exists())
+                                    ->columnSpanFull()
+                                    ->color('gray'),
+                            ])
+                            ->columns(2),
+                    ]),
                 \Filament\Tables\Actions\Action::make('whatsapp')
                     ->label('WhatsApp')
                     ->icon('heroicon-o-chat-bubble-left-right')
@@ -90,6 +133,8 @@ class InterviewsTable
                     ->label('Borrar Definitivamente')
                     ->visible(fn ($record) => $record->trashed()),
             ])
+            ->recordUrl(null)
+            ->recordAction('view')
             ->filters([
                 \Filament\Tables\Filters\TrashedFilter::make(),
             ])
