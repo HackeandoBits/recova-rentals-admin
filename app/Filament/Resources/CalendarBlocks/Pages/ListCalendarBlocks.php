@@ -297,16 +297,13 @@ class ListCalendarBlocks extends ListRecords
                         }
                     });
 
-                    // Sync en 2° plano: desde la mínima fecha insertada
+                    // Sync en 2° plano (ahora síncrono por pedido del usuario)
                     $minStart = (string) collect($rows)->min('starts_at');
-                    SyncBlocksRangeJob::dispatch($minStart);
+                    
+                    // Usamos dispatchSync para que se ejecute YA, sin workers
+                    SyncBlocksRangeJob::dispatchSync($minStart);
 
-                    // Intentar forzar el procesamiento de la cola en segundo plano (Windows/Laragon)
-                    // try {
-                    //     pclose(popen('start /B php artisan queue:work --stop-when-empty', 'r'));
-                    // } catch (\Throwable $e) {
-                    //     // Ignorar error al lanzar proceso
-                    // }
+                    // (Código de worker eliminado)
 
                     Notification::make()
                         ->title("Bloques creados: {$inserted}. La sincronización está en curso.")

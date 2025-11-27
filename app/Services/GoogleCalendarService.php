@@ -60,6 +60,9 @@ class GoogleCalendarService
             GoogleCalendar::CALENDAR_READONLY,
         ]);
 
+        // FIX: Deshabilitar verificación SSL para entorno local (Laragon)
+        $client->setHttpClient(new \GuzzleHttp\Client(['verify' => false]));
+
         // Cargar token actual al cliente
         $client->setAccessToken([
             'access_token'  => $token->access_token,

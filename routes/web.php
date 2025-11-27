@@ -11,3 +11,6 @@ Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])
 
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])
     ->name('google.callback');
+
+Route::get('/auth/google/disconnect', [GoogleAuthController::class, 'disconnect'])
+    ->name('google.disconnect');
