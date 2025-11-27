@@ -77,6 +77,14 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->navigationGroups([
                 'Agenda',
-            ]);
+            ])
+            ->renderHook(
+                'panels::head.end',
+                fn (): string => '<style>
+                    .fi-topbar-item:hover .fi-dropdown-panel {
+                        display: block !important;
+                    }
+                </style>',
+            );
     }
 }

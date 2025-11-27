@@ -17,21 +17,23 @@ class InterviewsTable
             ->columns([
                 TextColumn::make('title')
                     ->label('Título')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(),
                 TextColumn::make('customer_name')
                     ->label('Cliente')
-                    ->searchable(),
-                TextColumn::make('customer_phone')
-                    ->label('Teléfono')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(),
+
                 TextColumn::make('start_at')
                     ->label('Inicio')
                     ->dateTime()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
                 TextColumn::make('end_at')
                     ->label('Fin')
                     ->dateTime()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
                 SelectColumn::make('status')
                     ->label('Estado')
                     ->options([
@@ -39,7 +41,9 @@ class InterviewsTable
                         'confirmed' => 'Confirmada',
                         'cancelled' => 'Cancelada',
                     ])
-                    ->selectablePlaceholder(false),
+                    ->selectablePlaceholder(false)
+                    ->width('150px')
+                    ->toggleable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

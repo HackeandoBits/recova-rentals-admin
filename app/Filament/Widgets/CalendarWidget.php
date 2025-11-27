@@ -106,6 +106,16 @@ class CalendarWidget extends FullCalendarWidget
         return Interview::find($id);
     }
 
+    protected function headerActions(): array
+    {
+        return [
+            \Saade\FilamentFullCalendar\Actions\CreateAction::make()
+                ->label('Crear Reunión')
+                ->modalHeading('Crear Reunión')
+                ->form(fn ($form) => $form->schema(\App\Filament\Resources\Interviews\Schemas\InterviewForm::schema())),
+        ];
+    }
+
     protected function modalActions(): array
     {
         return [
@@ -128,106 +138,102 @@ class CalendarWidget extends FullCalendarWidget
                 ->icon('heroicon-o-trash'),
 
             ViewAction::make()
-                ->visible(fn ($record) => $record instanceof Interview)
-                ->modalHeading(fn ($record) => $record->title ?? 'Reunión')
-                ->infolist([
-                    \Filament\Infolists\Components\TextEntry::make('formatted_date')
-                        ->label('Fecha')
-                        ->state(fn ($record) => \Carbon\Carbon::parse($record->start_at)->translatedFormat('l, j \\d\\e F').' • '.
-                            \Carbon\Carbon::parse($record->start_at)->format('H:i').' – '.
-                            \Carbon\Carbon::parse($record->end_at)->format('H:i'))
-                        ->icon('heroicon-o-clock'),
-                    \Filament\Infolists\Components\TextEntry::make('customer_name')
-                        ->label('Cliente')
-                        ->icon('heroicon-o-user'),
-                    \Filament\Infolists\Components\TextEntry::make('customer_phone')
-                        ->label('Teléfono')
-                        ->icon('heroicon-o-phone')
-                        ->visible(fn ($record) => ! empty($record->customer_phone))
-                        ->suffixAction(
-                            \Filament\Infolists\Components\Actions\Action::make('whatsapp')
-                                ->icon('heroicon-o-chat-bubble-left-right')
-                                ->url(fn ($record) => $record->customer_phone
-                                    ? 'https://wa.me/'.preg_replace('/[^0-9]/', '', $record->customer_phone)
-                                    : null)
-                                ->openUrlInNewTab()
-                        ),
-                    \Filament\Infolists\Components\TextEntry::make('order_notes')
-                        ->label('Notas')
-                        ->visible(fn ($record) => ! empty($record->order_notes))
-                        ->columnSpanFull(),
-                ])
+                ->modalHeading(fn ($record) => $record instanceof Interview ? ($record->title ?? 'Reunión') : '🚫 Bloqueo de Agenda')
                 ->modalWidth('xs')
-                ->modalFooterActions([
-                    \Filament\Actions\Action::make('edit')
-                        ->label('Editar')
-                        ->icon('heroicon-o-pencil')
-                        ->color('primary')
-                        ->fillForm(fn ($record) => $record->attributesToArray())
-                        ->form(fn ($form) => $form->schema(\App\Filament\Resources\Interviews\Schemas\InterviewForm::schema()))
-                        ->action(function (array $data, $record, $livewire) {
-                            $record->update($data);
-                            $livewire->refreshRecords();
-                            $livewire->dispatch('close-modal', id: 'view-event');
+                ->infolist(function ($record) {
+                    if ($record instanceof \App\Models\CalendarBlock) {
+                        return [
+                            \Filament\Infolists\Components\TextEntry::make('title')
+                                ->label('Título'),
+                            \Filament\Infolists\Components\TextEntry::make('is_all_day')
+                                ->label('Todo el día')
+                                ->formatStateUsing(fn ($state) => $state ? 'Sí' : 'No'),
+                            \Filament\Infolists\Components\TextEntry::make('starts_at')
+                                ->label('Inicio')
+                                ->dateTime('d/m/Y H:i'),
+                            \Filament\Infolists\Components\TextEntry::make('ends_at')
+                                ->label('Fin')
+                                ->dateTime('d/m/Y H:i'),
+                            \Filament\Infolists\Components\TextEntry::make('kind')
+                                ->label('Tipo')
+                                ->formatStateUsing(fn ($state) => match ($state) {
+                                    'manual' => 'Manual',
+                                    'mantenimiento' => 'Mantenimiento',
+                                    'feriado' => 'Feriado',
+                                    'otro' => 'Otro',
+                                    default => ucfirst($state),
+                                }),
+                            \Filament\Infolists\Components\TextEntry::make('reason')
+                                ->label('Razón del bloqueo')
+                                ->visible(fn ($state) => ! empty($state))
+                                ->columnSpanFull(),
+                        ];
+                    }
 
-                            \Filament\Notifications\Notification::make()
-                                ->title('Reunión actualizada')
-                                ->success()
-                                ->send();
-                        }),
-                    \Filament\Actions\Action::make('delete_interview')
-                        ->label('Eliminar')
-                        ->icon('heroicon-o-trash')
-                        ->color('danger')
-                        ->requiresConfirmation()
-                        ->modalHeading('Eliminar Reunión')
-                        ->modalDescription('¿Estás seguro que deseas eliminar esta reunión?')
-                        ->action(function ($record, $livewire) {
-                            $record->delete();
-                            $livewire->refreshRecords();
-                            $livewire->dispatch('close-modal', id: 'view-event');
-                        }),
-                ]),
-
-            ViewAction::make('viewBlock')
-                ->label('Ver')
-                ->visible(fn ($record) => $record instanceof \App\Models\CalendarBlock)
-                ->modalHeading('🚫 Bloqueo de Agenda')
-                ->form(fn () => $this->getBlockForm())
-                ->modalCancelActionLabel('Cerrar'),
-        ];
-    }
-
-    protected function getBlockForm(): array
-    {
-        return [
-            TextInput::make('title')
-                ->label('Título')
-                ->disabled(),
-            TextInput::make('is_all_day')
-                ->label('Todo el día')
-                ->formatStateUsing(fn ($state) => $state ? 'Sí' : 'No')
-                ->disabled(),
-            DateTimePicker::make('starts_at')
-                ->label('Inicio')
-                ->disabled(),
-            DateTimePicker::make('ends_at')
-                ->label('Fin')
-                ->disabled(),
-            TextInput::make('kind')
-                ->label('Tipo')
-                ->formatStateUsing(fn ($state) => match ($state) {
-                    'manual' => 'Manual',
-                    'mantenimiento' => 'Mantenimiento',
-                    'feriado' => 'Feriado',
-                    'otro' => 'Otro',
-                    default => ucfirst($state),
+                    return [
+                        \Filament\Infolists\Components\TextEntry::make('formatted_date')
+                            ->label('Fecha')
+                            ->state(fn ($record) => \Carbon\Carbon::parse($record->start_at)->translatedFormat('l, j \\d\\e F').' • '.
+                                \Carbon\Carbon::parse($record->start_at)->format('H:i').' – '.
+                                \Carbon\Carbon::parse($record->end_at)->format('H:i'))
+                            ->icon('heroicon-o-clock'),
+                        \Filament\Infolists\Components\TextEntry::make('customer_name')
+                            ->label('Cliente')
+                            ->icon('heroicon-o-user'),
+                        \Filament\Infolists\Components\TextEntry::make('customer_phone')
+                            ->label('Teléfono')
+                            ->icon('heroicon-o-phone')
+                            ->visible(fn ($record) => ! empty($record->customer_phone))
+                            ->suffixAction(
+                                \Filament\Infolists\Components\Actions\Action::make('whatsapp')
+                                    ->icon('heroicon-o-chat-bubble-left-right')
+                                    ->url(fn ($record) => $record->customer_phone
+                                        ? 'https://wa.me/'.preg_replace('/[^0-9]/', '', $record->customer_phone)
+                                        : null)
+                                    ->openUrlInNewTab()
+                            ),
+                        \Filament\Infolists\Components\TextEntry::make('order_notes')
+                            ->label('Notas')
+                            ->visible(fn ($record) => ! empty($record->order_notes))
+                            ->columnSpanFull(),
+                    ];
                 })
-                ->disabled(),
-            Textarea::make('reason')
-                ->label('Razón del bloqueo')
-                ->disabled()
-                ->columnSpanFull(),
+                ->modalFooterActions(function ($record, $livewire) {
+                    if ($record instanceof \App\Models\CalendarBlock) {
+                        return [];
+                    }
+
+                    return [
+                        \Filament\Actions\Action::make('edit')
+                            ->label('Editar')
+                            ->icon('heroicon-o-pencil')
+                            ->color('primary')
+                            ->fillForm(fn ($record) => $record->attributesToArray())
+                            ->form(fn ($form) => $form->schema(\App\Filament\Resources\Interviews\Schemas\InterviewForm::schema()))
+                            ->action(function (array $data, $record, $livewire) {
+                                $record->update($data);
+                                $livewire->refreshRecords();
+                                $livewire->dispatch('close-modal', id: 'view-event');
+
+                                \Filament\Notifications\Notification::make()
+                                    ->title('Reunión actualizada')
+                                    ->success()
+                                    ->send();
+                            }),
+                        \Filament\Actions\Action::make('delete_interview')
+                            ->label('Eliminar')
+                            ->icon('heroicon-o-trash')
+                            ->color('danger')
+                            ->requiresConfirmation()
+                            ->modalHeading('Eliminar Reunión')
+                            ->modalDescription('¿Estás seguro que deseas eliminar esta reunión?')
+                            ->action(function ($record, $livewire) {
+                                $record->delete();
+                                $livewire->refreshRecords();
+                                $livewire->dispatch('close-modal', id: 'view-event');
+                            }),
+                    ];
+                }),
         ];
     }
 

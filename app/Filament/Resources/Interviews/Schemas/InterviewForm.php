@@ -40,8 +40,7 @@ class InterviewForm
                         ->label('Teléfono'),
                     DatePicker::make('event_date')
                         ->label('Fecha del Evento'),
-                    TextInput::make('service_type')
-                        ->label('Tipo de Servicio'),
+
                     Textarea::make('order_notes')
                         ->label('Notas del Pedido')
                         ->columnSpanFull(),
