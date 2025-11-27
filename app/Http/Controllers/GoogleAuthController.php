@@ -160,8 +160,8 @@ class GoogleAuthController extends Controller
                 \App\Jobs\SyncSingleBlockJob::dispatchSync($block->id);
             }
 
-            // 2. Reuniones pendientes
-            $pendingInterviews = \App\Models\Interview::where('status', 'pending')
+            // 2. Reuniones CONFIRMADAS pendientes de sync
+            $pendingInterviews = \App\Models\Interview::where('status', 'confirmed')
                 // ->where('assigned_user_id', $userId) // Si usas asignación
                 ->get();
 

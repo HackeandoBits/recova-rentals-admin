@@ -48,6 +48,7 @@ class CalendarWidget extends FullCalendarWidget
         $interviews = Interview::query()
             ->where('start_at', '>=', $fetchInfo['start'])
             ->where('end_at', '<=', $fetchInfo['end'])
+            ->where('status', '!=', 'pending') // Ocultar pendientes
             ->get()
             ->map(
                 fn (Interview $interview) => [

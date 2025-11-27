@@ -36,12 +36,19 @@ class BookingController extends Controller
                 $interview = Interview::create([
                     'title' => 'Reunión con '.$validated['customer']['name'],
                     // Si hay fecha sugerida, la usamos. Si no, usamos "ahora" o null.
-                    'start_at' => $validated['meeting_date']
-                                    ? \Carbon\Carbon::parse($validated['meeting_date'])
-                                    : now()->addDay()->setHour(9)->setMinute(0),
-                    'end_at' => $validated['meeting_date']
-                                    ? \Carbon\Carbon::parse($validated['meeting_date'])->addHour()
-                                    : now()->addDay()->setHour(10)->setMinute(0),
+                    // Si es WhatsApp, la fecha de inicio es AHORA.
+                    // Si es Reunión, usamos la fecha sugerida.
+                    'start_at' => $validated['request_type'] === 'whatsapp'
+                                    ? now()
+                                    : ($validated['meeting_date']
+                                        ? \Carbon\Carbon::parse($validated['meeting_date'])
+                                        : now()->addDay()->setHour(9)->setMinute(0)),
+                    
+                    'end_at' => $validated['request_type'] === 'whatsapp'
+                                    ? now()->addHour()
+                                    : ($validated['meeting_date']
+                                        ? \Carbon\Carbon::parse($validated['meeting_date'])->addHour()
+                                        : now()->addDay()->setHour(10)->setMinute(0)),
                     'status' => 'pending',
                     'channel' => $validated['request_type'] === 'reunion' ? 'physical_meeting' : 'whatsapp',
 

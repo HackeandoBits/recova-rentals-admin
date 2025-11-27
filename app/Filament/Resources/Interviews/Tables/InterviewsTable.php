@@ -24,6 +24,23 @@ class InterviewsTable
                     ->searchable()
                     ->toggleable(),
 
+                TextColumn::make('channel')
+                    ->label('Canal')
+                    ->badge()
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'whatsapp' => 'WhatsApp',
+                        'physical_meeting' => 'Reunión Física',
+                        'virtual_meeting' => 'Reunión Virtual',
+                        default => ucfirst($state),
+                    })
+                    ->color(fn (string $state): string => match ($state) {
+                        'whatsapp' => 'success',
+                        'physical_meeting' => 'primary',
+                        'virtual_meeting' => 'info',
+                        default => 'gray',
+                    })
+                    ->toggleable(),
+
                 TextColumn::make('start_at')
                     ->label('Inicio')
                     ->dateTime()
