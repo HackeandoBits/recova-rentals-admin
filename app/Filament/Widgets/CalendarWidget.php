@@ -204,6 +204,13 @@ class CalendarWidget extends FullCalendarWidget
                             ->label('Notas')
                             ->visible(fn ($record) => ! empty($record->order_notes))
                             ->columnSpanFull(),
+                        \Filament\Infolists\Components\TextEntry::make('items_summary')
+                            ->label('Items Solicitados')
+                            ->state(fn ($record) => $record->items->map(fn ($item) => "• {$item->quantity}x {$item->name}")->join('<br>'))
+                            ->html()
+                            ->visible(fn ($record) => $record->items()->exists())
+                            ->columnSpanFull()
+                            ->color('gray'),
                     ];
                 })
                 ->modalFooterActions(function ($record, $livewire) {
