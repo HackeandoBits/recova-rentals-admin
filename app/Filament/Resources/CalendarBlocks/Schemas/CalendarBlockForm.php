@@ -43,8 +43,18 @@ class CalendarBlockForm
                 ->default(0)
                 ->reactive()
                 ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                    if ($state && $get('starts_at')) {
-                        $set('ends_at', Carbon::parse($get('starts_at'))->endOfDay());
+                    $start = $get('starts_at') ? Carbon::parse($get('starts_at')) : null;
+
+                    if (! $start) {
+                        return;
+                    }
+
+                    if ($state) {
+                        // Si cambia a Día Completo -> Fin del día
+                        $set('ends_at', $start->copy()->endOfDay());
+                    } else {
+                        // Si cambia a NO Día Completo -> Inicio + 1 hora
+                        $set('ends_at', $start->copy()->addHour());
                     }
                 }),
 
@@ -53,7 +63,24 @@ class CalendarBlockForm
                 ->seconds(false)
                 ->required()
                 // No permitir bloquear días anteriores al día actual
-                ->minDate(fn () => Carbon::today()),
+                ->minDate(fn () => Carbon::today())
+                ->live() // Hace que el campo sea reactivo
+                ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                    if (! $state) {
+                        return;
+                    }
+
+                    $start = Carbon::parse($state);
+                    
+                    // Si es día completo, fin del día
+                    if ($get('is_all_day')) {
+                        $set('ends_at', $start->copy()->endOfDay());
+                        return;
+                    }
+
+                    // Si NO es día completo, misma fecha + 1 hora
+                    $set('ends_at', $start->copy()->addHour());
+                }),
 
             DateTimePicker::make('ends_at')
                 ->label('Hasta')

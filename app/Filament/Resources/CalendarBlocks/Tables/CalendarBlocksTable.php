@@ -70,6 +70,9 @@ class CalendarBlocksTable
                     ->dateTime('d/m/Y H:i')
                     ->label('Sincronizado'),
             ])
+            ->filters([
+                \Filament\Tables\Filters\TrashedFilter::make(),
+            ])
             ->actions([
                 // \Filament\Tables\Actions\Action::make('retry_sync')
                 //     ->label('Sincronizar')
@@ -82,8 +85,25 @@ class CalendarBlocksTable
                 //             ->success()
                 //             ->send();
                 //     }),
-                EditAction::make()->label('Editar'),
-                DeleteAction::make()->label('Eliminar'),
+                EditAction::make()
+                    ->label('Editar')
+                    ->visible(fn ($record) => ! $record->trashed()),
+                DeleteAction::make()
+                    ->label('Eliminar')
+                    ->visible(fn ($record) => ! $record->trashed()),
+                \Filament\Tables\Actions\RestoreAction::make()
+                    ->label('Restaurar')
+                    ->visible(fn ($record) => $record->trashed()),
+                \Filament\Tables\Actions\ForceDeleteAction::make()
+                    ->label('Borrar Definitivamente')
+                    ->visible(fn ($record) => $record->trashed()),
+            ])
+            ->bulkActions([
+                \Filament\Tables\Actions\BulkActionGroup::make([
+                    \Filament\Tables\Actions\DeleteBulkAction::make(),
+                    \Filament\Tables\Actions\RestoreBulkAction::make(),
+                    \Filament\Tables\Actions\ForceDeleteBulkAction::make(),
+                ]),
             ]);
     }
 }

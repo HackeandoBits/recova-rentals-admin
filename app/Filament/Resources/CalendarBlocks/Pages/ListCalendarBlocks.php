@@ -70,8 +70,8 @@ class ListCalendarBlocks extends ListRecords
                         ->minDate(fn () => Carbon::today())
                         ->live()
                         ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                            // Si es día completo, copiar fecha inicio a fin
-                            if ($get('all_day_r') == 1) {
+                            // Si se selecciona fecha de inicio, copiar a fecha fin por defecto
+                            if ($state) {
                                 $set('hasta', $state);
                             }
                         }),
@@ -107,7 +107,19 @@ class ListCalendarBlocks extends ListRecords
                         ->seconds(false)
                         ->required(fn ($get) => $get('mode') === 'range' && ! ((bool) $get('all_day_r')))
                         ->visible(fn ($get) => $get('mode') === 'range' && ! ((bool) $get('all_day_r')))
-                        ->dehydrated(fn ($get) => $get('mode') === 'range' && ! ((bool) $get('all_day_r'))),
+                        ->dehydrated(fn ($get) => $get('mode') === 'range' && ! ((bool) $get('all_day_r')))
+                        ->live()
+                        ->afterStateUpdated(function ($state, callable $set) {
+                            if ($state) {
+                                // Al poner hora inicio, sugerir hora fin +1 hora
+                                try {
+                                    $time = Carbon::createFromFormat('H:i', $state);
+                                    $set('hasta_hora_r', $time->addHour()->format('H:i'));
+                                } catch (\Exception $e) {
+                                    // Ignorar si el formato no es válido aún
+                                }
+                            }
+                        }),
                     TimePicker::make('hasta_hora_r')
                         ->label('Hora fin')
                         ->seconds(false)
@@ -150,7 +162,19 @@ class ListCalendarBlocks extends ListRecords
                         ->seconds(false)
                         ->required(fn ($get) => $get('mode') === 'days' && ! ((bool) $get('all_day_d')))
                         ->visible(fn ($get) => $get('mode') === 'days' && ! ((bool) $get('all_day_d')))
-                        ->dehydrated(fn ($get) => $get('mode') === 'days' && ! ((bool) $get('all_day_d'))),
+                        ->dehydrated(fn ($get) => $get('mode') === 'days' && ! ((bool) $get('all_day_d')))
+                        ->live()
+                        ->afterStateUpdated(function ($state, callable $set) {
+                            if ($state) {
+                                // Al poner hora inicio, sugerir hora fin +1 hora
+                                try {
+                                    $time = Carbon::createFromFormat('H:i', $state);
+                                    $set('hasta_hora_d', $time->addHour()->format('H:i'));
+                                } catch (\Exception $e) {
+                                    // Ignorar si el formato no es válido aún
+                                }
+                            }
+                        }),
                     TimePicker::make('hasta_hora_d')
                         ->label('Hora fin')
                         ->seconds(false)

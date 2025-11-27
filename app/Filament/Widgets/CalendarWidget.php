@@ -207,7 +207,20 @@ class CalendarWidget extends FullCalendarWidget
                 })
                 ->modalFooterActions(function ($record, $livewire) {
                     if ($record instanceof \App\Models\CalendarBlock) {
-                        return [];
+                        return [
+                            \Filament\Actions\Action::make('delete_block')
+                                ->label('Eliminar Bloqueo')
+                                ->icon('heroicon-o-trash')
+                                ->color('danger')
+                                ->requiresConfirmation()
+                                ->modalHeading('Eliminar Bloqueo')
+                                ->modalDescription('¿Estás seguro que deseas eliminar este bloqueo?')
+                                ->action(function ($record, $livewire) {
+                                    $record->delete();
+                                    $livewire->refreshRecords();
+                                    $livewire->dispatch('close-modal', id: 'view-event');
+                                }),
+                        ];
                     }
 
                     return [
