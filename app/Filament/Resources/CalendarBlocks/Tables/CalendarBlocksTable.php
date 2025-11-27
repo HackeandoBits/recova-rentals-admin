@@ -35,21 +35,25 @@ class CalendarBlocksTable
                         'warning' => 'mantenimiento',
                         'success' => 'feriado',
                         'secondary' => 'otro',
-                    ]),
+                    ])
+                    ->toggleable(),
 
                 IconColumn::make('is_all_day')
                     ->boolean()
-                    ->label('Día completo'),
+                    ->label('Día completo')
+                    ->toggleable(),
 
                 TextColumn::make('starts_at')
                     ->dateTime('d/m/Y H:i')
                     ->label('Desde')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
 
                 TextColumn::make('ends_at')
                     ->dateTime('d/m/Y H:i')
                     ->label('Hasta')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
 
                 TextColumn::make('sync_status')
                     ->label('Estado')
@@ -64,11 +68,13 @@ class CalendarBlocksTable
                         'gray' => 'pending',
                         'success' => 'synced',
                         'danger' => 'failed',
-                    ]),
+                    ])
+                    ->toggleable(),
 
                 TextColumn::make('synced_at')
                     ->dateTime('d/m/Y H:i')
-                    ->label('Sincronizado'),
+                    ->label('Sincronizado')
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 \Filament\Tables\Filters\TrashedFilter::make(),

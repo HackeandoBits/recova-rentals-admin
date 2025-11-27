@@ -61,15 +61,26 @@ class InterviewsTable
                     ->url(fn ($record) => $record->customer_phone
                         ? 'https://wa.me/'.preg_replace('/[^0-9]/', '', $record->customer_phone)
                         : null, shouldOpenInNewTab: true)
-                    ->visible(fn ($record) => ! empty($record->customer_phone)),
-                EditAction::make(),
+                    ->visible(fn ($record) => ! empty($record->customer_phone) && ! $record->trashed()),
+                EditAction::make()
+                    ->visible(fn ($record) => ! $record->trashed()),
+                \Filament\Tables\Actions\DeleteAction::make()
+                    ->visible(fn ($record) => ! $record->trashed()),
+                \Filament\Tables\Actions\RestoreAction::make()
+                    ->label('Restaurar')
+                    ->visible(fn ($record) => $record->trashed()),
+                \Filament\Tables\Actions\ForceDeleteAction::make()
+                    ->label('Borrar Definitivamente')
+                    ->visible(fn ($record) => $record->trashed()),
             ])
             ->filters([
-                //
+                \Filament\Tables\Filters\TrashedFilter::make(),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
+                    \Filament\Tables\Actions\RestoreBulkAction::make(),
+                    \Filament\Tables\Actions\ForceDeleteBulkAction::make(),
                 ]),
             ]);
     }

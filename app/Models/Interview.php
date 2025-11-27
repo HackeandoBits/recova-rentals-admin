@@ -7,8 +7,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 class Interview extends Model
 {
+    use SoftDeletes;
     /**
      * Los campos que vienen de AMBOS modelos
      */
