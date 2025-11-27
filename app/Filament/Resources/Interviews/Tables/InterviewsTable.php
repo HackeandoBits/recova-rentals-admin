@@ -73,6 +73,7 @@ class InterviewsTable
             ->actions([
                 \Filament\Tables\Actions\ViewAction::make()
                     ->label('Ver Detalles')
+                    ->iconButton() // Icono solo
                     ->infolist([
                         \Filament\Infolists\Components\Section::make('Información de la Reunión')
                             ->schema([
@@ -123,14 +124,18 @@ class InterviewsTable
                         : null, shouldOpenInNewTab: true)
                     ->visible(fn ($record) => ! empty($record->customer_phone) && ! $record->trashed()),
                 EditAction::make()
+                    ->iconButton()
                     ->visible(fn ($record) => ! $record->trashed()),
                 \Filament\Tables\Actions\DeleteAction::make()
+                    ->iconButton()
                     ->visible(fn ($record) => ! $record->trashed()),
                 \Filament\Tables\Actions\RestoreAction::make()
                     ->label('Restaurar')
+                    ->iconButton()
                     ->visible(fn ($record) => $record->trashed()),
                 \Filament\Tables\Actions\ForceDeleteAction::make()
                     ->label('Borrar Definitivamente')
+                    ->iconButton()
                     ->visible(fn ($record) => $record->trashed()),
             ])
             ->recordUrl(null)

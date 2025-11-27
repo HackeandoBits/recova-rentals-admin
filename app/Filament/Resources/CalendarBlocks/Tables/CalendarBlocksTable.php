@@ -92,16 +92,18 @@ class CalendarBlocksTable
                 //             ->send();
                 //     }),
                 EditAction::make()
-                    ->label('Editar')
+                    ->iconButton()
                     ->visible(fn ($record) => ! $record->trashed()),
                 DeleteAction::make()
-                    ->label('Eliminar')
+                    ->iconButton()
                     ->visible(fn ($record) => ! $record->trashed()),
                 \Filament\Tables\Actions\RestoreAction::make()
                     ->label('Restaurar')
+                    ->iconButton()
                     ->visible(fn ($record) => $record->trashed()),
                 \Filament\Tables\Actions\ForceDeleteAction::make()
                     ->label('Borrar Definitivamente')
+                    ->iconButton()
                     ->visible(fn ($record) => $record->trashed()),
             ])
             ->bulkActions([
