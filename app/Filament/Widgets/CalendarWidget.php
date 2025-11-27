@@ -87,23 +87,24 @@ class CalendarWidget extends FullCalendarWidget
                         'description' => 'Bloqueo de agenda',
                         'isBlock' => true,
                     ],
+                    'url' => '', // Empty string to bypass plugin's url check
                 ]
             );
 
         return array_merge($interviews->values()->all(), $blocks->values()->all());
     }
 
-    public function resolveEventRecord(string $id): ?\Illuminate\Database\Eloquent\Model
+    public function resolveRecord(string|int $key): \Illuminate\Database\Eloquent\Model
     {
         // Si el ID comienza con 'block-', es un bloqueo de calendario
-        if (str_starts_with($id, 'block-')) {
-            $blockId = str_replace('block-', '', $id);
+        if (is_string($key) && str_starts_with($key, 'block-')) {
+            $blockId = str_replace('block-', '', $key);
 
-            return \App\Models\CalendarBlock::find($blockId);
+            return \App\Models\CalendarBlock::findOrFail($blockId);
         }
 
         // De lo contrario, es una Interview
-        return Interview::find($id);
+        return Interview::findOrFail($key);
     }
 
     protected function headerActions(): array
@@ -114,6 +115,12 @@ class CalendarWidget extends FullCalendarWidget
                 ->modalHeading('Crear Reunión')
                 ->form(fn ($form) => $form->schema(\App\Filament\Resources\Interviews\Schemas\InterviewForm::schema())),
         ];
+    }
+
+    public function onEventClick(array $info): void
+    {
+        \Illuminate\Support\Facades\Log::info('onEventClick reached', $info);
+        parent::onEventClick($info);
     }
 
     protected function modalActions(): array
@@ -137,23 +144,22 @@ class CalendarWidget extends FullCalendarWidget
                 ->iconButton()
                 ->icon('heroicon-o-trash'),
 
-            ViewAction::make()
-                ->modalHeading(fn ($record) => $record instanceof Interview ? ($record->title ?? 'Reunión') : '🚫 Bloqueo de Agenda')
+            ViewAction::make('view')
+                ->modalHeading(fn ($record) => $record instanceof \App\Models\CalendarBlock
+                    ? '🚫 Bloqueo de Agenda'
+                    : ($record->title ?? 'Reunión'))
                 ->modalWidth('xs')
                 ->infolist(function ($record) {
                     if ($record instanceof \App\Models\CalendarBlock) {
                         return [
                             \Filament\Infolists\Components\TextEntry::make('title')
                                 ->label('Título'),
-                            \Filament\Infolists\Components\TextEntry::make('is_all_day')
-                                ->label('Todo el día')
-                                ->formatStateUsing(fn ($state) => $state ? 'Sí' : 'No'),
-                            \Filament\Infolists\Components\TextEntry::make('starts_at')
-                                ->label('Inicio')
-                                ->dateTime('d/m/Y H:i'),
-                            \Filament\Infolists\Components\TextEntry::make('ends_at')
-                                ->label('Fin')
-                                ->dateTime('d/m/Y H:i'),
+                            \Filament\Infolists\Components\TextEntry::make('formatted_date')
+                                ->label('Fecha')
+                                ->state(fn ($record) => \Carbon\Carbon::parse($record->starts_at)->translatedFormat('l, j \\d\\e F').' • '.
+                                    \Carbon\Carbon::parse($record->starts_at)->format('H:i').' – '.
+                                    \Carbon\Carbon::parse($record->ends_at)->format('H:i'))
+                                ->icon('heroicon-o-clock'),
                             \Filament\Infolists\Components\TextEntry::make('kind')
                                 ->label('Tipo')
                                 ->formatStateUsing(fn ($state) => match ($state) {
@@ -170,6 +176,7 @@ class CalendarWidget extends FullCalendarWidget
                         ];
                     }
 
+                    // Interview fields
                     return [
                         \Filament\Infolists\Components\TextEntry::make('formatted_date')
                             ->label('Fecha')

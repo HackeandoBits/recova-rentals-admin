@@ -83,22 +83,19 @@ class AdminPanelProvider extends PanelProvider
                 fn (): string => <<<'JS'
                     <script>
                         document.addEventListener('DOMContentLoaded', () => {
-                            const initHover = () => {
-                                document.querySelectorAll('.fi-sidebar-group, .fi-topbar-item').forEach(el => {
-                                    const button = el.querySelector('button');
-                                    if (!button) return;
-                                    
-                                    el.addEventListener('mouseenter', () => {
-                                        if (button.getAttribute('aria-expanded') === 'false') {
-                                            button.click();
-                                        }
-                                    });
-                                });
-                            };
+                            // Event delegation for hover using mouseover (bubbles)
+                            document.addEventListener('mouseover', (e) => {
+                                const target = e.target.closest('.fi-sidebar-group, .fi-topbar-item');
+                                if (!target) return;
 
-                            initHover();
-                            // Re-run on Livewire navigation
-                            document.addEventListener('livewire:navigated', initHover);
+                                const trigger = target.querySelector('button, a');
+                                if (!trigger) return;
+
+                                // If it's a button and not expanded, click it
+                                if (trigger.tagName.toLowerCase() === 'button' && trigger.getAttribute('aria-expanded') === 'false') {
+                                    trigger.click();
+                                }
+                            });
                         });
                     </script>
 JS,
