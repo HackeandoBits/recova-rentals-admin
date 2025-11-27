@@ -63,9 +63,15 @@ class Interview extends Model
             }
 
             // 2) No solapar con otras entrevistas
+            // EXCEPCIÓN: Si el canal es 'whatsapp', permitimos solapamiento (son solo solicitudes)
+            if ($i->channel === 'whatsapp') {
+                return; // No chequeamos conflictos para WhatsApp
+            }
+
             $conflict = static::query()
                 ->when($i->exists, fn ($q) => $q->where('id', '!=', $i->id))
                 ->where('status', '!=', 'cancelled')
+                ->where('channel', '!=', 'whatsapp') // Ignoramos las de WhatsApp al chequear conflictos
                 ->where('end_at', '>', $i->start_at)
                 ->where('start_at', '<', $i->end_at)
                 ->exists();

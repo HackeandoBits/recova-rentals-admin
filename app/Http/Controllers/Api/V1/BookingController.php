@@ -33,8 +33,12 @@ class BookingController extends Controller
             $result = DB::transaction(function () use ($validated) {
 
                 // A) Crear la Reunión (Interview) que ahora contiene los datos del pedido
+                $title = $validated['request_type'] === 'whatsapp'
+                    ? 'Solicitud WhatsApp: '.$validated['customer']['name']
+                    : 'Reunión con '.$validated['customer']['name'];
+
                 $interview = Interview::create([
-                    'title' => 'Reunión con '.$validated['customer']['name'],
+                    'title' => $title,
                     // Si hay fecha sugerida, la usamos. Si no, usamos "ahora" o null.
                     // Si es WhatsApp, la fecha de inicio es AHORA.
                     // Si es Reunión, usamos la fecha sugerida.
@@ -81,11 +85,13 @@ class BookingController extends Controller
                 'interview_id' => $result->id,
             ], 201);
 
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
         } catch (\Exception $e) {
             // 4. Manejo de Errores
             Log::error('Error creando booking desde API: '.$e->getMessage());
 
-            return response()->json(['error' => 'Error interno al procesar el pedido'], 500);
+            return response()->json(['error' => 'Error interno al procesar el pedido: ' . $e->getMessage()], 500);
         }
     }
 
