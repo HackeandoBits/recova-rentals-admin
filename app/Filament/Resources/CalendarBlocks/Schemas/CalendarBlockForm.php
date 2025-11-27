@@ -6,14 +6,14 @@ use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Schema;     // <-- igual que Interview
+use Filament\Forms\Form;
 use Illuminate\Support\Carbon;
 
 class CalendarBlockForm
 {
-    public static function configure(Schema $schema): Schema
+    public static function configure(Form $form): Form
     {
-        return $schema->components([
+        return $form->schema([
             TextInput::make('title')
                 ->label('Título')
                 ->required()
@@ -62,6 +62,16 @@ class CalendarBlockForm
                 ->rule('after:starts_at')
                 // La fecha mínima de fin es el inicio (si existe) o, en su defecto, hoy
                 ->minDate(fn (callable $get) => $get('starts_at') ?? Carbon::today()),
+
+            TextInput::make('sync_status')
+                ->label('Estado de Sincronización')
+                ->disabled(),
+
+            Textarea::make('last_error')
+                ->label('Último Error')
+                ->disabled()
+                ->columnSpanFull()
+                ->visible(fn ($get) => $get('last_error')),
         ])->columns(2);
     }
 }

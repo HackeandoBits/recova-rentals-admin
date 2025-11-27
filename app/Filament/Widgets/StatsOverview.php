@@ -15,13 +15,19 @@ class StatsOverview extends BaseWidget
 
     protected function getStats(): array
     {
-        $pedidosPendientes = \App\Models\Booking::where('status', 'pending')->count();
+        $pedidosPendientes = Interview::where('status', 'pending')->count();
 
         $reunionesHoy = Interview::whereDate('start_at', Carbon::today())
             ->where('status', '!=', 'cancelled')
             ->count();
 
-        $pedidosMes = \App\Models\Booking::whereBetween('created_at', [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])->count();
+        $pedidosMes = Interview::whereBetween('created_at', [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])->count();
+
+        $totalBookings = Interview::count();
+        $confirmedBookings = Interview::where('status', 'confirmed')->count();
+        $successRate = $totalBookings > 0 ? round(($confirmedBookings / $totalBookings) * 100) : 0;
+
+        $totalClients = Interview::distinct('customer_email')->count('customer_email');
 
         return [
             Stat::make('Pedidos Pendientes', $pedidosPendientes)
@@ -34,9 +40,14 @@ class StatsOverview extends BaseWidget
                 ->icon('heroicon-o-calendar')
                 ->color('primary'),
 
-            Stat::make('Nuevos Pedidos (Mes)', $pedidosMes)
-                ->description('Total este mes')
-                ->icon('heroicon-o-chart-bar')
+            Stat::make('Tasa de Éxito', $successRate.'%')
+                ->description('Reservas confirmadas')
+                ->icon('heroicon-o-chart-pie')
+                ->color('success'),
+
+            Stat::make('Total Clientes', $totalClients)
+                ->description('Únicos registrados')
+                ->icon('heroicon-o-users')
                 ->color('info'),
         ];
     }

@@ -8,7 +8,7 @@ class QuickStats extends Widget
 {
     protected static ?int $sort = 3;
 
-    protected string $view = 'filament.widgets.quick-stats';
+    protected static string $view = 'filament.widgets.quick-stats';
 
     protected int|string|array $columnSpan = [
         'sm' => 1,

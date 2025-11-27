@@ -15,7 +15,7 @@ class SyncBlocksRangeJob implements ShouldQueue
 
     public function __construct(public string $sinceDate)
     {
-        $this->onQueue('google-sync');
+        // $this->onQueue('google-sync'); // Removed to use default queue
     }
 
     public $tries = 3;
@@ -29,7 +29,7 @@ class SyncBlocksRangeJob implements ShouldQueue
             ->orderBy('id')
             ->chunkById(100, function ($blocks) {
                 foreach ($blocks as $b) {
-                    dispatch(new SyncSingleBlockJob($b->id));
+                    SyncSingleBlockJob::dispatchSync($b->id);
                 }
             });
     }

@@ -8,4 +8,6 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateCalendarBlock extends CreateRecord
 {
     protected static string $resource = CalendarBlockResource::class;
+
+    protected static ?string $title = 'Crear Bloqueo';
 }

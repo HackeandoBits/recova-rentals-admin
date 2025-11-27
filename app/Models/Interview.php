@@ -18,14 +18,22 @@ class Interview extends Model
         'end_at',
         'status',
         'google_event_id',
-        'booking_id',
+        // 'booking_id', // Removed
         'channel',
         'location_note',
+        // New fields
+        'customer_name',
+        'customer_email',
+        'customer_phone',
+        'event_date',
+        'service_type',
+        'order_notes',
     ];
 
     protected $casts = [
         'start_at' => 'datetime',
         'end_at' => 'datetime',
+        'event_date' => 'date',
     ];
 
     /**
@@ -53,7 +61,7 @@ class Interview extends Model
 
             // 2) No solapar con otras entrevistas
             $conflict = static::query()
-                ->when($i->exists, fn($q) => $q->where('id', '!=', $i->id))
+                ->when($i->exists, fn ($q) => $q->where('id', '!=', $i->id))
                 ->where('status', '!=', 'cancelled')
                 ->where('end_at', '>', $i->start_at)
                 ->where('start_at', '<', $i->end_at)
@@ -85,16 +93,16 @@ class Interview extends Model
 
     /*
     |--------------------------------------------------------------------------
-    | Relaciones (Robadas de Appointment)
+    | Relaciones
     |--------------------------------------------------------------------------
     */
 
     /**
-     * La reserva (pedido del cliente) asociada a esta reunión.
+     * Items solicitados en este pedido/reunión.
      */
-    public function booking(): BelongsTo
+    public function items()
     {
-        return $this->belongsTo(Booking::class);
+        return $this->hasMany(InterviewItem::class);
     }
 
     /**

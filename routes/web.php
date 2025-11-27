@@ -4,7 +4,7 @@ use App\Http\Controllers\GoogleAuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect('/admin');
 });
 Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])
     ->name('google.redirect');

@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources\Interviews\Tables;
 
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -16,24 +16,28 @@ class InterviewsTable
         return $table
             ->columns([
                 TextColumn::make('title')
+                    ->label('Título')
                     ->searchable(),
-                TextColumn::make('booking.customer_name')
+                TextColumn::make('customer_name')
                     ->label('Cliente')
                     ->searchable(),
-                TextColumn::make('booking.customer_phone')
+                TextColumn::make('customer_phone')
                     ->label('Teléfono')
                     ->searchable(),
                 TextColumn::make('start_at')
+                    ->label('Inicio')
                     ->dateTime()
                     ->sortable(),
                 TextColumn::make('end_at')
+                    ->label('Fin')
                     ->dateTime()
                     ->sortable(),
                 SelectColumn::make('status')
+                    ->label('Estado')
                     ->options([
-                        'pending' => 'Pending',
-                        'confirmed' => 'Confirmed',
-                        'cancelled' => 'Cancelled',
+                        'pending' => 'Pendiente',
+                        'confirmed' => 'Confirmada',
+                        'cancelled' => 'Cancelada',
                     ])
                     ->selectablePlaceholder(false),
                 TextColumn::make('created_at')
@@ -46,23 +50,20 @@ class InterviewsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->actions([
-                Tables\Actions\Action::make('whatsapp')
+                \Filament\Tables\Actions\Action::make('whatsapp')
                     ->label('WhatsApp')
                     ->icon('heroicon-o-chat-bubble-left-right')
                     ->color('success')
-                    ->url(fn ($record) => $record->booking && $record->booking->customer_phone
-                        ? 'https://wa.me/'.preg_replace('/[^0-9]/', '', $record->booking->customer_phone)
+                    ->url(fn ($record) => $record->customer_phone
+                        ? 'https://wa.me/'.preg_replace('/[^0-9]/', '', $record->customer_phone)
                         : null, shouldOpenInNewTab: true)
-                    ->visible(fn ($record) => $record->booking && $record->booking->customer_phone),
+                    ->visible(fn ($record) => ! empty($record->customer_phone)),
                 EditAction::make(),
             ])
             ->filters([
                 //
             ])
-            ->recordActions([
-                EditAction::make(),
-            ])
-            ->toolbarActions([
+            ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),

@@ -125,7 +125,7 @@ php artisan queue:work --queue=google-sync,default --tries=3
 
 ### Calendar Blocks
 
-* Ingresar a **/admin → Bloques de agenda**.
+* Ingresar a **/admin → Bloqueos de agenda**.
 * **Generar bloqueos** (acción en el listado):
 
   * **Modo “Rango de fechas”**: seleccioná `Desde/Hasta`, “Día completo” o `Hora inicio/fin`.

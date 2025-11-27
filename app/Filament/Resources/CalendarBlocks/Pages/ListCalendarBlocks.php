@@ -20,11 +20,13 @@ class ListCalendarBlocks extends ListRecords
 {
     protected static string $resource = CalendarBlockResource::class;
 
+    protected static ?string $title = 'Listado de Bloqueos';
+
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('generarBloques')
-                ->label('Generar bloques')
+            Action::make('generarBloqueos')
+                ->label('Generar bloqueos')
                 ->icon('heroicon-o-no-symbol')
                 ->color('warning')
                 ->modalWidth('3xl')
@@ -65,7 +67,14 @@ class ListCalendarBlocks extends ListRecords
                         ->visible(fn ($get) => $get('mode') === 'range')
                         ->dehydrated(fn ($get) => $get('mode') === 'range')
                         // No permitir seleccionar fechas anteriores a hoy
-                        ->minDate(fn () => Carbon::today()),
+                        ->minDate(fn () => Carbon::today())
+                        ->live()
+                        ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                            // Si es día completo, copiar fecha inicio a fin
+                            if ($get('all_day_r') == 1) {
+                                $set('hasta', $state);
+                            }
+                        }),
                     DatePicker::make('hasta')
                         ->label('Hasta')
                         ->required()
@@ -83,7 +92,16 @@ class ListCalendarBlocks extends ListRecords
                         ->default(0)
                         ->live()
                         ->visible(fn ($get) => $get('mode') === 'range')
-                        ->dehydrated(fn ($get) => $get('mode') === 'range'),
+                        ->dehydrated(fn ($get) => $get('mode') === 'range')
+                        ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                            if ($state == 1) {
+                                // Al activar día completo, igualar fechas si ya hay "desde"
+                                $desde = $get('desde');
+                                if ($desde) {
+                                    $set('hasta', $desde);
+                                }
+                            }
+                        }),
                     TimePicker::make('desde_hora_r')
                         ->label('Hora inicio')
                         ->seconds(false)
@@ -258,6 +276,13 @@ class ListCalendarBlocks extends ListRecords
                     // Sync en 2° plano: desde la mínima fecha insertada
                     $minStart = (string) collect($rows)->min('starts_at');
                     SyncBlocksRangeJob::dispatch($minStart);
+
+                    // Intentar forzar el procesamiento de la cola en segundo plano (Windows/Laragon)
+                    // try {
+                    //     pclose(popen('start /B php artisan queue:work --stop-when-empty', 'r'));
+                    // } catch (\Throwable $e) {
+                    //     // Ignorar error al lanzar proceso
+                    // }
 
                     Notification::make()
                         ->title("Bloques creados: {$inserted}. La sincronización está en curso.")

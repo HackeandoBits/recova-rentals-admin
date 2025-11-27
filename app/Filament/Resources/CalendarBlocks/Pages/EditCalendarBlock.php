@@ -8,4 +8,6 @@ use Filament\Resources\Pages\EditRecord;
 class EditCalendarBlock extends EditRecord
 {
     protected static string $resource = CalendarBlockResource::class;
+
+    protected static ?string $title = 'Editar Bloqueo';
 }
