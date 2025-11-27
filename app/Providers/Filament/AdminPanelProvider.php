@@ -80,11 +80,28 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->renderHook(
                 'panels::head.end',
-                fn (): string => '<style>
-                    .fi-topbar-item:hover .fi-dropdown-panel {
-                        display: block !important;
-                    }
-                </style>',
+                fn (): string => <<<'JS'
+                    <script>
+                        document.addEventListener('DOMContentLoaded', () => {
+                            const initHover = () => {
+                                document.querySelectorAll('.fi-sidebar-group, .fi-topbar-item').forEach(el => {
+                                    const button = el.querySelector('button');
+                                    if (!button) return;
+                                    
+                                    el.addEventListener('mouseenter', () => {
+                                        if (button.getAttribute('aria-expanded') === 'false') {
+                                            button.click();
+                                        }
+                                    });
+                                });
+                            };
+
+                            initHover();
+                            // Re-run on Livewire navigation
+                            document.addEventListener('livewire:navigated', initHover);
+                        });
+                    </script>
+JS,
             );
     }
 }
