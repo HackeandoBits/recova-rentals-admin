@@ -8,29 +8,36 @@ use App\Filament\Resources\CalendarBlocks\Pages\ListCalendarBlocks;
 use App\Filament\Resources\CalendarBlocks\Schemas\CalendarBlockForm;
 use App\Filament\Resources\CalendarBlocks\Tables\CalendarBlocksTable;
 use App\Models\CalendarBlock;
-use BackedEnum;
+use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Schemas\Schema;                 // <-- igual que Interview
-use Filament\Support\Icons\Heroicon;         // <-- igual que Interview
 use Filament\Tables\Table;
-use UnitEnum;
 
 class CalendarBlockResource extends Resource
 {
     protected static ?string $model = CalendarBlock::class;
 
     // Navegación (mismos tipos que tu InterviewResource)
-    protected static UnitEnum|string|null $navigationGroup = 'Agenda';
+    protected static ?string $navigationGroup = 'Agenda';
 
-    protected static BackedEnum|string|null $navigationIcon = Heroicon::OutlinedNoSymbol;
+    protected static ?string $navigationIcon = 'heroicon-o-no-symbol';
 
-    protected static ?string $navigationLabel = 'Bloques de agenda';
+    protected static ?string $navigationLabel = 'Bloqueos de agenda';
 
     protected static ?string $recordTitleAttribute = 'title';
 
-    public static function form(Schema $schema): Schema
+    public static function getModelLabel(): string
     {
-        return CalendarBlockForm::configure($schema);
+        return 'Bloqueo';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Bloqueos';
+    }
+
+    public static function form(Form $form): Form
+    {
+        return CalendarBlockForm::configure($form);
     }
 
     public static function table(Table $table): Table

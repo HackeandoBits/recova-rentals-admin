@@ -7,8 +7,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 class Interview extends Model
 {
+    use SoftDeletes;
     /**
      * Los campos que vienen de AMBOS modelos
      */
@@ -18,14 +21,22 @@ class Interview extends Model
         'end_at',
         'status',
         'google_event_id',
-        'booking_id',
+        // 'booking_id', // Removed
         'channel',
         'location_note',
+        // New fields
+        'customer_name',
+        'customer_email',
+        'customer_phone',
+        'event_date',
+        'service_type',
+        'order_notes',
     ];
 
     protected $casts = [
         'start_at' => 'datetime',
         'end_at' => 'datetime',
+        'event_date' => 'date',
     ];
 
     /**
@@ -52,9 +63,15 @@ class Interview extends Model
             }
 
             // 2) No solapar con otras entrevistas
+            // EXCEPCIÓN: Si el canal es 'whatsapp', permitimos solapamiento (son solo solicitudes)
+            if ($i->channel === 'whatsapp') {
+                return; // No chequeamos conflictos para WhatsApp
+            }
+
             $conflict = static::query()
-                ->when($i->exists, fn($q) => $q->where('id', '!=', $i->id))
+                ->when($i->exists, fn ($q) => $q->where('id', '!=', $i->id))
                 ->where('status', '!=', 'cancelled')
+                ->where('channel', '!=', 'whatsapp') // Ignoramos las de WhatsApp al chequear conflictos
                 ->where('end_at', '>', $i->start_at)
                 ->where('start_at', '<', $i->end_at)
                 ->exists();
@@ -85,16 +102,16 @@ class Interview extends Model
 
     /*
     |--------------------------------------------------------------------------
-    | Relaciones (Robadas de Appointment)
+    | Relaciones
     |--------------------------------------------------------------------------
     */
 
     /**
-     * La reserva (pedido del cliente) asociada a esta reunión.
+     * Items solicitados en este pedido/reunión.
      */
-    public function booking(): BelongsTo
+    public function items()
     {
-        return $this->belongsTo(Booking::class);
+        return $this->hasMany(InterviewItem::class);
     }
 
     /**

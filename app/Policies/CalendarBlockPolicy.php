@@ -39,6 +39,6 @@ class CalendarBlockPolicy
 
     public function forceDelete(User $user, CalendarBlock $block): bool
     {
-        return false;
+        return $user->is_admin;
     }
 }

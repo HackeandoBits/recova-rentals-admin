@@ -20,11 +20,13 @@ class ListCalendarBlocks extends ListRecords
 {
     protected static string $resource = CalendarBlockResource::class;
 
+    protected static ?string $title = 'Listado de Bloqueos';
+
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('generarBloques')
-                ->label('Generar bloques')
+            Action::make('generarBloqueos')
+                ->label('Generar bloqueos')
                 ->icon('heroicon-o-no-symbol')
                 ->color('warning')
                 ->modalWidth('3xl')
@@ -65,7 +67,14 @@ class ListCalendarBlocks extends ListRecords
                         ->visible(fn ($get) => $get('mode') === 'range')
                         ->dehydrated(fn ($get) => $get('mode') === 'range')
                         // No permitir seleccionar fechas anteriores a hoy
-                        ->minDate(fn () => Carbon::today()),
+                        ->minDate(fn () => Carbon::today())
+                        ->live()
+                        ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                            // Si se selecciona fecha de inicio, copiar a fecha fin por defecto
+                            if ($state) {
+                                $set('hasta', $state);
+                            }
+                        }),
                     DatePicker::make('hasta')
                         ->label('Hasta')
                         ->required()
@@ -83,13 +92,34 @@ class ListCalendarBlocks extends ListRecords
                         ->default(0)
                         ->live()
                         ->visible(fn ($get) => $get('mode') === 'range')
-                        ->dehydrated(fn ($get) => $get('mode') === 'range'),
+                        ->dehydrated(fn ($get) => $get('mode') === 'range')
+                        ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                            if ($state == 1) {
+                                // Al activar día completo, igualar fechas si ya hay "desde"
+                                $desde = $get('desde');
+                                if ($desde) {
+                                    $set('hasta', $desde);
+                                }
+                            }
+                        }),
                     TimePicker::make('desde_hora_r')
                         ->label('Hora inicio')
                         ->seconds(false)
                         ->required(fn ($get) => $get('mode') === 'range' && ! ((bool) $get('all_day_r')))
                         ->visible(fn ($get) => $get('mode') === 'range' && ! ((bool) $get('all_day_r')))
-                        ->dehydrated(fn ($get) => $get('mode') === 'range' && ! ((bool) $get('all_day_r'))),
+                        ->dehydrated(fn ($get) => $get('mode') === 'range' && ! ((bool) $get('all_day_r')))
+                        ->live()
+                        ->afterStateUpdated(function ($state, callable $set) {
+                            if ($state) {
+                                // Al poner hora inicio, sugerir hora fin +1 hora
+                                try {
+                                    $time = Carbon::createFromFormat('H:i', $state);
+                                    $set('hasta_hora_r', $time->addHour()->format('H:i'));
+                                } catch (\Exception $e) {
+                                    // Ignorar si el formato no es válido aún
+                                }
+                            }
+                        }),
                     TimePicker::make('hasta_hora_r')
                         ->label('Hora fin')
                         ->seconds(false)
@@ -132,7 +162,19 @@ class ListCalendarBlocks extends ListRecords
                         ->seconds(false)
                         ->required(fn ($get) => $get('mode') === 'days' && ! ((bool) $get('all_day_d')))
                         ->visible(fn ($get) => $get('mode') === 'days' && ! ((bool) $get('all_day_d')))
-                        ->dehydrated(fn ($get) => $get('mode') === 'days' && ! ((bool) $get('all_day_d'))),
+                        ->dehydrated(fn ($get) => $get('mode') === 'days' && ! ((bool) $get('all_day_d')))
+                        ->live()
+                        ->afterStateUpdated(function ($state, callable $set) {
+                            if ($state) {
+                                // Al poner hora inicio, sugerir hora fin +1 hora
+                                try {
+                                    $time = Carbon::createFromFormat('H:i', $state);
+                                    $set('hasta_hora_d', $time->addHour()->format('H:i'));
+                                } catch (\Exception $e) {
+                                    // Ignorar si el formato no es válido aún
+                                }
+                            }
+                        }),
                     TimePicker::make('hasta_hora_d')
                         ->label('Hora fin')
                         ->seconds(false)
@@ -255,9 +297,13 @@ class ListCalendarBlocks extends ListRecords
                         }
                     });
 
-                    // Sync en 2° plano: desde la mínima fecha insertada
+                    // Sync en 2° plano (ahora síncrono por pedido del usuario)
                     $minStart = (string) collect($rows)->min('starts_at');
-                    SyncBlocksRangeJob::dispatch($minStart);
+                    
+                    // Usamos dispatchSync para que se ejecute YA, sin workers
+                    SyncBlocksRangeJob::dispatchSync($minStart);
+
+                    // (Código de worker eliminado)
 
                     Notification::make()
                         ->title("Bloques creados: {$inserted}. La sincronización está en curso.")
