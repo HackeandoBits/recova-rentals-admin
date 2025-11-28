@@ -3,7 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Widgets\BookingStatusChartWidget;
-use App\Filament\Widgets\IncomeChartWidget;
+use App\Filament\Widgets\BookingTrendChartWidget;
 use App\Filament\Widgets\ReportHistoryTableWidget;
 use App\Filament\Widgets\ReportsStatsOverviewWidget;
 use App\Models\ReportLog;
@@ -23,9 +23,8 @@ class ReportsPage extends Page
 
     protected static ?string $title = 'Reportes y Estadísticas';
 
-    protected static ?string $navigationGroup = 'Reportes';
-
-    protected static ?int $navigationSort = 10;
+    protected static ?string $navigationGroup = 'Reportes'; // Agrupar para ordenar
+    protected static ?int $navigationSort = 1;
 
     public ?array $dateRange = [
         'from' => null,
@@ -120,36 +119,35 @@ class ReportsPage extends Page
         ];
     }
 
+    // Widgets are manually rendered in the blade view to avoid duplication
+    // Filament's automatic rendering is disabled by returning empty arrays
     protected function getHeaderWidgets(): array
     {
-        return [
-            ReportsStatsOverviewWidget::class,
-        ];
+        return []; // Disabled - rendered manually in blade
     }
 
     protected function getFooterWidgets(): array
     {
+        return []; // Disabled - rendered manually in blade
+    }
+
+    // Public methods for the blade view to access widgets
+    public function getStatsWidget(): string
+    {
+        return ReportsStatsOverviewWidget::class;
+    }
+
+    public function getChartWidgets(): array
+    {
         return [
-            IncomeChartWidget::class,
-            BookingStatusChartWidget::class,
-            ReportHistoryTableWidget::class,
+            BookingTrendChartWidget::class, // Gráfico de líneas (solicitudes por día)
+            BookingStatusChartWidget::class, // Gráfico de estados (pastel)
         ];
     }
 
-    public function getWidgets(): array
+    public function getTableWidget(): string
     {
-        return array_merge(
-            $this->getHeaderWidgets(),
-            $this->getFooterWidgets()
-        );
-    }
-
-    // Método para pasar el rango de fechas a los widgets
-    public function getWidgetData(): array
-    {
-        return [
-            'dateRange' => $this->dateRange,
-        ];
+        return ReportHistoryTableWidget::class;
     }
 
     public function updatedDateRange(): void

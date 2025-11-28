@@ -16,6 +16,9 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Saade\FilamentFullCalendar\FilamentFullCalendarPlugin;
+use Filament\Navigation\NavigationBuilder;
+use Filament\Navigation\NavigationGroup;
+use Filament\Navigation\NavigationItem;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -71,78 +74,77 @@ class AdminPanelProvider extends PanelProvider
                     ->url(fn (): string => \App\Filament\Pages\Profile::getUrl())
                     ->icon('heroicon-o-user-circle'),
             ])
-            ->navigationGroups([
-                'Agenda',
-                'Reportes',
-            ])
+            ->navigation(function (NavigationBuilder $builder): NavigationBuilder {
+                return $builder
+                    ->items([
+                        ...\App\Filament\Pages\Dashboard::getNavigationItems(),
+                        ...\App\Filament\Pages\ReportsPage::getNavigationItems(), // Ahora como item fijo
+                    ])
+                    ->groups([
+                        \Filament\Navigation\NavigationGroup::make('Agenda')
+                            ->items([
+                                ...\App\Filament\Pages\Calendar::getNavigationItems(),
+                                ...\App\Filament\Resources\CalendarBlocks\CalendarBlockResource::getNavigationItems(),
+                                ...\App\Filament\Resources\Interviews\InterviewResource::getNavigationItems(),
+                            ]),
+                    ]);
+            })
             ->renderHook(
                 'panels::head.end',
-                fn (): string => <<<'JS'
+                fn (): string => <<<'HTML'
+                    <style>
+                        /* Forzar orden visual usando Flexbox */
+                        .fi-topbar-nav > ul {
+                            display: flex;
+                            gap: 0.5rem; /* Espaciado consistente */
+                        }
+
+                        /* Por defecto todos tienen orden 0 */
+                        .fi-topbar-item, .fi-topbar-group {
+                            order: 0;
+                        }
+
+                        /* Mover Reportes al final (identificado por su enlace) */
+                        .fi-topbar-item:has(a[href*="reports"]) {
+                            order: 100 !important;
+                        }
+                        
+                        /* Asegurar que Agenda (Grupo) esté antes que Reportes pero después de Dashboard */
+                        /* Dashboard suele ser el primero por defecto */
+                    </style>
+
                     <script>
                         document.addEventListener('DOMContentLoaded', () => {
-                            let currentOpenDropdown = null;
+                            // Lógica para abrir dropdowns al pasar el mouse (Hover)
+                            const nav = document.querySelector('.fi-topbar-nav');
+                            if (!nav) return;
 
-                            // Función para abrir un dropdown
-                            function openDropdown(button) {
-                                if (!button || button.getAttribute('aria-expanded') !== 'false') return;
-                                button.click();
-                                currentOpenDropdown = button;
-                            }
+                            nav.addEventListener('mouseover', (e) => {
+                                const group = e.target.closest('[data-group-label]');
+                                if (!group) return;
 
-                            // Función para cerrar un dropdown
-                            function closeDropdown(button) {
-                                if (!button || button.getAttribute('aria-expanded') !== 'true') return;
-                                button.click();
-                                if (currentOpenDropdown === button) {
-                                    currentOpenDropdown = null;
+                                const button = group.querySelector('button[aria-expanded="false"]');
+                                if (button) {
+                                    button.click();
                                 }
-                            }
-
-                            // Event delegation para hover (abrir)
-                            document.addEventListener('mouseover', (e) => {
-                                const target = e.target.closest('.fi-topbar-item, [data-group-label]');
-                                if (!target) return;
-
-                                const trigger = target.querySelector('button[aria-expanded]');
-                                if (!trigger) return;
-
-                                // Si hay otro dropdown abierto, cerrarlo primero
-                                if (currentOpenDropdown && currentOpenDropdown !== trigger) {
-                                    closeDropdown(currentOpenDropdown);
-                                }
-
-                                openDropdown(trigger);
                             });
 
-                            // Cerrar cuando el mouse sale del área del dropdown
-                            document.addEventListener('mouseout', (e) => {
-                                const target = e.target.closest('.fi-topbar-item, [data-group-label]');
-                                if (!target || !currentOpenDropdown) return;
+                            // Cerrar al salir del grupo
+                            nav.addEventListener('mouseout', (e) => {
+                                const group = e.target.closest('[data-group-label]');
+                                if (!group) return;
 
-                                // Verificar si el mouse realmente salió del contenedor
-                                const relatedTarget = e.relatedTarget;
-                                if (relatedTarget && target.contains(relatedTarget)) {
-                                    return; // El mouse sigue dentro del mismo dropdown
+                                // Verificar si el mouse realmente salió del grupo y sus hijos
+                                if (group.contains(e.relatedTarget)) return;
+
+                                const button = group.querySelector('button[aria-expanded="true"]');
+                                if (button) {
+                                    button.click();
                                 }
-
-                                // Pequeño delay para evitar cierres accidentales
-                                setTimeout(() => {
-                                    // Verificar si el mouse está sobre algún dropdown o su contenido
-                                    const hoveredElement = document.elementFromPoint(e.clientX, e.clientY);
-                                    const isOverDropdown = hoveredElement && (
-                                        hoveredElement.closest('.fi-topbar-item') ||
-                                        hoveredElement.closest('[data-group-label]') ||
-                                        hoveredElement.closest('[role="menu"]')
-                                    );
-
-                                    if (!isOverDropdown && currentOpenDropdown) {
-                                        closeDropdown(currentOpenDropdown);
-                                    }
-                                }, 100);
                             });
                         });
                     </script>
-JS,
+HTML,
             );
     }
 }

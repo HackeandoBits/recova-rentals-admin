@@ -44,19 +44,12 @@ class ReportsStatsOverviewWidget extends BaseWidget
 
         $trendColor = $trend > 0 ? 'success' : ($trend < 0 ? 'danger' : 'gray');
 
-        // 2. Ingresos Totales (simulados - multiplicamos por 5000 cada reserva confirmada)
-        $confirmedBookings = Interview::whereBetween('created_at', [$from, $to])
-            ->where('status', 'confirmed')
-            ->count();
-
-        $totalIncome = $confirmedBookings * 5000; // Valor estimado por reserva
-
-        // 3. Próximas Reservas
+        // 2. Próximas Reservas
         $upcomingBookings = Interview::where('status', 'confirmed')
             ->where('start_at', '>', Carbon::now())
             ->count();
 
-        // 4. Tasa de Nuevos Clientes
+        // 3. Tasa de Nuevos Clientes
         $newClientsThisMonth = Interview::whereBetween('created_at', [$from, $to])
             ->distinct('customer_email')
             ->count('customer_email');
@@ -83,11 +76,6 @@ class ReportsStatsOverviewWidget extends BaseWidget
                 ->descriptionIcon($trend > 0 ? 'heroicon-m-arrow-trending-up' : 'heroicon-m-arrow-trending-down')
                 ->icon('heroicon-o-calendar-days')
                 ->color($trendColor),
-
-            Stat::make('Ingresos Estimados', 'ARS $'.number_format($totalIncome, 0, ',', '.'))
-                ->description('Basado en reservas confirmadas')
-                ->icon('heroicon-o-banknotes')
-                ->color('success'),
 
             Stat::make('Próximas Reservas', $upcomingBookings)
                 ->description('Confirmadas y futuras')

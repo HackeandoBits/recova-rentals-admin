@@ -12,7 +12,9 @@ class BookingStatusChartWidget extends ChartWidget
 
     protected static ?int $sort = 3;
 
-    protected int|string|array $columnSpan = 'full';
+    // protected int|string|array $columnSpan = 'full'; // Eliminado para permitir grid
+
+    protected static ?string $maxHeight = '300px';
 
     public ?array $dateRange = null;
 

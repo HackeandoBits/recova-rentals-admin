@@ -17,11 +17,13 @@ class CalendarBlockResource extends Resource
     protected static ?string $model = CalendarBlock::class;
 
     // Navegación (mismos tipos que tu InterviewResource)
+    protected static ?string $navigationIcon = 'heroicon-o-lock-closed';
+
+    protected static ?string $navigationLabel = 'Bloqueos';
+
     protected static ?string $navigationGroup = 'Agenda';
 
-    protected static ?string $navigationIcon = 'heroicon-o-no-symbol';
-
-    protected static ?string $navigationLabel = 'Bloqueos de agenda';
+    protected static ?int $navigationSort = 2;
 
     protected static ?string $recordTitleAttribute = 'title';
 

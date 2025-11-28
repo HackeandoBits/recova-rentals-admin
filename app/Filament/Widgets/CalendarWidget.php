@@ -48,20 +48,24 @@ class CalendarWidget extends FullCalendarWidget
         $interviews = Interview::query()
             ->where('start_at', '>=', $fetchInfo['start'])
             ->where('end_at', '<=', $fetchInfo['end'])
-            ->where('status', '!=', 'pending') // Ocultar pendientes
+            ->where('status', '!=', 'pending') // Solo mostrar confirmadas en calendario
             ->get()
             ->map(
                 fn (Interview $interview) => [
                     'id' => $interview->id,
-                    'title' => $interview->title ?? 'Entrevista',
+                    'title' => '🕒 ' . ($interview->title ?? 'Reunión'),
                     'start' => $interview->start_at,
                     'end' => $interview->end_at,
-                    'color' => '#3788d8', // Default blue for interviews
-                    'textColor' => '#ffffff',
+                    'display' => 'list-item', // Mostrar como texto sin fondo
+                    'backgroundColor' => 'transparent',
+                    'borderColor' => 'transparent',
+                    'textColor' => '#ffffff', // Texto blanco para tema oscuro
+                    'className' => 'fc-event-transparent', // Clase CSS personalizada
                     'extendedProps' => [
                         'description' => $interview->description,
                         'customer_name' => $interview->customer_name ?? 'N/A',
                         'customer_phone' => $interview->customer_phone ?? '',
+                        'status' => $interview->status,
                     ],
                 ]
             );

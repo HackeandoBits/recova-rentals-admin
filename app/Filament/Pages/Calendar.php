@@ -15,7 +15,7 @@ class Calendar extends Page
 
     protected static ?string $title = 'Calendario de Eventos';
 
-    protected static ?int $navigationSort = -1;
+    protected static ?int $navigationSort = 1;
 
     protected static string $view = 'filament.pages.calendar';
 

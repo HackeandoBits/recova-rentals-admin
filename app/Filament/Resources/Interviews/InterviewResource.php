@@ -23,6 +23,8 @@ class InterviewResource extends Resource
 
     protected static ?string $navigationLabel = 'Reuniones';
 
+    protected static ?int $navigationSort = 3;
+
     protected static ?string $recordTitleAttribute = 'title';
 
     public static function getModelLabel(): string
