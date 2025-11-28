@@ -16,7 +16,7 @@ class SyncSingleBlockJob implements ShouldQueue
 
     public function __construct(public int $blockId, public bool $delete = false)
     {
-        $this->onQueue('google-sync');
+        // $this->onQueue('google-sync'); // Removed to use default queue
     }
 
     public $tries = 3;                          // reintentos

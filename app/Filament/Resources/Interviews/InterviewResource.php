@@ -8,29 +8,36 @@ use App\Filament\Resources\Interviews\Pages\ListInterviews;
 use App\Filament\Resources\Interviews\Schemas\InterviewForm;
 use App\Filament\Resources\Interviews\Tables\InterviewsTable;
 use App\Models\Interview;
-use BackedEnum;
+use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use UnitEnum;
 
 class InterviewResource extends Resource
 {
     protected static ?string $model = Interview::class;
 
     // Navegación (tipos deben coincidir con la clase base)
-    protected static UnitEnum|string|null $navigationGroup = 'Agenda';
+    protected static ?string $navigationGroup = 'Agenda';
 
-    protected static BackedEnum|string|null $navigationIcon = Heroicon::OutlinedCalendarDays;
+    protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
 
     protected static ?string $navigationLabel = 'Reuniones';
 
     protected static ?string $recordTitleAttribute = 'title';
 
-    public static function form(Schema $schema): Schema
+    public static function getModelLabel(): string
     {
-        return InterviewForm::configure($schema);
+        return 'Reunión';
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return 'Reuniones';
+    }
+
+    public static function form(Form $form): Form
+    {
+        return InterviewForm::configure($form);
     }
 
     public static function table(Table $table): Table

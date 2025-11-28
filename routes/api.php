@@ -18,4 +18,7 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     // Endpoint para consultar horarios ocupados por fecha
     Route::get('/bookings/occupied-time-slots', [BookingController::class, 'getOccupiedTimeSlots']);
 
+    // Endpoint para obtener fechas totalmente bloqueadas
+    Route::get('/bookings/blocked-dates', [BookingController::class, 'getBlockedDates']);
+
 });

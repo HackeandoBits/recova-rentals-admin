@@ -1,0 +1,24 @@
+    .fc-event {
+        cursor: pointer !important;
+    }
+
+    .fc-event:hover {
+        opacity: 0.9;
+        transform: scale(1.02);
+        transition: all 0.2s ease;
+    }
+
+    /* Mejorar apariencia de los modales */
+    .fi-modal-content {
+        border-radius: 12px;
+    }
+
+    .fi-modal-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid rgb(30 41 59 / 0.1);
+    }
+
+    .fi-modal-heading {
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
