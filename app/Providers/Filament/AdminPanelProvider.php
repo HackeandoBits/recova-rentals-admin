@@ -6,6 +6,7 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationBuilder;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -16,9 +17,6 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Saade\FilamentFullCalendar\FilamentFullCalendarPlugin;
-use Filament\Navigation\NavigationBuilder;
-use Filament\Navigation\NavigationGroup;
-use Filament\Navigation\NavigationItem;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -73,6 +71,10 @@ class AdminPanelProvider extends PanelProvider
                     ->label('Mi Perfil')
                     ->url(fn (): string => \App\Filament\Pages\Profile::getUrl())
                     ->icon('heroicon-o-user-circle'),
+                \Filament\Navigation\MenuItem::make()
+                    ->label(fn () => auth()->user()?->googleToken()->exists() ? 'Desconectar Google' : 'Conectar Google')
+                    ->url(fn () => auth()->user()?->googleToken()->exists() ? route('google.disconnect') : route('google.redirect'))
+                    ->icon(fn () => auth()->user()?->googleToken()->exists() ? 'heroicon-o-x-circle' : 'heroicon-o-link'),
             ])
             ->navigation(function (NavigationBuilder $builder): NavigationBuilder {
                 return $builder
@@ -114,34 +116,23 @@ class AdminPanelProvider extends PanelProvider
                     </style>
 
                     <script>
-                        document.addEventListener('DOMContentLoaded', () => {
-                            // Lógica para abrir dropdowns al pasar el mouse (Hover)
-                            const nav = document.querySelector('.fi-topbar-nav');
+                        // Usar delegación de eventos global para manejar actualizaciones de Livewire y asegurar detección
+                        document.addEventListener('mouseover', (e) => {
+                            // Verificar si estamos dentro de la navegación superior
+                            const nav = e.target.closest('.fi-topbar-nav');
                             if (!nav) return;
 
-                            nav.addEventListener('mouseover', (e) => {
-                                const group = e.target.closest('[data-group-label]');
-                                if (!group) return;
+                            // Verificar si estamos sobre un item
+                            const item = e.target.closest('.fi-topbar-item');
+                            if (!item) return;
 
-                                const button = group.querySelector('button[aria-expanded="false"]');
-                                if (button) {
-                                    button.click();
-                                }
-                            });
-
-                            // Cerrar al salir del grupo
-                            nav.addEventListener('mouseout', (e) => {
-                                const group = e.target.closest('[data-group-label]');
-                                if (!group) return;
-
-                                // Verificar si el mouse realmente salió del grupo y sus hijos
-                                if (group.contains(e.relatedTarget)) return;
-
-                                const button = group.querySelector('button[aria-expanded="true"]');
-                                if (button) {
-                                    button.click();
-                                }
-                            });
+                            // Buscar el botón disparador (que tenga aria-expanded)
+                            const button = item.querySelector('button[aria-expanded]');
+                            
+                            // Si el botón existe y el menú está cerrado, simular click para abrir
+                            if (button && button.getAttribute('aria-expanded') === 'false') {
+                                button.click();
+                            }
                         });
                     </script>
 HTML,

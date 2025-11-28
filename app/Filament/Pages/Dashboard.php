@@ -52,28 +52,5 @@ class Dashboard extends BaseDashboard
         ];
     }
 
-    protected function getHeaderActions(): array
-    {
-        $user = auth()->user();
-        $hasToken = $user ? \App\Models\GoogleToken::where('user_id', $user->id)->exists() : false;
-
-        return [
-            \Filament\Actions\Action::make('connect_google')
-                ->label('Conectar Google Calendar')
-                ->icon('heroicon-o-link')
-                ->color('primary')
-                ->url(route('google.redirect'))
-                ->visible(! $hasToken),
-
-            \Filament\Actions\Action::make('disconnect_google')
-                ->label('Desconectar Google')
-                ->icon('heroicon-o-trash')
-                ->color('danger')
-                ->requiresConfirmation()
-                ->modalHeading('¿Desconectar Google Calendar?')
-                ->modalDescription('Se dejarán de sincronizar los eventos. No se borrarán los eventos ya creados en Google.')
-                ->url(route('google.disconnect'))
-                ->visible($hasToken),
-        ];
-    }
+    // Acciones movidas al menú de usuario
 }
