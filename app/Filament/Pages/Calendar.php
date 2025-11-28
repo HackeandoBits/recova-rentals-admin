@@ -11,11 +11,29 @@ class Calendar extends Page
 
     protected static ?string $navigationLabel = 'Calendario';
 
-    protected static ?string $title = 'Calendario';
+    protected static ?string $navigationGroup = 'Agenda';
+
+    protected static ?string $title = 'Calendario de Eventos';
 
     protected static ?int $navigationSort = -1;
 
     protected static string $view = 'filament.pages.calendar';
+
+    public static function getNavigationBadge(): ?string
+    {
+        // Mostrar el número de eventos de hoy
+        $today = \Carbon\Carbon::today();
+        $todayEvents = \App\Models\Interview::whereDate('start_at', $today)
+            ->where('status', '!=', 'cancelled')
+            ->count();
+
+        return $todayEvents > 0 ? (string) $todayEvents : null;
+    }
+
+    public static function getNavigationBadgeColor(): string|array|null
+    {
+        return 'primary';
+    }
 
     protected function getHeaderWidgets(): array
     {

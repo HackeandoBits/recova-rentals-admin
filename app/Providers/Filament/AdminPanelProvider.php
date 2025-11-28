@@ -139,18 +139,6 @@ class AdminPanelProvider extends PanelProvider
                                         closeDropdown(currentOpenDropdown);
                                     }
                                 }, 100);
-                            // Event delegation for hover using mouseover (bubbles)
-                            document.addEventListener('mouseover', (e) => {
-                                const target = e.target.closest('.fi-sidebar-group, .fi-topbar-item');
-                                if (!target) return;
-
-                                const trigger = target.querySelector('button, a');
-                                if (!trigger) return;
-
-                                // If it's a button and not expanded, click it
-                                if (trigger.tagName.toLowerCase() === 'button' && trigger.getAttribute('aria-expanded') === 'false') {
-                                    trigger.click();
-                                }
                             });
                         });
                     </script>
