@@ -11,6 +11,8 @@ use Filament\Tables\Table;
 
 class InterviewsTable
 {
+    use \App\Filament\Traits\PersistsTableConfig;
+
     public static function configure(Table $table): Table
     {
         return $table

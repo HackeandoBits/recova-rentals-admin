@@ -40,6 +40,7 @@ class CalendarWidget extends FullCalendarWidget
             'eventMouseEnter' => 'function(info) { info.el.style.cursor = "pointer"; }',
             'eventMouseLeave' => 'function(info) { info.el.style.cursor = "default"; }',
             'schedulerLicenseKey' => 'GPL-My-Project-Is-Open-Source',
+            'dayMaxEvents' => true, // Limitar eventos por día para mantener altura de celdas
         ];
     }
 

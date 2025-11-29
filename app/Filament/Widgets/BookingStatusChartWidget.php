@@ -18,6 +18,13 @@ class BookingStatusChartWidget extends ChartWidget
 
     public ?array $dateRange = null;
 
+    public function updateChartData(): void
+    {
+        $this->dispatch('updateChartData', [
+            'data' => $this->getData(),
+        ]);
+    }
+
     protected function getData(): array
     {
         // Determinar el rango de fechas
