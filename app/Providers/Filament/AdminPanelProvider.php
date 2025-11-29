@@ -71,10 +71,6 @@ class AdminPanelProvider extends PanelProvider
                     ->label('Mi Perfil')
                     ->url(fn (): string => \App\Filament\Pages\Profile::getUrl())
                     ->icon('heroicon-o-user-circle'),
-                \Filament\Navigation\MenuItem::make()
-                    ->label(fn () => auth()->user()?->googleToken()->exists() ? 'Desconectar Google' : 'Conectar Google')
-                    ->url(fn () => auth()->user()?->googleToken()->exists() ? route('google.disconnect') : route('google.redirect'))
-                    ->icon(fn () => auth()->user()?->googleToken()->exists() ? 'heroicon-o-x-circle' : 'heroicon-o-link'),
             ])
             ->navigation(function (NavigationBuilder $builder): NavigationBuilder {
                 return $builder

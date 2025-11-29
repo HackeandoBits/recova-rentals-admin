@@ -6,18 +6,34 @@ use App\Rules\NoOverlapRule;
 use App\Rules\NoOverlapWithBlocks;
 use Carbon\Carbon;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 
 class InterviewForm
 {
     public static function configure(Form $form): Form
     {
         return $form->schema(self::schema())->columns(2);
+    }
+
+    /**
+     * Genera los horarios disponibles de 8:00 a 23:00 en intervalos de 30min
+     */
+    protected static function generateTimeSlots(): array
+    {
+        $slots = [];
+        for ($hour = 8; $hour <= 23; $hour++) {
+            $slots[sprintf('%02d:00', $hour)] = sprintf('%02d:00', $hour);
+            if ($hour < 23) { // No agregar 23:30
+                $slots[sprintf('%02d:30', $hour)] = sprintf('%02d:30', $hour);
+            }
+        }
+        return $slots;
     }
 
     public static function schema(): array
@@ -70,28 +86,93 @@ class InterviewForm
                 ])
                 ->collapsible(),
 
-            DateTimePicker::make('start_at')
-                ->label('Inicio')
-                ->seconds(false)
-                ->required()
-                // No permitir entrevistas en días anteriores al día actual
-                ->minDate(fn () => Carbon::today())
-                ->live()
-                ->afterStateUpdated(function ($state, callable $set) {
-                    if ($state) {
-                        $start = Carbon::parse($state);
-                        $set('end_at', $start->copy()->addHour()->toDateTimeString());
-                    }
-                }),
+            // FECHA Y HORA SEPARADOS PARA INICIO
+            \Filament\Forms\Components\Grid::make(2)
+                ->schema([
+                    DatePicker::make('start_date')
+                        ->label('Fecha de Inicio')
+                        ->required()
+                        ->minDate(fn () => Carbon::today())
+                        ->live()
+                        ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                            // Recalcular start_at cuando cambia la fecha
+                            if ($state && $get('start_time')) {
+                                $set('start_at', Carbon::parse($state)->setTimeFromTimeString($get('start_time')));
+                                // Auto-calcular end_at (1 hora después)
+                                if ($get('start_at')) {
+                                    $start = Carbon::parse($get('start_at'));
+                                    $endDateTime = $start->copy()->addHour();
+                                    $set('end_date', $endDateTime->toDateString());
+                                    $set('end_time', $endDateTime->format('H:i'));
+                                    $set('end_at', $endDateTime->toDateTimeString());
+                                }
+                            }
+                        }),
 
-            DateTimePicker::make('end_at')
-                ->label('Fin')
-                ->seconds(false)
-                ->required()
-                // La fecha mínima de fin es el inicio (si existe) o, en su defecto, hoy
-                ->minDate(fn (callable $get) => $get('start_at') ?? Carbon::today())
+                    Select::make('start_time')
+                        ->label('Hora de Inicio')
+                        ->options(self::generateTimeSlots())
+                        ->required()
+                        ->searchable()
+                        ->live()
+                        ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                            // Recalcular start_at cuando cambia la hora
+                            if ($state && $get('start_date')) {
+                                $set('start_at', Carbon::parse($get('start_date'))->setTimeFromTimeString($state));
+                                // Auto-calcular end_at (1 hora después)
+                                if ($get('start_at')) {
+                                    $start = Carbon::parse($get('start_at'));
+                                    $endDateTime = $start->copy()->addHour();
+                                    $set('end_date', $endDateTime->toDateString());
+                                    $set('end_time', $endDateTime->format('H:i'));
+                                    $set('end_at', $endDateTime->toDateTimeString());
+                                }
+                            }
+                        }),
+                ])
+                ->columnSpanFull(),
+
+            // Campo oculto que guarda el DateTime real
+            \Filament\Forms\Components\Hidden::make('start_at')
+                ->dehydrated()
+                ->default(fn ($record) => $record?->start_at),
+
+            // FECHA Y HORA SEPARADOS PARA FIN
+            \Filament\Forms\Components\Grid::make(2)
+                ->schema([
+                    DatePicker::make('end_date')
+                        ->label('Fecha de Fin')
+                        ->required()
+                        ->minDate(fn (callable $get) => $get('start_date') ?? Carbon::today())
+                        ->live()
+                        ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                            // Recalcular end_at cuando cambia la fecha
+                            if ($state && $get('end_time')) {
+                                $set('end_at', Carbon::parse($state)->setTimeFromTimeString($get('end_time')));
+                            }
+                        }),
+
+                    Select::make('end_time')
+                        ->label('Hora de Fin')
+                        ->options(self::generateTimeSlots())
+                        ->required()
+                        ->searchable()
+                        ->live()
+                        ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                            // Recalcular end_at cuando cambia la hora
+                            if ($state && $get('end_date')) {
+                                $set('end_at', Carbon::parse($get('end_date'))->setTimeFromTimeString($state));
+                            }
+                        }),
+                ])
+                ->columnSpanFull(),
+
+            // Campo oculto que guarda el DateTime real
+            \Filament\Forms\Components\Hidden::make('end_at')
+                ->dehydrated()
+                ->default(fn ($record) => $record?->end_at)
                 ->rules([
-                    // fin > inicio (una sola vez)
+                    // fin > inicio
                     fn ($get) => function (string $attribute, $value, \Closure $fail) use ($get) {
                         $start = $get('start_at');
                         if ($start && $value && Carbon::parse($value)->lte(Carbon::parse($start))) {
@@ -109,7 +190,7 @@ class InterviewForm
                     'confirmed' => 'Confirmada',
                     'cancelled' => 'Cancelada',
                 ])
-                ->default('pending')
+                ->default('confirmed')
                 ->required(),
         ];
     }

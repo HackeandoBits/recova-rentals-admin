@@ -13,23 +13,24 @@ use Laravel\Socialite\Facades\Socialite;
 class GoogleAuthController extends Controller
 {
     /**
-     * Iniciar flujo de LOGIN con Google (auto-registro si no existe)
+     * Iniciar flujo de LOGIN con Google (incluye Calendar automáticamente)
      */
     public function loginWithGoogle(Request $request): RedirectResponse
     {
-        // Guardamos que es un flujo de LOGIN (no solo conectar calendar)
+        // Guardamos que es un flujo de LOGIN (incluye calendar)
         $request->session()->put('oauth_action', 'login');
 
+        // Pedimos permisos de login + calendar
         $scopes = [
             'openid', 'email', 'profile',
+            'https://www.googleapis.com/auth/calendar.events',
+            'https://www.googleapis.com/auth/calendar.readonly',
         ];
 
         $extra = [
-            'access_type' => 'online',  // Solo login, no necesitamos refresh_token
+            'access_type' => 'offline', // Para obtener refresh_token de Calendar
             'include_granted_scopes' => 'true',
-            '
-
-prompt' => 'select_account', // Siempre mostrar selector de cuenta
+            'prompt' => 'consent', // Forzar consentimiento para refresh_token
         ];
 
         return Socialite::driver('google')
@@ -129,7 +130,7 @@ prompt' => 'select_account', // Siempre mostrar selector de cuenta
     }
 
     /**
-     * Manejar LOGIN: Buscar o crear usuario y autenticar
+     * Manejar LOGIN: Buscar o crear usuario, autenticar Y guardar tokens de Calendar
      */
     protected function handleLogin($googleUser): RedirectResponse
     {
@@ -149,8 +150,8 @@ prompt' => 'select_account', // Siempre mostrar selector de cuenta
                     'name' => $googleUser->getName(),
                     'email' => $googleUser->getEmail(),
                     'google_id' => $googleUser->getId(),
-                    'email_verified_at' => now(), // Auto-verificar porque Google lo verifica
-                    'password' => null, // Sin password, solo OAuth
+                    'email_verified_at' => now(),
+                    'password' => null,
                 ]);
 
                 \Illuminate\Support\Facades\Log::info('New user registered via Google', ['user_id' => $user->id]);
@@ -159,11 +160,60 @@ prompt' => 'select_account', // Siempre mostrar selector de cuenta
 
         // Autenticar al usuario
         Auth::login($user, remember: true);
-
         \Illuminate\Support\Facades\Log::info('User logged in via Google', ['user_id' => $user->id]);
 
+        // Guardar tokens de Google Calendar
+        $access = $googleUser->token;
+        $refresh = $googleUser->refreshToken ?? null;
+        $expires = $googleUser->expiresIn ?? 3600;
+
+        $record = GoogleToken::firstOrNew(['user_id' => $user->id]);
+
+        $payload = [
+            'access_token' => $access,
+            'expires_at' => now('UTC')->addSeconds((int) $expires),
+            'google_user_id' => $googleUser->getId(),
+            'google_email' => $googleUser->getEmail(),
+            'id_token' => $googleUser->id_token ?? null,
+            'scopes' => json_encode([
+                'openid', 'email', 'profile',
+                'https://www.googleapis.com/auth/calendar.events',
+                'https://www.googleapis.com/auth/calendar.readonly',
+            ], JSON_UNESCAPED_SLASHES),
+            'revoked' => false,
+        ];
+
+        if (! empty($refresh)) {
+            $payload['refresh_token'] = $refresh;
+        }
+
+        try {
+            $record->fill($payload)->save();
+            \Illuminate\Support\Facades\Log::info('GoogleToken saved for user', ['user_id' => $user->id]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error saving GoogleToken: '.$e->getMessage());
+        }
+
+        // Sincronizar pendientes (opcional)
+        try {
+            $pendingBlocks = \App\Models\CalendarBlock::where('sync_status', 'pending')
+                ->where('owner_user_id', $user->id)
+                ->get();
+
+            foreach ($pendingBlocks as $block) {
+                \App\Jobs\SyncSingleBlockJob::dispatchSync($block->id);
+            }
+
+            $count = $pendingBlocks->count();
+            if ($count > 0) {
+                \Illuminate\Support\Facades\Log::info("Synced {$count} pending calendar blocks");
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error syncing pending items: '.$e->getMessage());
+        }
+
         return redirect()->route('filament.admin.pages.dashboard')
-            ->with('success', '¡Bienvenido, '.$user->name.'!');
+            ->with('success', '¡Bienvenido, '.$user->name.'! Google Calendar conectado.');
     }
 
     /**

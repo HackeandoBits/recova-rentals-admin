@@ -112,6 +112,10 @@ class CalendarBlocksTable
                     \Filament\Tables\Actions\RestoreBulkAction::make(),
                     \Filament\Tables\Actions\ForceDeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->persistFiltersInSession()
+            ->persistSortInSession()
+            ->persistSearchInSession()
+            ->persistColumnSearchesInSession();
     }
 }

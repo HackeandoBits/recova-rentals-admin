@@ -149,6 +149,10 @@ class InterviewsTable
                     \Filament\Tables\Actions\RestoreBulkAction::make(),
                     \Filament\Tables\Actions\ForceDeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->persistFiltersInSession()
+            ->persistSortInSession()
+            ->persistSearchInSession()
+            ->persistColumnSearchesInSession();
     }
 }
