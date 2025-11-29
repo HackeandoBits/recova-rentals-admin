@@ -51,22 +51,6 @@ class AdminPanelProvider extends PanelProvider
                 'gray' => Color::Zinc,
             ])
             ->viteTheme('resources/css/filament/admin/theme.css')
-
-            // 👇 Contenedor visual para el formulario de login
-            ->renderHook(
-                PanelsRenderHook::SIMPLE_PAGE_START,
-                fn() => '
-                    <div class="rr-login-card w-full max-w-md mx-auto rounded-2xl border border-slate-600/70
-                                bg-slate-950/90 px-8 py-6 shadow-2xl space-y-6">
-                ',
-            )
-            ->renderHook(
-                PanelsRenderHook::SIMPLE_PAGE_END,
-                fn() => '
-                    </div>
-                ',
-            )
-
             ->darkMode(true)
             ->plugin(FilamentFullCalendarPlugin::make())
 

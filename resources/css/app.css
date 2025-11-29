@@ -1,7 +1,7 @@
 @import 'tailwindcss';
-@import './calendar-custom.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../vendor/filament/**/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
 @source '../**/*.js';
@@ -16,4 +16,64 @@
     --color-neon-purple: #a855f7;
     --color-neon-pink: #ec4899;
     --color-primary: #351636;
+}
+
+/* ================== CALENDARIO / MODALES ================== */
+@layer components {
+    /* Eventos del calendario */
+    .fc-event {
+        cursor: pointer !important;
+        max-width: 100% !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        box-sizing: border-box !important;
+    }
+
+    .fc-event-transparent {
+        background: none !important;
+        border: none !important;
+        padding: 2px 4px !important;
+    }
+
+    .fc-daygrid-event {
+        max-width: calc(100% - 6px) !important;
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        overflow: hidden !important;
+        margin-left: 2px !important;
+        margin-right: 2px !important;
+    }
+
+    .fc-event-main {
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .fc-event-title {
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        display: block !important;
+        white-space: nowrap !important;
+    }
+
+    .fc-event:hover {
+        opacity: 0.9;
+        transform: scale(1.02);
+        transition: all 0.2s ease;
+        z-index: 100 !important;
+    }
+
+    .fi-modal-content {
+        border-radius: 12px;
+    }
+
+    .fi-modal-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid rgb(30 41 59 / 0.1);
+    }
+
+    .fi-modal-heading {
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
 }
