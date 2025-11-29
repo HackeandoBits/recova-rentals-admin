@@ -12,6 +12,35 @@ use Laravel\Socialite\Facades\Socialite;
 
 class GoogleAuthController extends Controller
 {
+    /**
+     * Iniciar flujo de LOGIN con Google (auto-registro si no existe)
+     */
+    public function loginWithGoogle(Request $request): RedirectResponse
+    {
+        // Guardamos que es un flujo de LOGIN (no solo conectar calendar)
+        $request->session()->put('oauth_action', 'login');
+
+        $scopes = [
+            'openid', 'email', 'profile',
+        ];
+
+        $extra = [
+            'access_type' => 'online',  // Solo login, no necesitamos refresh_token
+            'include_granted_scopes' => 'true',
+            '
+
+prompt' => 'select_account', // Siempre mostrar selector de cuenta
+        ];
+
+        return Socialite::driver('google')
+            ->scopes($scopes)
+            ->with($extra)
+            ->redirect();
+    }
+
+    /**
+     * Iniciar flujo de CONECTAR Google Calendar (requiere estar logueado)
+     */
     public function redirect(Request $request): RedirectResponse
     {
         // Debe estar logueado en tu app antes de conectar su Google
@@ -22,6 +51,7 @@ class GoogleAuthController extends Controller
 
         // Guardamos el user_id del usuario que va a vincular
         $request->session()->put('oauth_user_id', Auth::id());
+        $request->session()->put('oauth_action', 'connect_calendar');
 
         // Estado actual del token del usuario
         $existing = GoogleToken::where('user_id', Auth::id())->first();
@@ -40,9 +70,9 @@ class GoogleAuthController extends Controller
         $needsRefreshToken = ! $existing || empty($existing->refresh_token);
 
         $extra = [
-            'access_type'            => 'offline',            // necesario para refresh_token
+            'access_type' => 'offline',            // necesario para refresh_token
             'include_granted_scopes' => 'true',
-            'prompt'                 => ($force || $needsRefreshToken) ? 'consent' : 'none',
+            'prompt' => ($force || $needsRefreshToken) ? 'consent' : 'none',
         ];
 
         return Socialite::driver('google')
@@ -55,75 +85,128 @@ class GoogleAuthController extends Controller
     {
         \Illuminate\Support\Facades\Log::info('GoogleAuth Callback HIT', [
             'session_all' => $request->session()->all(),
-            'oauth_user_id' => $request->session()->get('oauth_user_id'),
+            'oauth_action' => $request->session()->get('oauth_action'),
         ]);
 
-        // Recuperamos a quién asociar el token (sin requerir auth en esta ruta)
-        $userId = $request->session()->pull('oauth_user_id');
+        // Determinar qué acción se está realizando
+        $action = $request->session()->pull('oauth_action', 'connect_calendar');
 
-        if (! $userId) {
-            \Illuminate\Support\Facades\Log::warning('GoogleAuth: No user ID in session');
-            // No sabemos a quién asociar → mandamos al login del panel
-            return redirect()->to($this->filamentLoginUrl())
-                ->with('error', 'Volvé a iniciar sesión y reintentá conectar Google.');
-        }
-
-        // Obtener los datos del usuario de Google (manejo de estado)
+        // Obtener los datos del usuario de Google
         try {
             \Illuminate\Support\Facades\Log::info('GoogleAuth: Requesting user from Socialite...');
-            
+
             // FIX: Deshabilitar verificación SSL para entorno local (Laragon)
             $driver = Socialite::driver('google');
             $driver->setHttpClient(new \GuzzleHttp\Client(['verify' => false]));
-            
+
             $googleUser = $driver->user();
             \Illuminate\Support\Facades\Log::info('GoogleAuth: Socialite user received');
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('GoogleAuth: Socialite Error (Stateful): ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('GoogleAuth: Socialite Error (Stateful): '.$e->getMessage());
             // En algunos navegadores/extensiones puede fallar el estado; probamos stateless
             try {
                 \Illuminate\Support\Facades\Log::info('GoogleAuth: Retrying stateless...');
-                
+
                 $driver = Socialite::driver('google')->stateless();
                 $driver->setHttpClient(new \GuzzleHttp\Client(['verify' => false]));
-                
+
                 $googleUser = $driver->user();
                 \Illuminate\Support\Facades\Log::info('GoogleAuth: Socialite user received (Stateless)');
             } catch (\Throwable $e2) {
-                \Illuminate\Support\Facades\Log::error('GoogleAuth: Socialite Error (Stateless): ' . $e2->getMessage());
+                \Illuminate\Support\Facades\Log::error('GoogleAuth: Socialite Error (Stateless): '.$e2->getMessage());
+
                 return redirect()->to($this->filamentLoginUrl())
                     ->with('error', 'Error al obtener las credenciales de Google: '.$e2->getMessage());
             }
         }
 
+        // Manejar según la acción
+        if ($action === 'login') {
+            return $this->handleLogin($googleUser);
+        } else {
+            return $this->handleConnectCalendar($googleUser, $request);
+        }
+    }
+
+    /**
+     * Manejar LOGIN: Buscar o crear usuario y autenticar
+     */
+    protected function handleLogin($googleUser): RedirectResponse
+    {
+        // Buscar usuario por google_id o email
+        $user = User::where('google_id', $googleUser->getId())->first();
+
+        if (! $user) {
+            // Buscar por email
+            $user = User::where('email', $googleUser->getEmail())->first();
+
+            if ($user) {
+                // Usuario existe con ese email, vincular google_id
+                $user->update(['google_id' => $googleUser->getId()]);
+            } else {
+                // Auto-registro: Crear usuario nuevo
+                $user = User::create([
+                    'name' => $googleUser->getName(),
+                    'email' => $googleUser->getEmail(),
+                    'google_id' => $googleUser->getId(),
+                    'email_verified_at' => now(), // Auto-verificar porque Google lo verifica
+                    'password' => null, // Sin password, solo OAuth
+                ]);
+
+                \Illuminate\Support\Facades\Log::info('New user registered via Google', ['user_id' => $user->id]);
+            }
+        }
+
+        // Autenticar al usuario
+        Auth::login($user, remember: true);
+
+        \Illuminate\Support\Facades\Log::info('User logged in via Google', ['user_id' => $user->id]);
+
+        return redirect()->route('filament.admin.pages.dashboard')
+            ->with('success', '¡Bienvenido, '.$user->name.'!');
+    }
+
+    /**
+     * Manejar CONECTAR CALENDAR: Guardar tokens de Google
+     */
+    protected function handleConnectCalendar($googleUser, Request $request): RedirectResponse
+    {
+        // Recuperamos a quién asociar el token
+        $userId = $request->session()->pull('oauth_user_id');
+
+        if (! $userId) {
+            \Illuminate\Support\Facades\Log::warning('GoogleAuth: No user ID in session');
+
+            return redirect()->to($this->filamentLoginUrl())
+                ->with('error', 'Volvé a iniciar sesión y reintentá conectar Google.');
+        }
+
         // Tokens y metadatos
-        $access  = $googleUser->token;
-        $refresh = $googleUser->refreshToken ?? null; // puede venir null si Google decide no reenviarlo
+        $access = $googleUser->token;
+        $refresh = $googleUser->refreshToken ?? null;
         $expires = $googleUser->expiresIn ?? 3600;
 
         \Illuminate\Support\Facades\Log::info('GoogleAuth Callback', [
             'user_id' => $userId,
-            'has_access' => !empty($access),
-            'has_refresh' => !empty($refresh),
-            'expires' => $expires
+            'has_access' => ! empty($access),
+            'has_refresh' => ! empty($refresh),
+            'expires' => $expires,
         ]);
 
         $record = GoogleToken::firstOrNew(['user_id' => $userId]);
 
         $payload = [
             'access_token' => $access,
-            // Normalizamos expiración en UTC
-            'expires_at'   => now('UTC')->addSeconds((int) $expires),
-            // (Opcional si tu tabla tiene estas columnas)
+            'expires_at' => now('UTC')->addSeconds((int) $expires),
             'google_user_id' => method_exists($googleUser, 'getId') ? $googleUser->getId() : null,
-            'google_email'   => method_exists($googleUser, 'getEmail') ? $googleUser->getEmail() : null,
-            'id_token'       => $googleUser->id_token ?? null,
-            'scopes'         => json_encode([
+            'google_email' => method_exists($googleUser, 'getEmail') ? $googleUser->getEmail() : null,
+            'id_token' => $googleUser->id_token ?? null,
+            'scopes' => json_encode([
                 'openid', 'email', 'profile',
                 'https://www.googleapis.com/auth/calendar.events',
                 'https://www.googleapis.com/auth/calendar.readonly',
             ], JSON_UNESCAPED_SLASHES),
-            'revoked'        => false,
+            'revoked' => false,
         ];
 
         // No pisar un refresh_token válido con null
@@ -135,9 +218,10 @@ class GoogleAuthController extends Controller
             $record->fill($payload)->save();
             \Illuminate\Support\Facades\Log::info('GoogleToken saved successfully', ['id' => $record->id]);
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Error saving GoogleToken: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('Error saving GoogleToken: '.$e->getMessage());
+
             return redirect()->route('filament.admin.pages.dashboard')
-                ->with('error', 'Error al guardar el token: ' . $e->getMessage());
+                ->with('error', 'Error al guardar el token: '.$e->getMessage());
         }
 
         // Aseguramos sesión del usuario (por si se perdió)
@@ -148,40 +232,30 @@ class GoogleAuthController extends Controller
         }
 
         // --- SINCRONIZACIÓN AUTOMÁTICA DE PENDIENTES ---
-        // Al conectar, buscamos todo lo que esté 'pending' y lo mandamos YA.
         try {
-            // 1. Bloqueos pendientes
             $pendingBlocks = \App\Models\CalendarBlock::where('sync_status', 'pending')
                 ->where('owner_user_id', $userId)
                 ->get();
 
             foreach ($pendingBlocks as $block) {
-                // Ejecutamos el Job sincrónicamente (sin colas)
                 \App\Jobs\SyncSingleBlockJob::dispatchSync($block->id);
             }
 
-            // 2. Reuniones CONFIRMADAS pendientes de sync
             $pendingInterviews = \App\Models\Interview::where('status', 'confirmed')
-                // ->where('assigned_user_id', $userId) // Si usas asignación
                 ->get();
 
             foreach ($pendingInterviews as $interview) {
-                // Solo si no tiene google_event_id aún
                 if (empty($interview->google_event_id)) {
-                    // Asumimos que existe un Job similar o lógica de sync
-                    // Si no existe Job, instanciamos el servicio directamente.
-                    // Por ahora, usaremos el Job si existe, o un placeholder.
-                    // Verificamos si existe SyncInterviewJob
                     if (class_exists(\App\Jobs\SyncInterviewJob::class)) {
                         \App\Jobs\SyncInterviewJob::dispatchSync($interview->id);
                     }
                 }
             }
-            
+
             $count = $pendingBlocks->count() + $pendingInterviews->count();
             $msg = "Google Calendar conectado. Se sincronizaron {$count} elementos pendientes.";
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Error sync on connect: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('Error sync on connect: '.$e->getMessage());
             $msg = 'Google Calendar conectado, pero hubo un error al sincronizar pendientes.';
         }
 
@@ -191,14 +265,12 @@ class GoogleAuthController extends Controller
 
     protected function filamentLoginUrl(): string
     {
-        // Detecta el name correcto del login de tu panel
         foreach (['filament.admin.auth.login', 'filament.auth.login', 'filament.panel.auth.login'] as $name) {
             if (RouteFacade::has($name)) {
                 return route($name);
             }
         }
 
-        // Fallback típico
         return '/admin/login';
     }
 
@@ -212,9 +284,6 @@ class GoogleAuthController extends Controller
         $token = GoogleToken::where('user_id', $userId)->first();
 
         if ($token) {
-            // Opcional: Revocar en Google
-            // $client = ...; $client->revokeToken();
-            
             $token->delete();
         }
 
