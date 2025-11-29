@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\Login;
+use App\Filament\Pages\Dashboard as AdminDashboard;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -17,6 +19,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Saade\FilamentFullCalendar\FilamentFullCalendarPlugin;
+use Filament\View\PanelsRenderHook;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -26,10 +29,11 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
-            ->brandName('Recova Rentals Admin')
-            ->topNavigation()
+            ->login(Login::class)
             ->authGuard('web') // Usa el guard web de Laravel
+            ->brandName('Recova Rentals Admin')
+            ->brandLogo(fn() => view('filament.admin.logo'))
+            ->topNavigation()
             ->colors([
                 'primary' => [
                     50 => '#fdf2fb',
@@ -46,8 +50,27 @@ class AdminPanelProvider extends PanelProvider
                 ],
                 'gray' => Color::Zinc,
             ])
-            ->darkMode(true) // Forzar o asegurar modo oscuro por defecto si es posible, o dejar que el usuario lo elija pero con paleta oscura bien definida
+            ->viteTheme('resources/css/filament/admin/theme.css')
+
+            // 👇 Contenedor visual para el formulario de login
+            ->renderHook(
+                PanelsRenderHook::SIMPLE_PAGE_START,
+                fn() => '
+                    <div class="rr-login-card w-full max-w-md mx-auto rounded-2xl border border-slate-600/70
+                                bg-slate-950/90 px-8 py-6 shadow-2xl space-y-6">
+                ',
+            )
+            ->renderHook(
+                PanelsRenderHook::SIMPLE_PAGE_END,
+                fn() => '
+                    </div>
+                ',
+            )
+
+            ->darkMode(true)
             ->plugin(FilamentFullCalendarPlugin::make())
+
+
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverResources(in: app_path('Filament/Resources/Interviews'), for: 'App\\Filament\\Resources\\Interviews')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -65,77 +88,6 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ])
-            ->userMenuItems([
-                \Filament\Navigation\MenuItem::make()
-                    ->label('Mi Perfil')
-                    ->url(fn (): string => \App\Filament\Pages\Profile::getUrl())
-                    ->icon('heroicon-o-user-circle'),
-                \Filament\Navigation\MenuItem::make()
-                    ->label(fn () => auth()->user()?->googleToken()->exists() ? 'Desconectar Google' : 'Conectar Google')
-                    ->url(fn () => auth()->user()?->googleToken()->exists() ? route('google.disconnect') : route('google.redirect'))
-                    ->icon(fn () => auth()->user()?->googleToken()->exists() ? 'heroicon-o-x-circle' : 'heroicon-o-link'),
-            ])
-            ->navigation(function (NavigationBuilder $builder): NavigationBuilder {
-                return $builder
-                    ->items([
-                        ...\App\Filament\Pages\Dashboard::getNavigationItems(),
-                        ...\App\Filament\Pages\ReportsPage::getNavigationItems(), // Ahora como item fijo
-                    ])
-                    ->groups([
-                        \Filament\Navigation\NavigationGroup::make('Agenda')
-                            ->items([
-                                ...\App\Filament\Pages\Calendar::getNavigationItems(),
-                                ...\App\Filament\Resources\CalendarBlocks\CalendarBlockResource::getNavigationItems(),
-                                ...\App\Filament\Resources\Interviews\InterviewResource::getNavigationItems(),
-                            ]),
-                    ]);
-            })
-            ->renderHook(
-                'panels::head.end',
-                fn (): string => <<<'HTML'
-                    <style>
-                        /* Forzar orden visual usando Flexbox */
-                        .fi-topbar-nav > ul {
-                            display: flex;
-                            gap: 0.5rem; /* Espaciado consistente */
-                        }
-
-                        /* Por defecto todos tienen orden 0 */
-                        .fi-topbar-item, .fi-topbar-group {
-                            order: 0;
-                        }
-
-                        /* Mover Reportes al final (identificado por su enlace) */
-                        .fi-topbar-item:has(a[href*="reports"]) {
-                            order: 100 !important;
-                        }
-                        
-                        /* Asegurar que Agenda (Grupo) esté antes que Reportes pero después de Dashboard */
-                        /* Dashboard suele ser el primero por defecto */
-                    </style>
-
-                    <script>
-                        // Usar delegación de eventos global para manejar actualizaciones de Livewire y asegurar detección
-                        document.addEventListener('mouseover', (e) => {
-                            // Verificar si estamos dentro de la navegación superior
-                            const nav = e.target.closest('.fi-topbar-nav');
-                            if (!nav) return;
-
-                            // Verificar si estamos sobre un item
-                            const item = e.target.closest('.fi-topbar-item');
-                            if (!item) return;
-
-                            // Buscar el botón disparador (que tenga aria-expanded)
-                            const button = item.querySelector('button[aria-expanded]');
-                            
-                            // Si el botón existe y el menú está cerrado, simular click para abrir
-                            if (button && button.getAttribute('aria-expanded') === 'false') {
-                                button.click();
-                            }
-                        });
-                    </script>
-HTML,
-            );
+            ]);
     }
 }

@@ -1,0 +1,227 @@
+@import '../../app.css';
+
+/* --------------------------------------------------------------------
+   2) LOGIN SIMPLE PAGE (solo afecta login / auth simple)
+---------------------------------------------------------------------*/
+
+/* Quitar el “marco / dispositivo” externo */
+.fi-simple-main {
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+}
+
+/* Fondo a pantalla completa, centrando el contenido */
+.fi-simple-page {
+    background: radial-gradient(circle at center, #1e1b4b 0%, #0f172a 40%, #000000 100%) !important;
+    min-height: 100vh !important;
+    width: 100% !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 1.5rem !important;
+}
+
+/* El <section> interno actúa como CARD del formulario */
+.fi-simple-page>section {
+    background: rgba(15, 23, 42, 0.96);
+    /* fondo card */
+    border-radius: 20px;
+    border: 1px solid rgba(148, 163, 184, 0.45);
+    /* borde alrededor */
+    box-shadow:
+        0 0 0 1px rgba(15, 23, 42, 0.9),
+        0 24px 60px rgba(15, 23, 42, 0.9);
+    padding: 2.5rem 3rem;
+    width: 100%;
+    max-width: 520px;
+    /* ancho card */
+}
+
+/* Un poco más de aire entre bloques dentro del card */
+.fi-simple-page>section>*+* {
+    margin-top: 1.5rem;
+}
+
+/* --------------------------------------------------------------------
+   Títulos
+---------------------------------------------------------------------*/
+.fi-simple-header-heading {
+    color: #ffffff !important;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5) !important;
+    font-weight: 700 !important;
+    text-align: center !important;
+    margin-bottom: 0.75rem !important;
+}
+
+.fi-simple-header-subheading {
+    color: #94a3b8 !important;
+    text-align: center !important;
+    margin-bottom: 1rem !important;
+}
+
+/* --------------------------------------------------------------------
+   Labels y campos
+---------------------------------------------------------------------*/
+label,
+.fi-fo-field-wrp-label span {
+    color: #22d3ee !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    text-shadow: 0 0 5px rgba(34, 211, 238, 0.4) !important;
+}
+
+/* separa un poco cada campo */
+.fi-fo-field-wrp {
+    margin-bottom: 1.1rem !important;
+}
+
+.fi-input-wrp {
+    background-color: rgba(0, 0, 0, 0.4) !important;
+    border: 1px solid rgba(148, 163, 184, 0.2) !important;
+    border-radius: 8px !important;
+    transition: all 0.3s ease !important;
+    overflow: hidden !important;
+}
+
+.fi-input-wrp:focus-within {
+    border-color: #06b6d4 !important;
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.3) !important;
+}
+
+.fi-input {
+    color: #ffffff !important;
+    background: transparent !important;
+}
+
+.fi-input::placeholder {
+    color: #64748b !important;
+}
+
+/* --------------------------------------------------------------------
+   Checkbox “Recordar”
+---------------------------------------------------------------------*/
+.fi-checkbox-input {
+    color: #06b6d4 !important;
+    background-color: rgba(0, 0, 0, 0.4) !important;
+    border-color: rgba(148, 163, 184, 0.4) !important;
+    border-radius: 4px !important;
+}
+
+.fi-checkbox-input:checked {
+    background-color: #06b6d4 !important;
+    border-color: #06b6d4 !important;
+}
+
+/* --------------------------------------------------------------------
+   Botón principal
+---------------------------------------------------------------------*/
+.fi-simple-page .fi-ac-btn-action {
+    display: inline-flex;
+    /* para centrar icono + texto */
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    background: linear-gradient(90deg, #22d3ee 0%, #a855f7 50%, #ec4899 100%) !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+
+    border: none !important;
+    border-radius: 9999px !important;
+    padding: 0.8rem 1.5rem !important;
+    width: 100% !important;
+
+    box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4) !important;
+    cursor: pointer !important;
+    margin-top: 0.75rem !important;
+}
+
+.fi-simple-page .fi-ac-btn-action:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(6, 182, 212, 0.6) !important;
+    filter: brightness(1.08) !important;
+}
+
+.fi-simple-page .fi-ac-btn-action:disabled,
+.fi-simple-page .fi-ac-btn-action[disabled] {
+    opacity: 0.75;
+    cursor: wait;
+    transform: none !important;
+}
+
+/* --------------------------------------------------------------------
+   Logo
+---------------------------------------------------------------------*/
+.rr-login-card .fi-logo {
+    position: absolute;
+    top: -10rem;
+    /* espacio para el logo flotante */
+    margin-top: 1rem;
+    /* súbelo por encima del borde de la card */
+    left: 50%;
+    transform: translateX(-50%);
+    height: auto !important;
+    /* anulamos el height fijo inline */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0;
+}
+
+.rr-login-card {
+    position: relative;
+    padding-top: 1rem;
+    /* deja espacio arriba para el logo flotante */
+}
+
+/* Autofill en Chrome / Edge / Safari */
+.fi-simple-page input:-webkit-autofill,
+.fi-simple-page input:-webkit-autofill:hover,
+.fi-simple-page input:-webkit-autofill:focus,
+.fi-simple-page input:-webkit-autofill:active {
+    -webkit-text-fill-color: #ffffff !important;
+    /* texto blanco */
+    caret-color: #ffffff !important;
+
+    /* Pintar el fondo igual que el input normal */
+    -webkit-box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.4) inset !important;
+    box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.4) inset !important;
+
+    border-color: #06b6d4 !important;
+    /* mismo borde que en focus */
+    transition: background-color 9999s ease-out, color 9999s ease-out !important;
+}
+
+/* Autofill en Firefox */
+.fi-simple-page input:-moz-autofill {
+    color: #ffffff !important;
+    caret-color: #ffffff !important;
+
+    box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.4) inset !important;
+    border-color: #06b6d4 !important;
+}
+
+/* --------------------------------------------------------------------
+   LOGIN: quitar el spinner gigante del botón "Iniciar Sesión"
+---------------------------------------------------------------------*/
+
+/* Oculta el ícono de carga del botón de acción del formulario */
+.fi-simple-page .fi-ac-btn-action .fi-loading-indicator,
+.fi-simple-page .fi-ac-btn-action svg.fi-loading-indicator {
+    display: none !important;
+}
+
+/* Asegura que el botón conserve un tamaño fijo aunque no tenga contenido */
+.fi-simple-page .fi-ac-btn-action {
+    min-height: 3rem;
+    /* ~48px */
+}
