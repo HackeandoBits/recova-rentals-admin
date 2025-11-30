@@ -84,7 +84,6 @@ body.fi-body .fi-topbar .fi-logo .rr-logo-subtitle {
     display: none;
 }
 
-
 /* =======================================================
    2) LOGIN – SIMPLE PAGE (solo afecta login/auth)
    Scoped a: body.fi-body .fi-simple-page ...
@@ -127,6 +126,20 @@ body.fi-body .fi-simple-page > section {
     background: none;
     box-shadow: none;
 }
+
+/* =========================================
+   Dashboard: header + widgets más pegados
+   ========================================= */
+
+body.fi-body .fi-dashboard-page > section {
+    /* Menos padding vertical que py-8 */
+    padding-top: 1rem;
+    padding-bottom: 1.75rem;
+
+    /* Menos separación entre header e items (gap-y-8 → ~gap-y-4) */
+    row-gap: 1rem;
+}
+
 
 /* --------------------------------------------------------------------
    Header del login (logo fuera de la card)
@@ -335,4 +348,156 @@ body.fi-body .fi-simple-page form.fi-form .fi-fo-component-ctn {
     display: flex !important;
     flex-direction: column !important;
     gap: 0.7rem !important;  /* en vez de gap-6 de Tailwind */
+}
+
+/* ============================
+   LAYOUT GENERAL DEL PANEL
+   (no afecta al login porque
+   el login usa .fi-simple-page)
+   ============================ */
+
+.fi-layout {
+    background: radial-gradient(circle at top, #1a1024 0, #05030a 45%, #02010a 100%);
+    color: #e5e7eb;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+}
+
+/* Main + sidebar */
+.fi-sidebar {
+    background: linear-gradient(180deg, #05030a, #05030f);
+    border-right: 1px solid rgba(248, 113, 222, 0.25); /* rosa neón suave */
+    box-shadow: 0 0 30px rgba(236, 72, 153, 0.25);
+}
+
+.fi-main {
+    /* Deja espacio, pero sin romper los paddings de Filament */
+    padding-inline: 1.75rem;
+    padding-block: 1.5rem 2rem;
+}
+
+/* Contenedor máximo para que el contenido no se haga infinito en pantallas grandes */
+.fi-main > .fi-page {
+    max-width: 1280px;
+    margin-inline: auto;
+}
+
+/* ============================
+   TIPOGRAFÍA Y HEADERS
+   ============================ */
+
+/* Título principal del dashboard / páginas */
+.fi-page-header-heading {
+    font-size: 1.5rem;       /* ~24px */
+    line-height: 1.2;
+    letter-spacing: 0.03em;
+    font-weight: 700;
+    background: linear-gradient(90deg, #f97316, #e11d48, #a855f7);
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+/* Subtítulo / descripción de página */
+.fi-page-header-subheading {
+    font-size: 0.9rem;
+    color: #9ca3af;
+}
+
+/* ============================
+   CARDS / WIDGETS
+   ============================ */
+
+/* Card genérica (Filament usa paneles con fondo) */
+.fi-section,
+.fi-stats-overview-widget,
+.fi-widget {
+    background: radial-gradient(circle at top left, rgba(236, 72, 153, 0.08), transparent 55%) #05030f;
+    border-radius: 1rem;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    box-shadow:
+        0 18px 40px rgba(15, 23, 42, 0.75),
+        0 0 0 1px rgba(15, 23, 42, 0.9);
+    padding: 1.25rem;
+}
+
+/* Título dentro de cada card */
+.fi-section-header,
+.fi-widget-header {
+    margin-bottom: 0.75rem;
+}
+
+.fi-section-header h2,
+.fi-widget-header h2 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #e5e7eb;
+}
+
+/* Contenido interno de la card: un poco más de aire */
+.fi-section-content,
+.fi-widget-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* Contenedor de los widgets en dashboard */
+.fi-widgets {
+    display: grid;
+    gap: 1.25rem;
+}
+
+/* Responsive básico (ajustaremos mejor cuando vea tu HTML real) */
+@media (min-width: 768px) {
+    .fi-widgets {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1280px) {
+    .fi-widgets {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+/* ============================
+   TABLAS / INDEX
+   ============================ */
+
+.fi-ta {
+    /* wrapper de la tabla */
+    background: rgba(15, 23, 42, 0.85);
+    border-radius: 0.9rem;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.fi-ta table thead th {
+    background: rgba(15, 23, 42, 0.95);
+    color: #e5e7eb;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.fi-ta table tbody tr {
+    transition: background 150ms ease, transform 150ms ease;
+}
+
+.fi-ta table tbody tr:hover {
+    background: rgba(236, 72, 153, 0.08);
+    transform: translateY(-1px);
+}
+
+/* Que el <main> del panel ocupe todo el ancho */
+main.fi-main {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* Quitar el header automático (título "Dashboard") solo en el dashboard */
+body.fi-body .fi-page.fi-dashboard-page .fi-header {
+    display: none !important;
 }

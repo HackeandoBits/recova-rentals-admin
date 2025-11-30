@@ -10,26 +10,11 @@ use Illuminate\Contracts\Support\Htmlable;
 
 class Dashboard extends BaseDashboard
 {
-    protected static ?string $navigationLabel = 'Inicio';
-
     protected static ?string $navigationIcon = 'heroicon-o-home';
 
     protected static ?int $navigationSort = -2;
 
-    public function getTitle(): string|Htmlable
-    {
-        return 'Inicio';
-    }
-
-    public function getHeading(): string|Htmlable
-    {
-        return 'Inicio';
-    }
-
-    public function getSubheading(): string|Htmlable|null
-    {
-        return '¡Bienvenido! Aquí tienes un resumen de tu negocio de alquiler.';
-    }
+    protected static string $view = 'filament.pages.dashboard';
 
     public function getColumns(): int|array
     {
