@@ -20,9 +20,8 @@ class BookingStatusChartWidget extends ChartWidget
 
     public function updateChartData(): void
     {
-        $this->dispatch('updateChartData', [
-            'data' => $this->getData(),
-        ]);
+        // This method is called by Filament's polling mechanism
+        // The chart will auto-update when dateRange changes
     }
 
     protected function getData(): array

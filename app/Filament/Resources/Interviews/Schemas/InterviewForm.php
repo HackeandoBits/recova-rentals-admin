@@ -105,8 +105,20 @@ class InterviewForm
                                     ->label(null)
                                     ->tooltip('Eliminar')
                                     ->action(function ($component) {
-                                        // Obtener el repeater padre y eliminar este item por su UUID (nombre del contenedor)
-                                        $component->getContainer()->getParentComponent()->deleteItem($component->getContainer()->getName());
+                                        // Navigate to the Actions component (parent of the Action)
+                                        $actionsComponent = $component->getParentComponent();
+                                        // The container for the repeater row (parent of Actions)
+                                        $itemContainer = $actionsComponent->getParentComponent();
+                                        // The Repeater component itself (parent of the item container)
+                                        $repeater = $itemContainer->getParentComponent();
+
+                                        // State path of the item, e.g., 'items.0' or 'items.uuid-1234'
+                                        $itemStatePath = $itemContainer->getStatePath();
+                                        $segments = explode('.', $itemStatePath);
+                                        $key = end($segments);
+
+                                        // Delete the specific item from the repeater
+                                        $repeater->deleteItem($key);
                                     }),
                             ])
                             ->columnSpan(1)
