@@ -22,6 +22,40 @@ class ListCalendarBlocks extends ListRecords
 
     use \App\Filament\Traits\PersistsTableConfig;
 
+    public function mountPersistsTableConfig(): void
+    {
+        // Hydrate filters
+        if ($filters = $this->getUserTableSettings('filters')) {
+            $this->tableFilters = array_merge($this->tableFilters ?? [], $filters);
+        }
+
+        // Hydrate sort
+        if ($sortColumn = $this->getUserTableSettings('sort_column')) {
+            $this->tableSortColumn = $sortColumn;
+        }
+        if ($sortDirection = $this->getUserTableSettings('sort_direction')) {
+            $this->tableSortDirection = $sortDirection;
+        }
+
+        // Hydrate search
+        if ($search = $this->getUserTableSettings('search')) {
+            $this->tableSearchQuery = $search;
+        }
+
+        // Hydrate columns
+        if ($columns = $this->getUserTableSettings('column_visibility')) {
+            if (property_exists($this, 'toggledTableColumns')) {
+                $this->toggledTableColumns = array_merge($this->toggledTableColumns ?? [], $columns);
+            }
+            if (property_exists($this, 'toggledHiddenColumns')) {
+                $this->toggledHiddenColumns = array_merge($this->toggledHiddenColumns ?? [], $columns);
+            }
+            if (property_exists($this, 'tableColumnToggledHiddenState')) {
+                $this->tableColumnToggledHiddenState = array_merge($this->tableColumnToggledHiddenState ?? [], $columns);
+            }
+        }
+    }
+
     protected static ?string $title = 'Listado de Bloqueos';
 
     protected function getHeaderActions(): array
