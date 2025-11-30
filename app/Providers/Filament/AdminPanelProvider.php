@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\Login;
+use App\Filament\Pages\Dashboard as AdminDashboard;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -17,6 +19,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Saade\FilamentFullCalendar\FilamentFullCalendarPlugin;
+use Filament\View\PanelsRenderHook;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -26,10 +29,11 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login(\App\Filament\Pages\Auth\Login::class)
-            ->brandName('Recova Rentals Admin')
-            ->topNavigation()
+            ->login(Login::class)
             ->authGuard('web') // Usa el guard web de Laravel
+            ->brandName('Recova Rentals Admin')
+            ->brandLogo(fn() => view('filament.admin.logo'))
+            ->topNavigation()
             ->colors([
                 'primary' => [
                     50 => '#fdf2fb',
@@ -46,8 +50,11 @@ class AdminPanelProvider extends PanelProvider
                 ],
                 'gray' => Color::Zinc,
             ])
-            ->darkMode(true) // Forzar o asegurar modo oscuro por defecto si es posible, o dejar que el usuario lo elija pero con paleta oscura bien definida
+            ->viteTheme('resources/css/filament/admin/theme.css')
+            ->darkMode(true)
             ->plugin(FilamentFullCalendarPlugin::make())
+
+
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverResources(in: app_path('Filament/Resources/Interviews'), for: 'App\\Filament\\Resources\\Interviews')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')

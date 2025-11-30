@@ -39,62 +39,64 @@ class CalendarWidget extends FullCalendarWidget
         return [
             'eventDidMount' => \Filament\Support\RawJs::make(<<<'JS'
                 function(info) { 
-                    // Intentar usar Tippy.js si está disponible (Filament lo usa)
-                    if (window.tippy) {
-                        window.tippy(info.el, {
-                            content: info.event.title,
-                            placement: 'top',
-                            animation: 'scale',
-                            theme: 'light',
-                        });
-                        return;
-                    }
-
-                    // Fallback a tooltip nativo mejorado
-                    info.el.setAttribute("title", info.event.title);
+                    // DEBUG: Poner borde rojo para confirmar que este código se ejecuta
+                    info.el.style.border = "2px solid red";
+                    info.el.style.pointerEvents = 'auto';
+                    info.el.setAttribute("data-title", info.event.title);
                     
-                    // Fallback custom tooltip
-                    if (!document.getElementById("fc-custom-tooltip")) {
+                    if (!window.fcTooltipInitialized) {
+                        window.fcTooltipInitialized = true;
+                        console.log("Initializing global tooltip system - DEBUG MODE");
+
                         var tooltip = document.createElement("div");
                         tooltip.id = "fc-custom-tooltip";
                         tooltip.style.position = "absolute";
-                        tooltip.style.zIndex = "999999";
-                        tooltip.style.background = "#1f2937"; 
-                        tooltip.style.color = "#ffffff";
-                        tooltip.style.padding = "6px 10px";
-                        tooltip.style.borderRadius = "4px";
-                        tooltip.style.fontSize = "12px";
+                        tooltip.style.zIndex = "99999999";
+                        tooltip.style.background = "red"; // Fondo rojo para que sea imposible no verlo
+                        tooltip.style.color = "white";
+                        tooltip.style.padding = "10px";
+                        tooltip.style.fontWeight = "bold";
                         tooltip.style.pointerEvents = "none";
                         tooltip.style.display = "none";
-                        tooltip.style.boxShadow = "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)";
-                        tooltip.style.border = "1px solid #374151";
-                        tooltip.style.whiteSpace = "nowrap";
                         document.body.appendChild(tooltip);
+
+                        document.addEventListener('mouseover', function(e) {
+                            // Loguear todo lo que toca el mouse para ver qué clases tiene
+                            // console.log("Hovering:", e.target.className);
+
+                            // Buscar cualquier elemento padre que parezca un evento
+                            var eventEl = e.target.closest('.fc-event') || 
+                                          e.target.closest('.fc-event-main') ||
+                                          e.target.closest('[data-title]');
+                                          
+                            if (eventEl) {
+                                var title = eventEl.getAttribute('data-title') || eventEl.getAttribute('title');
+                                if (title) {
+                                    console.log("Event detected:", title);
+                                    tooltip.innerText = title;
+                                    tooltip.style.display = "block";
+                                    tooltip.style.left = (e.pageX + 15) + "px";
+                                    tooltip.style.top = (e.pageY + 15) + "px";
+                                }
+                            }
+                        });
+
+                        document.addEventListener('mousemove', function(e) {
+                            if (tooltip.style.display === "block") {
+                                tooltip.style.left = (e.pageX + 15) + "px";
+                                tooltip.style.top = (e.pageY + 15) + "px";
+                            }
+                        });
+
+                        document.addEventListener('mouseout', function(e) {
+                            var eventEl = e.target.closest('.fc-event') || 
+                                          e.target.closest('.fc-event-main') ||
+                                          e.target.closest('[data-title]');
+                            if (eventEl) {
+                                tooltip.style.display = "none";
+                            }
+                        });
                     }
-
-                    var tooltipEl = document.getElementById("fc-custom-tooltip");
-                    
-                    info.el.addEventListener("mouseenter", function() {
-                        if (tooltipEl) {
-                            tooltipEl.innerText = info.event.title;
-                            tooltipEl.style.display = "block";
-                        }
-                        info.el.style.cursor = "pointer";
-                    });
-
-                    info.el.addEventListener("mousemove", function(e) {
-                        if (tooltipEl && tooltipEl.style.display === "block") {
-                            tooltipEl.style.left = (e.pageX + 10) + "px";
-                            tooltipEl.style.top = (e.pageY + 10) + "px";
-                        }
-                    });
-
-                    info.el.addEventListener("mouseleave", function() {
-                        if (tooltipEl) {
-                            tooltipEl.style.display = "none";
-                        }
-                        info.el.style.cursor = "default";
-                    });
                 }
             JS),
             'schedulerLicenseKey' => 'GPL-My-Project-Is-Open-Source',

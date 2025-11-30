@@ -1,0 +1,584 @@
+@import '../../app.css';
+
+/* =======================================================
+   0) BASE ADMIN (Filament v3)
+======================================================= */
+
+@layer base {
+    :root.dark {
+        color-scheme: dark;
+    }
+
+    /* Cuando hace scroll automático a errores, que no queden bajo la topbar */
+    [data-field-wrapper] {
+        scroll-margin-top: 8rem;
+    }
+}
+
+/* =======================================================
+   1) LOGO RECOVA – LOGIN vs TOPBAR
+======================================================= */
+
+/* --- Login (simple page) --- */
+
+/* Contenedor de la zona de logo en el login */
+body.fi-body .fi-simple-page .fi-simple-header>.fi-logo {
+    height: auto !important;
+    /* anula style="height: 1.5rem;" */
+    margin: 0 0 0.6rem 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: visible !important;
+}
+
+/* Dentro del login, logo en columna (imagen + textos) */
+body.fi-body .fi-simple-page .fi-simple-header>.fi-logo .rr-logo-wrapper {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Imagen grande en el login */
+body.fi-body .fi-simple-page .fi-simple-header>.fi-logo .rr-logo-icon {
+    height: 4.5rem;
+    margin-bottom: 0.6rem;
+}
+
+/* Título y subtítulo visibles y centrados en el login */
+body.fi-body .fi-simple-page .fi-simple-header>.fi-logo .rr-logo-title {
+    font-size: 2.1rem;
+    line-height: 1.1 !important;
+    text-align: center;
+}
+
+body.fi-body .fi-simple-page .fi-simple-header>.fi-logo .rr-logo-subtitle {
+    display: block;
+    text-align: center;
+    margin-top: 0.25rem;
+}
+
+/* --- Topbar (navbar del panel) --- */
+
+body.fi-body .fi-topbar .fi-logo .rr-logo-wrapper {
+    display: flex !important;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+/* Imagen más chica en el topbar */
+body.fi-body .fi-topbar .fi-logo .rr-logo-icon {
+    height: 2rem;
+    margin-bottom: 0;
+}
+
+/* Título más chico en el topbar */
+body.fi-body .fi-topbar .fi-logo .rr-logo-title {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Si por alguna razón apareciera el subtítulo en topbar, lo ocultamos */
+body.fi-body .fi-topbar .fi-logo .rr-logo-subtitle {
+    display: none;
+}
+
+/* =======================================================
+   2) LOGIN – SIMPLE PAGE (solo afecta login/auth)
+   Scoped a: body.fi-body .fi-simple-page ...
+======================================================= */
+
+/* --------------------------------------------------------------------
+   Layout general simple page (fondo)
+---------------------------------------------------------------------*/
+
+body.fi-body .fi-simple-main {
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+}
+
+body.fi-body .fi-simple-page {
+    background: radial-gradient(circle at center, #1e1b4b 0%, #0f172a 40%, #000000 100%) !important;
+    min-height: 100vh !important;
+    width: 100% !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 1.5rem !important;
+}
+
+/* Contenedor general (logo arriba + card/form abajo) */
+body.fi-body .fi-simple-page>section {
+    width: 100%;
+    max-width: 420px;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.9rem !important;
+    /* espacio entre header (logo) y form */
+    padding: 0;
+    /* la card va en el form, no en el section */
+    border: none;
+    background: none;
+    box-shadow: none;
+}
+
+/* =========================================
+   Dashboard: header + widgets más pegados
+   ========================================= */
+
+body.fi-body .fi-dashboard-page>section {
+    /* Menos padding vertical que py-8 */
+    padding-top: 1rem;
+    padding-bottom: 1.75rem;
+
+    /* Menos separación entre header e items (gap-y-8 → ~gap-y-4) */
+    row-gap: 1rem;
+}
+
+
+/* --------------------------------------------------------------------
+   Header del login (logo fuera de la card)
+---------------------------------------------------------------------*/
+
+body.fi-body .fi-simple-page .fi-simple-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+/* Si por alguna razón Filament generara heading/subheading,
+   los dejamos con poco margen (siguen FUERA de la card). */
+body.fi-body .fi-simple-page .fi-simple-header-heading {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    margin: 0.2rem 0 0.2rem 0 !important;
+}
+
+body.fi-body .fi-simple-page .fi-simple-header-subheading {
+    color: #94a3b8 !important;
+    margin: 0 0 0.4rem 0 !important;
+}
+
+/* --------------------------------------------------------------------
+   CARD: formulario de login
+---------------------------------------------------------------------*/
+
+body.fi-body .fi-simple-page form.fi-form {
+    background: rgba(15, 23, 42, 0.96);
+    border-radius: 20px;
+    border: 1px solid rgba(148, 163, 184, 0.45);
+    box-shadow:
+        0 0 0 1px rgba(15, 23, 42, 0.9),
+        0 24px 60px rgba(15, 23, 42, 0.9);
+    padding: 1.4rem 2rem;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.7rem !important;
+    /* espacio entre título interno, campos y botón */
+}
+
+/* Contenedor del título dentro del form */
+body.fi-body .fi-simple-page form.fi-form .rr-login-heading {
+    text-align: center;
+    margin-bottom: 0.35rem;
+}
+
+/* Título "Iniciar Sesión" dentro de la card */
+body.fi-body .fi-simple-page form.fi-form .rr-login-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+}
+
+/* Subtítulo "Ingresa tus credenciales..." */
+body.fi-body .fi-simple-page form.fi-form .rr-login-subtitle {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    margin-top: 0.25rem;
+    margin-bottom: 0;
+}
+
+/* --------------------------------------------------------------------
+   Labels y campos
+---------------------------------------------------------------------*/
+
+body.fi-body .fi-simple-page form.fi-form label,
+body.fi-body .fi-simple-page form.fi-form .fi-fo-field-wrp-label span {
+    color: #22d3ee !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    text-shadow: 0 0 5px rgba(34, 211, 238, 0.4) !important;
+}
+
+/* Separación compacta entre campos */
+body.fi-body .fi-simple-page form.fi-form .fi-fo-field-wrp {
+    margin-bottom: 0.45rem !important;
+}
+
+/* Wrapper de inputs (email / password) */
+body.fi-body .fi-simple-page form.fi-form .fi-input-wrp {
+    background-color: rgba(0, 0, 0, 0.4) !important;
+    border: 1px solid rgba(148, 163, 184, 0.2) !important;
+    border-radius: 8px !important;
+    transition: all 0.3s ease !important;
+    overflow: hidden !important;
+}
+
+body.fi-body .fi-simple-page form.fi-form .fi-input-wrp:focus-within {
+    border-color: #06b6d4 !important;
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.3) !important;
+}
+
+body.fi-body .fi-simple-page form.fi-form .fi-input {
+    color: #ffffff !important;
+    background: transparent !important;
+}
+
+body.fi-body .fi-simple-page form.fi-form .fi-input::placeholder {
+    color: #64748b !important;
+}
+
+/* --------------------------------------------------------------------
+   Checkbox "Recordar"
+---------------------------------------------------------------------*/
+
+body.fi-body .fi-simple-page form.fi-form .fi-checkbox-input {
+    color: #06b6d4 !important;
+    background-color: rgba(0, 0, 0, 0.4) !important;
+    border-color: rgba(148, 163, 184, 0.4) !important;
+    border-radius: 4px !important;
+}
+
+body.fi-body .fi-simple-page form.fi-form .fi-checkbox-input:checked {
+    background-color: #06b6d4 !important;
+    border-color: #06b6d4 !important;
+}
+
+/* --------------------------------------------------------------------
+   Botón principal "Iniciar sesión"
+---------------------------------------------------------------------*/
+
+body.fi-body .fi-simple-page form.fi-form .fi-ac-btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    background: linear-gradient(90deg,
+            #22d3ee 0%,
+            #a855f7 50%,
+            #ec4899 100%) !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+
+    border: none !important;
+    border-radius: 9999px !important;
+    padding: 0.6rem 1.3rem !important;
+    width: 100% !important;
+
+    box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4) !important;
+    cursor: pointer !important;
+    margin-top: 0.35rem !important;
+    min-height: 2.6rem !important;
+}
+
+body.fi-body .fi-simple-page form.fi-form .fi-ac-btn-action:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(6, 182, 212, 0.6) !important;
+    filter: brightness(1.08) !important;
+}
+
+body.fi-body .fi-simple-page form.fi-form .fi-ac-btn-action:disabled,
+body.fi-body .fi-simple-page form.fi-form .fi-ac-btn-action[disabled] {
+    opacity: 0.75;
+    cursor: wait;
+    transform: none !important;
+}
+
+/* Ocultamos el spinner interno del botón sólo en el login */
+body.fi-body .fi-simple-page form.fi-form .fi-ac-btn-action .fi-loading-indicator,
+body.fi-body .fi-simple-page form.fi-form .fi-ac-btn-action svg.fi-loading-indicator {
+    display: none !important;
+}
+
+/* --------------------------------------------------------------------
+   Autofill
+---------------------------------------------------------------------*/
+
+body.fi-body .fi-simple-page form.fi-form input:-webkit-autofill,
+body.fi-body .fi-simple-page form.fi-form input:-webkit-autofill:hover,
+body.fi-body .fi-simple-page form.fi-form input:-webkit-autofill:focus,
+body.fi-body .fi-simple-page form.fi-form input:-webkit-autofill:active {
+    -webkit-text-fill-color: #ffffff !important;
+    caret-color: #ffffff !important;
+
+    -webkit-box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.4) inset !important;
+    box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.4) inset !important;
+
+    border-color: #06b6d4 !important;
+    transition: background-color 9999s ease-out, color 9999s ease-out !important;
+}
+
+body.fi-body .fi-simple-page form.fi-form input:-moz-autofill {
+    color: #ffffff !important;
+    caret-color: #ffffff !important;
+
+    box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.4) inset !important;
+    border-color: #06b6d4 !important;
+}
+
+/* --------------------------------------------------------------------
+   Contenedor de componentes del form
+   (antes: grid con gap-6, ahora columna compacta)
+---------------------------------------------------------------------*/
+
+body.fi-body .fi-simple-page form.fi-form .fi-fo-component-ctn {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.7rem !important;
+    /* en vez de gap-6 de Tailwind */
+}
+
+/* ============================
+   LAYOUT GENERAL DEL PANEL
+   (no afecta al login porque
+   el login usa .fi-simple-page)
+   ============================ */
+
+.fi-layout {
+    background: radial-gradient(circle at top, #1a1024 0, #05030a 45%, #02010a 100%);
+    color: #e5e7eb;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+}
+
+/* Main + sidebar */
+.fi-sidebar {
+    background: linear-gradient(180deg, #05030a, #05030f);
+    border-right: 1px solid rgba(248, 113, 222, 0.25);
+    /* rosa neón suave */
+    box-shadow: 0 0 30px rgba(236, 72, 153, 0.25);
+}
+
+.fi-main {
+    /* Deja espacio, pero sin romper los paddings de Filament */
+    padding-inline: 1.75rem;
+    padding-block: 1.5rem 2rem;
+}
+
+/* Contenedor máximo para que el contenido no se haga infinito en pantallas grandes */
+.fi-main>.fi-page {
+    max-width: 1280px;
+    margin-inline: auto;
+}
+
+/* ============================
+   TIPOGRAFÍA Y HEADERS
+   ============================ */
+
+/* Título principal del dashboard / páginas */
+.fi-page-header-heading {
+    font-size: 1.5rem;
+    /* ~24px */
+    line-height: 1.2;
+    letter-spacing: 0.03em;
+    font-weight: 700;
+    background: linear-gradient(90deg, #f97316, #e11d48, #a855f7);
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+/* Subtítulo / descripción de página */
+.fi-page-header-subheading {
+    font-size: 0.9rem;
+    color: #9ca3af;
+}
+
+/* ============================
+   CARDS / WIDGETS
+   ============================ */
+
+/* Card genérica (Filament usa paneles con fondo) */
+.fi-section,
+.fi-stats-overview-widget,
+.fi-widget {
+    background: radial-gradient(circle at top left, rgba(236, 72, 153, 0.08), transparent 55%) #05030f;
+    border-radius: 1rem;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    box-shadow:
+        0 18px 40px rgba(15, 23, 42, 0.75),
+        0 0 0 1px rgba(15, 23, 42, 0.9);
+    padding: 1.25rem;
+}
+
+/* Título dentro de cada card */
+.fi-section-header,
+.fi-widget-header {
+    margin-bottom: 0.75rem;
+}
+
+.fi-section-header h2,
+.fi-widget-header h2 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #e5e7eb;
+}
+
+/* Contenido interno de la card: un poco más de aire */
+.fi-section-content,
+.fi-widget-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* Contenedor de los widgets en dashboard */
+.fi-widgets {
+    display: grid;
+    gap: 1.25rem;
+}
+
+/* Responsive básico (ajustaremos mejor cuando vea tu HTML real) */
+@media (min-width: 768px) {
+    .fi-widgets {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1280px) {
+    .fi-widgets {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+/* ============================
+   TABLAS / INDEX
+   ============================ */
+
+.fi-ta {
+    /* wrapper de la tabla */
+    background: rgba(15, 23, 42, 0.85);
+    border-radius: 0.9rem;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.fi-ta table thead th {
+    background: rgba(15, 23, 42, 0.95);
+    color: #e5e7eb;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.fi-ta table tbody tr {
+    transition: background 150ms ease, transform 150ms ease;
+}
+
+.fi-ta table tbody tr:hover {
+    background: rgba(236, 72, 153, 0.08);
+    transform: translateY(-1px);
+}
+
+/* Que el <main> del panel ocupe todo el ancho */
+main.fi-main {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* Quitar el header automático (título "Dashboard") solo en el dashboard */
+body.fi-body .fi-page.fi-dashboard-page .fi-header {
+    display: none !important;
+}
+
+/* ============================
+   FIX: SELECT ARROWS
+   ============================ */
+select,
+.fi-select-input {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    background-repeat: no-repeat !important;
+    background-position: right 0.5rem center !important;
+}
+
+/* ============================
+   FIX: CALENDAR LAYOUT
+   ============================ */
+/* Calendario centrado y ancho completo */
+.fi-page .fi-header-widgets {
+    display: flex !important;
+    justify-content: center !important;
+    width: 100% !important;
+}
+
+.fi-page .fi-header-widgets>div {
+    width: 100% !important;
+    max-width: 1400px !important;
+    /* Ancho máximo razonable */
+}
+
+/* El widget del calendario debe ocupar todo el espacio */
+.saade-ffc,
+.saade-ffc>div {
+    width: 100% !important;
+}
+
+/* ============================
+   FIX: DASHBOARD GRID LAYOUT
+   ============================ */
+/* Remover restricción de max-width en dashboard */
+.fi-dashboard-page .max-w-7xl {
+    max-width: 100% !important;
+}
+
+/* Asegurar que el contenedor de widgets use grid correctamente */
+.fi-dashboard-page x-filament-widgets\:\:widgets,
+.fi-dashboard-page [x-data*="widgets"] {
+    width: 100% !important;
+}
+
+/* Grid responsive para widgets del dashboard */
+@media (min-width: 1280px) {
+
+    /* Forzar grid a 4 columnas en XL */
+    .fi-dashboard-page .fi-widgets,
+    .fi-dashboard-page [class*="fi-wi"] {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 1.5rem !important;
+        width: 100% !important;
+    }
+
+    /* StatsOverview (primer widget) ocupa 4 columnas */
+    .fi-dashboard-page .fi-widgets>div:nth-child(1) {
+        grid-column: span 4 !important;
+    }
+
+    /* UpcomingInterviews (segundo widget) ocupa 3 columnas */
+    .fi-dashboard-page .fi-widgets>div:nth-child(2) {
+        grid-column: span 3 !important;
+    }
+
+    /* QuickStats (tercer widget) ocupa 1 columna */
+    .fi-dashboard-page .fi-widgets>div:nth-child(3) {
+        grid-column: span 1 !important;
+    }
+}
