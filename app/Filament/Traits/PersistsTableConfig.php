@@ -92,13 +92,29 @@ trait PersistsTableConfig
         $this->saveUserTableSettings('column_visibility', $this->toggledHiddenColumns ?? []);
     }
 
+    public function updatedToggledTableColumns(): void
+    {
+        \Illuminate\Support\Facades\Log::info('updatedToggledTableColumns fired', ['state' => $this->toggledTableColumns]);
+        $this->saveUserTableSettings('column_visibility', $this->toggledTableColumns ?? []);
+    }
+
     // Catch-all for debugging or fallback
     public function updated($name, $value): void
     {
         \Illuminate\Support\Facades\Log::info("Updated property: {$name}", ['value' => $value]);
 
-        if ($name === 'tableColumnToggledHiddenState' || $name === 'toggledHiddenColumns') {
-            $this->saveUserTableSettings('column_visibility', $value);
+        if ($name === 'tableColumnToggledHiddenState' || 
+            $name === 'toggledHiddenColumns' || 
+            $name === 'toggledTableColumns' ||
+            str_starts_with($name, 'toggledTableColumns.')) {
+            
+            // Determine which property holds the state
+            $state = $this->toggledTableColumns 
+                  ?? $this->toggledHiddenColumns 
+                  ?? $this->tableColumnToggledHiddenState 
+                  ?? [];
+
+            $this->saveUserTableSettings('column_visibility', $state);
         }
         
         if ($name === 'tableFilters') {
