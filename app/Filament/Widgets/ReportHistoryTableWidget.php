@@ -81,6 +81,7 @@ class ReportHistoryTableWidget extends BaseWidget
                     ->label('Descargar PDF')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('primary')
+                    ->iconButton()
                     ->action(function (ReportLog $record) {
                         // Verificar si el PDF existe
                         if (!$record->pdf_path || !\Illuminate\Support\Facades\Storage::disk('public')->exists($record->pdf_path)) {
@@ -110,6 +111,7 @@ class ReportHistoryTableWidget extends BaseWidget
                     ->label('Reenviar')
                     ->icon('heroicon-o-arrow-path')
                     ->color('warning')
+                    ->iconButton()
                     ->requiresConfirmation()
                     ->modalHeading('¿Reenviar este reporte?')
                     ->modalDescription('Se creará un nuevo registro de envío con los mismos parámetros.')
@@ -128,10 +130,32 @@ class ReportHistoryTableWidget extends BaseWidget
                         ]);
 
                         Notification::make()
-                            ->title('Reporte Reenviado')
-                            ->success()
                             ->body('El reporte se envió nuevamente exitosamente.')
                             ->send();
+                    }),
+
+                Tables\Actions\DeleteAction::make()
+                    ->label('Eliminar')
+                    ->icon('heroicon-o-trash')
+                    ->iconButton()
+                    ->modalHeading('¿Eliminar este reporte?')
+                    ->modalDescription('Esta acción no se puede deshacer. Se eliminará el registro y el archivo PDF asociado.')
+                    ->before(function (ReportLog $record) {
+                        // Eliminar el archivo PDF si existe
+                        if ($record->pdf_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($record->pdf_path)) {
+                            \Illuminate\Support\Facades\Storage::disk('public')->delete($record->pdf_path);
+                        }
+                    }),
+            ])
+            ->bulkActions([
+                Tables\Actions\DeleteBulkAction::make()
+                    ->label('Eliminar Seleccionados')
+                    ->before(function (\Illuminate\Database\Eloquent\Collection $records) {
+                        foreach ($records as $record) {
+                            if ($record->pdf_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($record->pdf_path)) {
+                                \Illuminate\Support\Facades\Storage::disk('public')->delete($record->pdf_path);
+                            }
+                        }
                     }),
             ])
             ->defaultSort('created_at', 'desc')

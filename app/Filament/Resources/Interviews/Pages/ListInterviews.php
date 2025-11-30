@@ -10,6 +10,8 @@ class ListInterviews extends ListRecords
 {
     protected static string $resource = InterviewResource::class;
 
+    use \App\Filament\Traits\PersistsTableConfig;
+
     protected function getHeaderActions(): array
     {
         return [

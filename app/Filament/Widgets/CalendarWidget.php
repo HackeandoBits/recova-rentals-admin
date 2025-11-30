@@ -37,8 +37,66 @@ class CalendarWidget extends FullCalendarWidget
     public function config(): array
     {
         return [
-            'eventMouseEnter' => 'function(info) { info.el.style.cursor = "pointer"; }',
-            'eventMouseLeave' => 'function(info) { info.el.style.cursor = "default"; }',
+            'eventDidMount' => \Filament\Support\RawJs::make(<<<'JS'
+                function(info) { 
+                    // Intentar usar Tippy.js si está disponible (Filament lo usa)
+                    if (window.tippy) {
+                        window.tippy(info.el, {
+                            content: info.event.title,
+                            placement: 'top',
+                            animation: 'scale',
+                            theme: 'light',
+                        });
+                        return;
+                    }
+
+                    // Fallback a tooltip nativo mejorado
+                    info.el.setAttribute("title", info.event.title);
+                    
+                    // Fallback custom tooltip
+                    if (!document.getElementById("fc-custom-tooltip")) {
+                        var tooltip = document.createElement("div");
+                        tooltip.id = "fc-custom-tooltip";
+                        tooltip.style.position = "absolute";
+                        tooltip.style.zIndex = "999999";
+                        tooltip.style.background = "#1f2937"; 
+                        tooltip.style.color = "#ffffff";
+                        tooltip.style.padding = "6px 10px";
+                        tooltip.style.borderRadius = "4px";
+                        tooltip.style.fontSize = "12px";
+                        tooltip.style.pointerEvents = "none";
+                        tooltip.style.display = "none";
+                        tooltip.style.boxShadow = "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)";
+                        tooltip.style.border = "1px solid #374151";
+                        tooltip.style.whiteSpace = "nowrap";
+                        document.body.appendChild(tooltip);
+                    }
+
+                    var tooltipEl = document.getElementById("fc-custom-tooltip");
+                    
+                    info.el.addEventListener("mouseenter", function() {
+                        if (tooltipEl) {
+                            tooltipEl.innerText = info.event.title;
+                            tooltipEl.style.display = "block";
+                        }
+                        info.el.style.cursor = "pointer";
+                    });
+
+                    info.el.addEventListener("mousemove", function(e) {
+                        if (tooltipEl && tooltipEl.style.display === "block") {
+                            tooltipEl.style.left = (e.pageX + 10) + "px";
+                            tooltipEl.style.top = (e.pageY + 10) + "px";
+                        }
+                    });
+
+                    info.el.addEventListener("mouseleave", function() {
+                        if (tooltipEl) {
+                            tooltipEl.style.display = "none";
+                        }
+                        info.el.style.cursor = "default";
+                    });
+                }
+            JS),
             'schedulerLicenseKey' => 'GPL-My-Project-Is-Open-Source',
             'dayMaxEvents' => true, // Limitar eventos por día para mantener altura de celdas
         ];

@@ -11,7 +11,7 @@ use Filament\Tables\Table;
 
 class InterviewsTable
 {
-    use \App\Filament\Traits\PersistsTableConfig;
+    // use \App\Filament\Traits\PersistsTableConfig; // Moved to ListInterviews page
 
     public static function configure(Table $table): Table
     {

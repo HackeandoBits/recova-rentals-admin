@@ -20,6 +20,8 @@ class ListCalendarBlocks extends ListRecords
 {
     protected static string $resource = CalendarBlockResource::class;
 
+    use \App\Filament\Traits\PersistsTableConfig;
+
     protected static ?string $title = 'Listado de Bloqueos';
 
     protected function getHeaderActions(): array

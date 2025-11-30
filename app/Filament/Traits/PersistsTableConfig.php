@@ -6,54 +6,104 @@ use Filament\Tables\Table;
 
 trait PersistsTableConfig
 {
-    public function getPersistedFilterState(): array
+    // --- Load State ---
+
+    public function getTableFiltersFormState(): array
     {
-        return $this->getUserTableSettings('filters') ?? [];
+        return $this->getUserTableSettings('filters') ?? parent::getTableFiltersFormState();
     }
 
-    public function getPersistedSortState(): array
+    public function getTableSortColumn(): ?string
     {
-        return $this->getUserTableSettings('sort') ?? [];
+        return $this->getUserTableSettings('sort_column') ?? parent::getTableSortColumn();
     }
 
-    public function getPersistedSearchState(): ?string
+    public function getTableSortDirection(): ?string
     {
-        return $this->getUserTableSettings('search');
+        return $this->getUserTableSettings('sort_direction') ?? parent::getTableSortDirection();
     }
 
-    public function getPersistedColumnSearchState(): array
+    public function getTableSearchQuery(): ?string
     {
-        return $this->getUserTableSettings('column_search') ?? [];
+        return $this->getUserTableSettings('search') ?? parent::getTableSearchQuery();
     }
 
-    public function getPersistedColumnVisibilityState(): array
+    public function getTableColumnSearchQueries(): array
     {
+        return $this->getUserTableSettings('column_search') ?? parent::getTableColumnSearchQueries();
+    }
+
+    public function getTableColumnToggledHiddenState(): array
+    {
+        return $this->getUserTableSettings('column_visibility') ?? parent::getTableColumnToggledHiddenState();
+    }
+
+    // Fallback for other Filament versions
+    public function getToggledHiddenColumns(): array
+    {
+        // Check if parent has this method to avoid error
+        if (method_exists(parent::class, 'getToggledHiddenColumns')) {
+            return $this->getUserTableSettings('column_visibility') ?? parent::getToggledHiddenColumns();
+        }
         return $this->getUserTableSettings('column_visibility') ?? [];
     }
 
-    public function persistFilterState(array $filters): void
+    // --- Save State ---
+
+    public function updatedTableFilters(): void
     {
-        $this->saveUserTableSettings('filters', $filters);
+        parent::updatedTableFilters();
+        $this->saveUserTableSettings('filters', $this->tableFilters);
     }
 
-    public function persistSortState(array $sort): void
+    public function updatedTableSortColumn(): void
     {
-        $this->saveUserTableSettings('sort', $sort);
+        parent::updatedTableSortColumn();
+        $this->saveUserTableSettings('sort_column', $this->tableSortColumn);
     }
 
-    public function persistSearchState(?string $search): void
+    public function updatedTableSortDirection(): void
     {
-        $this->saveUserTableSettings('search', $search);
+        parent::updatedTableSortDirection();
+        $this->saveUserTableSettings('sort_direction', $this->tableSortDirection);
     }
 
-    public function persistColumnSearchState(array $search): void
+    public function updatedTableSearchQuery(): void
     {
-        $this->saveUserTableSettings('column_search', $search);
+        parent::updatedTableSearchQuery();
+        $this->saveUserTableSettings('search', $this->tableSearchQuery);
     }
 
-    public function persistColumnVisibilityState(array $visibility): void
+    public function updatedTableColumnSearchQueries(): void
     {
-        $this->saveUserTableSettings('column_visibility', $visibility);
+        parent::updatedTableColumnSearchQueries();
+        $this->saveUserTableSettings('column_search', $this->tableColumnSearchQueries);
+    }
+
+    public function updatedTableColumnToggledHiddenState(): void
+    {
+        \Illuminate\Support\Facades\Log::info('updatedTableColumnToggledHiddenState fired', ['state' => $this->tableColumnToggledHiddenState]);
+        $this->saveUserTableSettings('column_visibility', $this->tableColumnToggledHiddenState);
+    }
+
+    public function updatedToggledHiddenColumns(): void
+    {
+        \Illuminate\Support\Facades\Log::info('updatedToggledHiddenColumns fired', ['state' => $this->toggledHiddenColumns]);
+        $this->saveUserTableSettings('column_visibility', $this->toggledHiddenColumns ?? []);
+    }
+
+    // Catch-all for debugging or fallback
+    public function updated($name, $value): void
+    {
+        \Illuminate\Support\Facades\Log::info("Updated property: {$name}", ['value' => $value]);
+
+        if ($name === 'tableColumnToggledHiddenState' || $name === 'toggledHiddenColumns') {
+            $this->saveUserTableSettings('column_visibility', $value);
+        }
+        
+        if ($name === 'tableFilters') {
+            $this->saveUserTableSettings('filters', $value);
+        }
     }
 
     protected function getUserTableSettings(string $key): mixed
@@ -65,9 +115,11 @@ trait PersistsTableConfig
 
         $tableId = $this->getTableIdentifier();
         $settings = $user->settings ?? [];
-
-        // Estructura: settings['tables'][table_id][key]
-        return data_get($settings, "tables.{$tableId}.{$key}");
+        
+        $value = data_get($settings, "tables.{$tableId}.{$key}");
+        \Illuminate\Support\Facades\Log::info("Loading setting: {$key} for table {$tableId}", ['value' => $value]);
+        
+        return $value;
     }
 
     protected function saveUserTableSettings(string $key, mixed $value): void
@@ -80,11 +132,12 @@ trait PersistsTableConfig
         $tableId = $this->getTableIdentifier();
         $settings = $user->settings ?? [];
 
-        // Usamos data_set para facilitar la asignación anidada
         data_set($settings, "tables.{$tableId}.{$key}", $value);
 
         $user->settings = $settings;
         $user->save();
+
+        \Illuminate\Support\Facades\Log::info("Saving setting: {$key} for table {$tableId}", ['value' => $value]);
     }
 
     protected function getTableIdentifier(): string

@@ -13,6 +13,8 @@ class ReportLog extends Model
         'period_from',
         'period_to',
         'status',
+        'pdf_path',
+        'report_format',
         'metadata',
     ];
 

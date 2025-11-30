@@ -10,7 +10,7 @@ use Filament\Tables\Table;
 
 class CalendarBlocksTable
 {
-    use \App\Filament\Traits\PersistsTableConfig;
+    // use \App\Filament\Traits\PersistsTableConfig; // Moved to ListCalendarBlocks page
 
     public static function configure(Table $table): Table
     {

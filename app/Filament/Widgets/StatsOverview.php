@@ -27,7 +27,10 @@ class StatsOverview extends BaseWidget
         $confirmedBookings = Interview::where('status', 'confirmed')->count();
         $successRate = $totalBookings > 0 ? round(($confirmedBookings / $totalBookings) * 100) : 0;
 
-        $totalClients = Interview::distinct('customer_email')->count('customer_email');
+        $totalClients = Interview::whereNotNull('customer_email')
+            ->where('customer_email', '!=', '')
+            ->distinct('customer_email')
+            ->count('customer_email');
 
         return [
             Stat::make('Pedidos Pendientes', $pedidosPendientes)
