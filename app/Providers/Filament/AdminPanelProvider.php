@@ -56,11 +56,30 @@ class AdminPanelProvider extends PanelProvider
 
             // 👇 Ítem "Mi Perfil" en el menú de usuario (dropdown arriba a la derecha)
             ->userMenuItems([
-                'profile' => MenuItem::make()
+                MenuItem::make()
                     ->label('Mi Perfil')
-                    ->url(fn() => Profile::getUrl()) // genera /admin/profile
+                    ->url(fn() => Profile::getUrl())
                     ->icon('heroicon-o-user-circle'),
+
+                // Conectar / Desconectar Google
+                MenuItem::make()
+                    ->label(
+                        fn() => auth()->user()?->googleToken()->exists()
+                        ? 'Desconectar Google'
+                        : 'Conectar Google'
+                    )
+                    ->url(
+                        fn() => auth()->user()?->googleToken()->exists()
+                        ? route('google.disconnect')
+                        : route('google.redirect')
+                    )
+                    ->icon(
+                        fn() => auth()->user()?->googleToken()->exists()
+                        ? 'heroicon-o-x-circle'
+                        : 'heroicon-o-link'
+                    ),
             ])
+
 
             // Descubrimiento automático de resources, pages y widgets
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
