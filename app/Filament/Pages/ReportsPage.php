@@ -19,6 +19,11 @@ class ReportsPage extends Page
 
     protected static string $view = 'filament.pages.reports';
 
+    public function getSubheading(): ?string
+    {
+        return 'Visualiza el rendimiento de tu negocio.';
+    }
+
     protected static ?string $navigationLabel = 'Reportes';
 
     protected static ?string $title = 'Reportes y Estadísticas';
@@ -72,7 +77,7 @@ class ReportsPage extends Page
 
                     // Simulación de envío de WhatsApp
                     // TODO: Integrar con API de WhatsApp Business
-
+        
                     Notification::make()
                         ->title('Reporte Enviado Exitosamente')
                         ->success()

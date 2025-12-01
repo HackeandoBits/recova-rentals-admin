@@ -369,7 +369,12 @@ body.fi-body .fi-simple-page form.fi-form .fi-fo-component-ctn {
     box-shadow: 0 0 30px rgba(236, 72, 153, 0.25);
 }
 
-.fi-main {
+/* main del panel */
+main.fi-main {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin-inline: 0 !important;
+
     /* Deja espacio, pero sin romper los paddings de Filament */
     padding-inline: 1.75rem;
     padding-block: 1.5rem 2rem;
@@ -377,7 +382,7 @@ body.fi-body .fi-simple-page form.fi-form .fi-fo-component-ctn {
 
 /* Contenedor máximo para que el contenido no se haga infinito en pantallas grandes */
 .fi-main > .fi-page {
-    max-width: 1280px;
+    max-width: 80%;
     margin-inline: auto;
 }
 
@@ -392,7 +397,8 @@ body.fi-body .fi-simple-page form.fi-form .fi-fo-component-ctn {
     letter-spacing: 0.03em;
     font-weight: 700;
     background: linear-gradient(90deg, #f97316, #e11d48, #a855f7);
-    -webkit-background-clip: text;
+    background-clip: text;          /* estándar */
+    -webkit-background-clip: text;  /* prefijo */
     color: transparent;
 }
 
@@ -448,7 +454,7 @@ body.fi-body .fi-simple-page form.fi-form .fi-fo-component-ctn {
     gap: 1.25rem;
 }
 
-/* Responsive básico (ajustaremos mejor cuando vea tu HTML real) */
+/* Responsive básico */
 @media (min-width: 768px) {
     .fi-widgets {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -489,15 +495,155 @@ body.fi-body .fi-simple-page form.fi-form .fi-fo-component-ctn {
     transform: translateY(-1px);
 }
 
-/* Que el <main> del panel ocupe todo el ancho */
-main.fi-main {
-    max-width: 100% !important;
-    width: 100% !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
+/* Quitar el header automático (título "Dashboard") solo en el dashboard y páginas personalizadas */
+/* Quitar el header automático (título "Dashboard") solo en el dashboard y páginas personalizadas */
+/* body.fi-body .fi-page.fi-dashboard-page .fi-header,
+body.fi-body .fi-page.fi-reports-page .fi-header,
+body.fi-body .fi-page.fi-calendar-page .fi-header,
+body.fi-body .fi-page.fi-profile-page .fi-header {
+    display: none !important;
+} */
+
+/* ============================
+   FIX: TOPBAR & USER MENU
+   ============================ */
+
+/* Asegurar que la barra superior esté siempre visible y por encima */
+.fi-topbar {
+    z-index: 50 !important;
+    position: sticky !important;
+    top: 0 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    overflow: visible !important; /* Para que el dropdown del usuario no se corte */
 }
 
-/* Quitar el header automático (título "Dashboard") solo en el dashboard */
+/* Asegurar que el menú de usuario no esté oculto */
+.fi-user-menu,
+.fi-user-menu-trigger {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* ============================
+   PROFILE PAGE: FULL WIDTH SECTIONS
+   ============================ */
+
+/* Hacer que las secciones de Perfil ocupen todo el ancho del contenedor */
+.fi-profile-page .fi-fo-component-ctn {
+    max-width: 100% !important;
+}
+
+.fi-profile-page .fi-section {
+    max-width: 100% !important;
+}
+
+/* Asegurar que el formulario también use todo el ancho */
+.fi-profile-page form {
+    max-width: 100% !important;
+}
+
+/* ============================
+   PROFILE PAGE: FULL WIDTH
+   ============================ */
+
+body.fi-body .fi-profile-page form.fi-form {
+    max-width: 100% !important;
+    margin-inline: 0 !important;
+}
+
+body.fi-body .fi-profile-page .fi-section {
+    max-width: 100% !important;
+    margin-inline: 0 !important;
+}
+
+body.fi-body .fi-profile-page .fi-fo-component-ctn {
+    max-width:  100% !important;
+}
+
+/* =====================================
+   Fix: flechas múltiples en selects
+   ===================================== */
+
+@layer base {
+    body.fi-body select.fi-select-input {
+        background-image: none !important;  /* quitamos las flechas duplicadas */
+        background-repeat: no-repeat !important;
+        background-position: right 0.75rem center !important;
+    }
+}
+
+/* Solo el header del dashboard */
 body.fi-body .fi-page.fi-dashboard-page .fi-header {
-    display: none !important;
+    padding-left: 15.5rem;   /* acá lo corrés a la derecha */
+}
+
+/* SOLO contenido del dashboard (widgets + secciones),
+   sin tocar el header */
+body.fi-body .fi-page.fi-dashboard-page > section > :not(.fi-header) {
+    margin-right: 10.75rem !important;  /* mantiene aire a la derecha    */
+    
+}
+
+/* Asegurar que cada columna ocupe todo ese ancho */
+body.fi-body .fi-profile-page .fi-fo-component-ctn > .grid > * {
+    max-width: 100% !important;
+}
+
+/* === Perfil: poner “Información Personal” y “Seguridad” lado a lado === */
+
+/* 1) Fuerzo a que el contenedor del form sea una grid de 2 columnas */
+body.fi-body .fi-profile-page .fi-fo-component-ctn {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 1.5rem !important;  /* separacion entre los dos bloques */
+}
+
+/* 2) Cada bloque (wrapper de la fi-section) ocupa solo 1 columna */
+body.fi-body .fi-profile-page .fi-fo-component-ctn > .col-\[\-\-col-span-default\] {
+    grid-column: span 1 / span 1 !important;
+}
+
+/* 3) En pantallas chicas, volvemos a una sola columna (uno debajo del otro) */
+@media (max-width: 768px) {
+    body.fi-body .fi-profile-page .fi-fo-component-ctn {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+}
+
+/* 1) El wrapper que está justo debajo de la <section> del profile */
+body.fi-body .fi-page.fi-profile-page section.flex.flex-col.gap-y-8 > div {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-inline: 0 !important;
+}
+
+/* 2) El grid que contiene las dos secciones (Información Personal / Seguridad) */
+body.fi-body .fi-page.fi-profile-page .fi-fo-component-ctn {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* 3) Por si alguna columna tiene max-width raro */
+body.fi-body .fi-page.fi-profile-page .fi-fo-component-ctn > * {
+    width: 100%;
+}
+
+/* Todas las cards (secciones) del perfil con la misma altura */
+body.fi-body .fi-page.fi-profile-page .fi-fo-component-ctn > * {
+    height: 100%;                    /* la columna ocupa todo el alto de la fila */
+}
+
+body.fi-body .fi-page.fi-profile-page .fi-fo-component-ctn > * .fi-section {
+    height: 100%;                    /* la card llena la columna */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Opcional: que el contenido también se estire dentro de la card */
+body.fi-body .fi-page.fi-profile-page .fi-section-content-ctn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }

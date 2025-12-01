@@ -11,9 +11,8 @@ class QuickStats extends Widget
     protected static string $view = 'filament.widgets.quick-stats';
 
     protected int|string|array $columnSpan = [
-        'sm' => 1,
-        'lg' => 2,
-        'xl' => 1,
+        'default' => 1,
+        'lg' => 1,
     ];
 
     protected function getViewData(): array

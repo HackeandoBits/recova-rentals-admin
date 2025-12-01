@@ -1,11 +1,4 @@
-<x-filament-panels::page>
-    <form wire:submit="submit">
-        {{ $this->form }}
-
-        <div class="mt-6 flex justify-end">
-            <x-filament::button type="submit">
-                Guardar Cambios
-            </x-filament::button>
-        </div>
-    </form>
+{{-- resources/views/filament/pages/profile.blade.php --}}
+<x-filament-panels::page class="fi-profile-page">
+    {{ $this->form }}
 </x-filament-panels::page>

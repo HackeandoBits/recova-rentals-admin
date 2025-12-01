@@ -26,6 +26,11 @@ class Profile extends Page implements HasForms
 
     protected static ?string $title = 'Mi Perfil';
 
+    public function getSubheading(): ?string
+    {
+        return 'Administra tu información personal y seguridad.';
+    }
+
     public ?array $data = [];
 
     public function mount(): void
@@ -37,40 +42,59 @@ class Profile extends Page implements HasForms
     {
         return $form
             ->schema([
+                // ============= BLOQUE 1: INFORMACIÓN PERSONAL ============
                 Section::make('Información Personal')
+                    ->description('Actualiza los datos de tu perfil e información de contacto')
                     ->schema([
                         TextInput::make('name')
                             ->label('Nombre Completo')
                             ->required(),
+
                         TextInput::make('email')
-                            ->label('Email')
+                            ->label('Correo Electrónico')
                             ->email()
                             ->required()
                             ->unique(ignoreRecord: true),
+
                         TextInput::make('dni')
                             ->label('DNI')
                             ->numeric(),
+
                         TextInput::make('whatsapp')
                             ->label('WhatsApp'),
-                    ])->columns(2),
+                    ])
+                    ->columns(1),
 
-                Section::make('Seguridad')
+                // ============= BLOQUE 2: CAMBIAR CONTRASEÑA ============
+                Section::make('Cambiar Contraseña')
+                    ->description('Actualiza tu contraseña para mantener tu cuenta segura.')
                     ->schema([
+                        TextInput::make('current_password')
+                            ->label('Contraseña Actual')
+                            ->password()
+                            ->revealable()
+                            ->requiredWith('new_password')   // si quiere cambiarla, pide la actual
+                            ->rule('current_password'),       // valida contra la contraseña del usuario
+
                         TextInput::make('new_password')
                             ->label('Nueva Contraseña')
                             ->password()
                             ->revealable()
-                            ->rule(Password::default()),
+                            ->rule(Password::default()),      // misma regla que ya usabas
+
                         TextInput::make('new_password_confirmation')
-                            ->label('Confirmar Contraseña')
+                            ->label('Confirmar Nueva Contraseña')
                             ->password()
                             ->revealable()
                             ->same('new_password')
                             ->requiredWith('new_password'),
-                    ])->columns(2),
+                    ])
+                    ->columns(1), // todos los campos de password a una sola columna
             ])
             ->statePath('data');
     }
+
+
 
     public function submit(): void
     {
@@ -85,7 +109,7 @@ class Profile extends Page implements HasForms
             'whatsapp' => $data['whatsapp'],
         ]);
 
-        if (! empty($data['new_password'])) {
+        if (!empty($data['new_password'])) {
             $user->password = Hash::make($data['new_password']);
         }
 
