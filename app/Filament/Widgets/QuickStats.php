@@ -13,49 +13,68 @@ class QuickStats extends Widget
     protected int|string|array $columnSpan = [
         'sm' => 1,
         'lg' => 2,
-        'xl' => 1,
+        'xl' => 2,
     ];
 
     protected function getViewData(): array
     {
-        $totalClients = \App\Models\Interview::whereNotNull('customer_email')
-            ->distinct('customer_email')
-            ->count('customer_email');
+        // 1. Interviews este mes
+        $interviewsThisMonth = \App\Models\Interview::whereBetween('created_at', [
+            \Carbon\Carbon::now()->startOfMonth(),
+            \Carbon\Carbon::now()->endOfMonth()
+        ])->count();
 
-        $confirmedInterviews = \App\Models\Interview::where('status', 'confirmed')->count();
-        $totalInterviews = \App\Models\Interview::count();
-        $successRate = $totalInterviews > 0 ? round(($confirmedInterviews / $totalInterviews) * 100) : 0;
+        // 2. Cancelaciones del mes
+        $cancellationsThisMonth = \App\Models\Interview::where('status', 'cancelled')
+            ->whereBetween('created_at', [
+                \Carbon\Carbon::now()->startOfMonth(),
+                \Carbon\Carbon::now()->endOfMonth()
+            ])->count();
 
-        // Equipment types based on service_type
-        $equipmentTypes = \App\Models\Interview::whereNotNull('service_type')
-            ->distinct('service_type')
-            ->count('service_type');
-
-        // Most popular services
-        $popularServices = \App\Models\Interview::selectRaw('service_type, COUNT(*) as count')
-            ->whereNotNull('service_type')
-            ->groupBy('service_type')
+        // 3. Día más popular (de la semana)
+        $popularDay = \App\Models\Interview::selectRaw('DAYOFWEEK(start_at) as day_of_week, COUNT(*) as count')
+            ->whereNotNull('start_at')
+            ->groupBy('day_of_week')
             ->orderByDesc('count')
-            ->limit(3)
+            ->first();
+
+        $daysOfWeek = [
+            1 => 'Domingo',
+            2 => 'Lunes',
+            3 => 'Martes',
+            4 => 'Miércoles',
+            5 => 'Jueves',
+            6 => 'Viernes',
+            7 => 'Sábado'
+        ];
+
+        $mostPopularDay = $popularDay ? $daysOfWeek[$popularDay->day_of_week] : 'Sin datos';
+
+        // 4. Top 5 Productos/Combos más populares
+        $popularProducts = \DB::table('interview_items')
+            ->select('name', 'product_type', \DB::raw('SUM(quantity) as total_quantity'))
+            ->groupBy('name', 'product_type')
+            ->orderByDesc('total_quantity')
+            ->limit(5)
             ->get();
 
-        $totalServices = $popularServices->sum('count');
+        $totalItems = $popularProducts->sum('total_quantity');
 
-        $popularEquipment = $popularServices->map(function ($service) use ($totalServices) {
+        $topProducts = $popularProducts->map(function ($product) use ($totalItems) {
             return [
-                'name' => $service->service_type ?? 'Sin especificar',
-                'percentage' => $totalServices > 0 ? round(($service->count / $totalServices) * 100) : 0,
+                'name' => $product->name,
+                'type' => $product->product_type === 'combo' ? 'Combo' : 'Item',
+                'percentage' => $totalItems > 0 ? round(($product->total_quantity / $totalItems) * 100) : 0,
             ];
         })->toArray();
 
         return [
-            'totalClients' => $totalClients,
-            'equipmentTypes' => $equipmentTypes ?: 1,
-            'successRate' => $successRate,
-            'popularEquipment' => $popularEquipment ?: [
-                ['name' => 'Sin datos aún', 'percentage' => 100],
+            'interviewsThisMonth' => $interviewsThisMonth,
+            'cancellationsThisMonth' => $cancellationsThisMonth,
+            'mostPopularDay' => $mostPopularDay,
+            'topProducts' => $topProducts ?: [
+                ['name' => 'Sin datos aún', 'type' => '-', 'percentage' => 100],
             ],
         ];
     }
-
 }

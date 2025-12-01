@@ -398,6 +398,7 @@ body.fi-body .fi-simple-page form.fi-form .fi-fo-component-ctn {
     font-weight: 700;
     background: linear-gradient(90deg, #f97316, #e11d48, #a855f7);
     -webkit-background-clip: text;
+    background-clip: text;
     color: transparent;
 }
 
@@ -555,30 +556,96 @@ select,
     width: 100% !important;
 }
 
-/* Grid responsive para widgets del dashboard */
+/* Forzar que los widgets respeten el grid layout con los valores de columnSpan */
 @media (min-width: 1280px) {
 
-    /* Forzar grid a 4 columnas en XL */
-    .fi-dashboard-page .fi-widgets,
-    .fi-dashboard-page [class*="fi-wi"] {
+    /* El contenedor de widgets en el dashboard */
+    .fi-dashboard-page [x-data]>div[class*="grid"],
+    .fi-dashboard-page .fi-wi {
         display: grid !important;
         grid-template-columns: repeat(4, 1fr) !important;
         gap: 1.5rem !important;
-        width: 100% !important;
     }
 
-    /* StatsOverview (primer widget) ocupa 4 columnas */
-    .fi-dashboard-page .fi-widgets>div:nth-child(1) {
+    /* Widget 1: StatsOverview - 4 columnas (full width) */
+    .fi-dashboard-page [x-data]>div[class*="grid"]>div:nth-child(1),
+    .fi-dashboard-page .fi-wi>div:nth-child(1) {
         grid-column: span 4 !important;
     }
 
-    /* UpcomingInterviews (segundo widget) ocupa 3 columnas */
-    .fi-dashboard-page .fi-widgets>div:nth-child(2) {
+    /* Widget 2: UpcomingInterviews (TableWidget) - 2 columnas */
+    .fi-dashboard-page [x-data]>div[class*="grid"]>div:nth-child(2),
+    .fi-dashboard-page .fi-wi>div:nth-child(2) {
         grid-column: span 3 !important;
     }
 
-    /* QuickStats (tercer widget) ocupa 1 columna */
-    .fi-dashboard-page .fi-widgets>div:nth-child(3) {
+    /* Widget 3: QuickStats - 2 columnas */
+    .fi-dashboard-page [x-data]>div[class*="grid"]>div:nth-child(3),
+    .fi-dashboard-page .fi-wi>div:nth-child(3) {
         grid-column: span 1 !important;
+    }
+
+    /* Asegurar que el contenido de los widgets no se desborde */
+    .fi-dashboard-page [x-data]>div[class*="grid"]>div,
+    .fi-dashboard-page .fi-wi>div {
+        min-width: 0;
+        /* Importante para que el grid funcione correctamente */
+        width: 100%;
+    }
+
+    /* Para TableWidgets: permitir scroll horizontal si la tabla es muy ancha */
+    .fi-wi-table,
+    [class*="fi-wi"][class*="table"] {
+        overflow-x: auto !important;
+    }
+
+    /* Centrar contenido de las tarjetas de estadísticas (StatsOverview) */
+    .fi-wi-stats-overview-stat {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+    }
+
+    /* Centrar todos los elementos internos de cada stat */
+    .fi-wi-stats-overview-stat>* {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+    }
+
+    /* Asegurar que íconos, valores y descripciones estén centrados */
+    .fi-wi-stats-overview-stat div,
+    .fi-wi-stats-overview-stat span,
+    .fi-wi-stats-overview-stat p {
+        text-align: center !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+
+    /* Alinear título y búsqueda de TableWidgets en la misma fila */
+    .fi-wi-table .fi-ta-header-ctn,
+    .fi-ta .fi-ta-header-ctn {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 1rem !important;
+    }
+
+    /* El heading (título) a la izquierda */
+    .fi-wi-table .fi-ta-header-heading,
+    .fi-ta .fi-ta-header-heading {
+        flex-shrink: 0 !important;
+        margin-bottom: 0 !important;
+    }
+
+    /* El campo de búsqueda a la derecha */
+    .fi-wi-table .fi-ta-search,
+    .fi-ta .fi-ta-search {
+        margin-top: 0 !important;
+        margin-left: auto !important;
     }
 }

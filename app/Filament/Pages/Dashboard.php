@@ -12,6 +12,8 @@ class Dashboard extends BaseDashboard
 {
     protected static ?string $navigationIcon = 'heroicon-o-home';
 
+    protected static ?string $navigationLabel = 'Inicio';
+
     protected static ?int $navigationSort = -2;
 
     protected static string $view = 'filament.pages.dashboard';
@@ -35,6 +37,11 @@ class Dashboard extends BaseDashboard
             UpcomingInterviews::class,
             QuickStats::class,
         ];
+    }
+
+    public function getTitle(): string|Htmlable
+    {
+        return 'Panel de Control';
     }
 
     // Acciones movidas al menú de usuario

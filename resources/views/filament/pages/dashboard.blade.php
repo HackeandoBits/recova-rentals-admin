@@ -8,7 +8,7 @@
         {{-- Header personalizado que sí podés tocar a gusto --}}
         <header class="space-y-1">
             <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-                Dashboard
+                Panel de Control
             </h1>
             <p class="text-gray-400">
                 ¡Bienvenido! Aquí tienes un resumen de tu negocio de alquiler.

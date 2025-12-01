@@ -17,7 +17,7 @@ class UpcomingInterviews extends BaseWidget
     protected int|string|array $columnSpan = [
         'sm' => 1,
         'lg' => 2,
-        'xl' => 3,
+        'xl' => 2,
     ];
 
     protected function getTableQuery(): Builder
