@@ -144,10 +144,9 @@ body.fi-body .fi-dashboard-page>section {
 /* --------------------------------------------------------------------
    Header del login (logo fuera de la card)
 ---------------------------------------------------------------------*/
-=======
 
 /* Header del login (logo fuera de la card) */
->>>>>>>origin/feature/refactor-login-ui body.fi-body .fi-simple-page .fi-simple-header {
+body.fi-body .fi-simple-page .fi-simple-header {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -663,7 +662,6 @@ select,
     }
 }
 
-=======*/
 /* =======================================================
    7) FIX: TOPBAR & USER MENU
 ======================================================= */
@@ -753,5 +751,3 @@ body.fi-body .fi-page.fi-dashboard-page .fi-header {
 body.fi-body .fi-page.fi-dashboard-page>section> :not(.fi-header) {
     margin-right: 10.75rem !important;
 }
-
->>>>>>>origin/feature/refactor-login-ui

@@ -3,13 +3,12 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Auth\Login;
-use App\Filament\Pages\Auth\Login;                    // 👈 IMPORTANTE
 use App\Filament\Pages\Profile;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
-use Filament\Http\Middleware\DispatchServingFilamentEvent;                  // 👈 IMPORTANTE
-use Filament\Navigation\MenuItem;         // 👈 AGREGADO para navigation()
+use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\MenuItem;
 use Filament\Navigation\NavigationBuilder;
 use Filament\Panel;
 use Filament\PanelProvider;

@@ -45,12 +45,6 @@ class ReportsPage extends Page
         ];
     }
 
-    public function updateChartData(): void
-    {
-        // This method is called by Filament's polling mechanism on the page itself
-        // No action needed, charts update automatically via their own listeners
-    }
-
     protected function getHeaderActions(): array
     {
         return [
