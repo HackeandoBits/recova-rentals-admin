@@ -523,23 +523,66 @@ select,
 /* ============================
    FIX: CALENDAR LAYOUT
    ============================ */
-/* Calendario centrado y ancho completo */
-.fi-page .fi-header-widgets {
+/* Página del calendario: remover restricción de ancho y centrar */
+.fi-page:has([data-poll]) {
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+/* Contenedor de widgets del calendario centrado */
+.fi-page .fi-header-widgets,
+.fi-page .fi-page-header-widgets {
     display: flex !important;
     justify-content: center !important;
     width: 100% !important;
+    max-width: none !important;
 }
 
-.fi-page .fi-header-widgets>div {
+/* Limitar ancho máximo razonable del calendario */
+.fi-page .fi-header-widgets>div,
+.fi-page .fi-page-header-widgets>div {
     width: 100% !important;
-    max-width: 1400px !important;
-    /* Ancho máximo razonable */
+    max-width: 1280px !important;
+    /* Reducido de 1400px para mejor ajuste */
 }
 
-/* El widget del calendario debe ocupar todo el espacio */
+/* El widget del calendario FullCalendar debe ocupar todo el espacio */
 .saade-ffc,
-.saade-ffc>div {
+.saade-ffc>div,
+[data-poll] {
     width: 100% !important;
+    max-width: none !important;
+}
+
+/* Asegurar que el contenedor del calendario use todo el ancho */
+.fc,
+.fc-view-harness {
+    width: 100% !important;
+}
+
+/* Capitalizar nombres de meses y días */
+.fc-toolbar-title,
+.fc-col-header-cell-cushion,
+.fc-daygrid-day-number {
+    text-transform: capitalize !important;
+}
+
+/* Reducir espacio entre título y calendario */
+.fi-page:has([data-poll]) .fi-page-content,
+.fi-page:has([data-poll]) .fi-section-content-ctn {
+    padding-top: 1rem !important;
+    /* Reducido significativamente */
+}
+
+.fi-page .fi-header-widgets,
+.fi-page .fi-page-header-widgets {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+.fi-page .fi-header-widgets>*,
+.fi-page .fi-page-header-widgets>* {
+    margin-top: 0 !important;
 }
 
 /* ============================

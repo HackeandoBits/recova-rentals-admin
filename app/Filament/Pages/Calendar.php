@@ -35,6 +35,20 @@ class Calendar extends Page
         return 'primary';
     }
 
+    protected function getHeaderActions(): array
+    {
+        return [
+            \Filament\Actions\Action::make('create')
+                ->label('Crear Reunión')
+                ->icon('heroicon-o-plus-circle')
+                ->color('primary')
+                ->action(function () {
+                    // Redirigir al recurso de Interviews para crear
+                    return redirect()->route('filament.admin.resources.interviews.create');
+                }),
+        ];
+    }
+
     protected function getHeaderWidgets(): array
     {
         return [
