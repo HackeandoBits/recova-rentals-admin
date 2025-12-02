@@ -16,4 +16,9 @@ class CreateCalendarBlock extends CreateRecord
         // Sincronizar inmediatamente con Google Calendar
         \App\Jobs\SyncSingleBlockJob::dispatchSync($this->record->id);
     }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
 }

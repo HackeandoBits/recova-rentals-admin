@@ -10,6 +10,8 @@ use Filament\Tables\Table;
 
 class CalendarBlocksTable
 {
+    // use \App\Filament\Traits\PersistsTableConfig; // Moved to ListCalendarBlocks page
+
     public static function configure(Table $table): Table
     {
         return $table
@@ -112,6 +114,10 @@ class CalendarBlocksTable
                     \Filament\Tables\Actions\RestoreBulkAction::make(),
                     \Filament\Tables\Actions\ForceDeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->persistFiltersInSession()
+            ->persistSortInSession()
+            ->persistSearchInSession()
+            ->persistColumnSearchesInSession();
     }
 }

@@ -31,8 +31,9 @@
                             from: '{{ now()->startOfMonth()->toDateString() }}',
                             to: '{{ now()->endOfMonth()->toDateString() }}'
                         })"
-                        class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
-                        <x-filament::icon icon="heroicon-o-calendar" class="w-4 h-4" />
+                        class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 shadow-sm">
+                        <x-filament::icon icon="heroicon-o-calendar"
+                            class="w-4 h-4 text-primary-600 dark:text-primary-400" />
                         Este Mes
                     </button>
 
@@ -41,8 +42,9 @@
                             from: '{{ now()->subDays(30)->toDateString() }}',
                             to: '{{ now()->toDateString() }}'
                         })"
-                        class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
-                        <x-filament::icon icon="heroicon-o-calendar-days" class="w-4 h-4" />
+                        class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 shadow-sm">
+                        <x-filament::icon icon="heroicon-o-calendar-days"
+                            class="w-4 h-4 text-primary-600 dark:text-primary-400" />
                         Últimos 30 Días
                     </button>
                 </div>
@@ -52,14 +54,14 @@
 
     {{-- Widgets de Estadísticas --}}
     <div class="mb-6">
-        @livewire($this->getStatsWidget(), ['dateRange' => $dateRange])
+        @livewire($this->getStatsWidget(), ['dateRange' => $dateRange], key('stats-overview-' . $dateRange['from'] . '-' . $dateRange['to']))
     </div>
 
     {{-- Gráficos --}}
     <div class="grid grid-cols-1 gap-6 mb-6 md:grid-cols-2">
         @foreach ($this->getChartWidgets() as $widget)
-            <div>
-                @livewire($widget, ['dateRange' => $dateRange])
+            <div wire:ignore.self>
+                @livewire($widget, ['dateRange' => $dateRange], key($widget . '-' . $dateRange['from'] . '-' . $dateRange['to']))
             </div>
         @endforeach
     </div>

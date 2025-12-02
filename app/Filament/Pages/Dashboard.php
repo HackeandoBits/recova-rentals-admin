@@ -10,27 +10,11 @@ use Illuminate\Contracts\Support\Htmlable;
 
 class Dashboard extends BaseDashboard
 {
-    protected static ?string $navigationLabel = 'Inicio';
-
     protected static ?string $navigationIcon = 'heroicon-o-home';
 
+    protected static ?string $navigationLabel = 'Inicio';
+
     protected static ?int $navigationSort = -2;
-
-    public function getTitle(): string|Htmlable
-    {
-        return 'Inicio';
-    }
-
-    public function getHeading(): string|Htmlable
-    {
-        return 'Inicio';
-    }
-
-    public function getSubheading(): string|Htmlable|null
-    {
-        return '¡Bienvenido! Aquí tienes un resumen de tu negocio de alquiler.';
-    }
-
     public function getColumns(): int|array
     {
         // 4 columnas en XL para lograr el layout:
@@ -50,6 +34,11 @@ class Dashboard extends BaseDashboard
             UpcomingInterviews::class,
             QuickStats::class,
         ];
+    }
+
+    public function getTitle(): string|Htmlable
+    {
+        return 'Panel de Control';
     }
 
     // Acciones movidas al menú de usuario

@@ -11,6 +11,8 @@ use Filament\Tables\Table;
 
 class InterviewsTable
 {
+    // use \App\Filament\Traits\PersistsTableConfig; // Moved to ListInterviews page
+
     public static function configure(Table $table): Table
     {
         return $table
@@ -149,6 +151,10 @@ class InterviewsTable
                     \Filament\Tables\Actions\RestoreBulkAction::make(),
                     \Filament\Tables\Actions\ForceDeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->persistFiltersInSession()
+            ->persistSortInSession()
+            ->persistSearchInSession()
+            ->persistColumnSearchesInSession();
     }
 }

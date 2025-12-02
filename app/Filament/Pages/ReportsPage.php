@@ -40,6 +40,12 @@ class ReportsPage extends Page
         ];
     }
 
+    public function updateChartData(): void
+    {
+        // This method is called by Filament's polling mechanism on the page itself
+        // No action needed, charts update automatically via their own listeners
+    }
+
     protected function getHeaderActions(): array
     {
         return [
@@ -89,33 +95,40 @@ class ReportsPage extends Page
                 ->color('primary')
                 ->requiresConfirmation()
                 ->modalHeading('Exportar Reporte')
+                ->form([
+                    \Filament\Forms\Components\Select::make('format')
+                        ->label('Formato del Reporte')
+                        ->options([
+                            'full' => 'Completo (con todas las tablas y detalles)',
+                            'summary' => 'Resumen (solo estadísticas principales)',
+                        ])
+                        ->default('full')
+                        ->required(),
+                ])
                 ->modalDescription(function () {
                     $from = $this->dateRange['from'] ? Carbon::parse($this->dateRange['from'])->format('d/m/Y') : 'N/A';
                     $to = $this->dateRange['to'] ? Carbon::parse($this->dateRange['to'])->format('d/m/Y') : 'N/A';
 
                     return "Se exportará el reporte del período: {$from} - {$to}";
                 })
-                ->action(function () {
-                    ReportLog::create([
-                        'user_id' => auth()->id(),
-                        'report_type' => 'custom',
-                        'period_from' => $this->dateRange['from'],
-                        'period_to' => $this->dateRange['to'],
-                        'status' => 'sent',
-                        'metadata' => [
-                            'exported_at' => now()->toDateTimeString(),
-                            'format' => 'pdf',
-                        ],
+                ->action(function (array $data) {
+                    // Redirigir a la ruta de descarga con parámetros
+                    $url = route('reports.download.pdf', [
+                        'from' => $this->dateRange['from'],
+                        'to' => $this->dateRange['to'],
+                        'format' => $data['format'],
                     ]);
 
                     Notification::make()
-                        ->title('Reporte Exportado')
+                        ->title('Generando Reporte')
                         ->success()
-                        ->body('El reporte se exportó correctamente.')
+                        ->body('El reporte se descargará automáticamente.')
                         ->send();
 
-                    $this->dispatch('$refresh');
-                }),
+                    // Redirigir a la descarga
+                    $this->redirect($url, navigate: false);
+                })
+                ->close(), // Cerrar modal automáticamente
         ];
     }
 
@@ -155,10 +168,5 @@ class ReportsPage extends Page
         // Este método se llama automáticamente cuando dateRange cambia
         // Los widgets se refrescarán automáticamente gracias a Livewire
         $this->dispatch('updateChartData');
-    }
-
-    public function updateChartData(): void
-    {
-        // Stub to prevent "Method not found" error if called directly
     }
 }

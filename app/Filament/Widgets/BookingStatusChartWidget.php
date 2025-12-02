@@ -18,6 +18,12 @@ class BookingStatusChartWidget extends ChartWidget
 
     public ?array $dateRange = null;
 
+    public function updateChartData(): void
+    {
+        // This method is called by Filament's polling mechanism
+        // The chart will auto-update when dateRange changes
+    }
+
     protected function getData(): array
     {
         // Determinar el rango de fechas

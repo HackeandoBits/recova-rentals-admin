@@ -37,9 +37,70 @@ class CalendarWidget extends FullCalendarWidget
     public function config(): array
     {
         return [
-            'eventMouseEnter' => 'function(info) { info.el.style.cursor = "pointer"; }',
-            'eventMouseLeave' => 'function(info) { info.el.style.cursor = "default"; }',
+            'eventDidMount' => \Filament\Support\RawJs::make(<<<'JS'
+                function(info) { 
+                    // DEBUG: Poner borde rojo para confirmar que este código se ejecuta
+                    info.el.style.border = "2px solid red";
+                    info.el.style.pointerEvents = 'auto';
+                    info.el.setAttribute("data-title", info.event.title);
+                    
+                    if (!window.fcTooltipInitialized) {
+                        window.fcTooltipInitialized = true;
+                        console.log("Initializing global tooltip system - DEBUG MODE");
+
+                        var tooltip = document.createElement("div");
+                        tooltip.id = "fc-custom-tooltip";
+                        tooltip.style.position = "absolute";
+                        tooltip.style.zIndex = "99999999";
+                        tooltip.style.background = "red"; // Fondo rojo para que sea imposible no verlo
+                        tooltip.style.color = "white";
+                        tooltip.style.padding = "10px";
+                        tooltip.style.fontWeight = "bold";
+                        tooltip.style.pointerEvents = "none";
+                        tooltip.style.display = "none";
+                        document.body.appendChild(tooltip);
+
+                        document.addEventListener('mouseover', function(e) {
+                            // Loguear todo lo que toca el mouse para ver qué clases tiene
+                            // console.log("Hovering:", e.target.className);
+
+                            // Buscar cualquier elemento padre que parezca un evento
+                            var eventEl = e.target.closest('.fc-event') || 
+                                          e.target.closest('.fc-event-main') ||
+                                          e.target.closest('[data-title]');
+                                          
+                            if (eventEl) {
+                                var title = eventEl.getAttribute('data-title') || eventEl.getAttribute('title');
+                                if (title) {
+                                    console.log("Event detected:", title);
+                                    tooltip.innerText = title;
+                                    tooltip.style.display = "block";
+                                    tooltip.style.left = (e.pageX + 15) + "px";
+                                    tooltip.style.top = (e.pageY + 15) + "px";
+                                }
+                            }
+                        });
+
+                        document.addEventListener('mousemove', function(e) {
+                            if (tooltip.style.display === "block") {
+                                tooltip.style.left = (e.pageX + 15) + "px";
+                                tooltip.style.top = (e.pageY + 15) + "px";
+                            }
+                        });
+
+                        document.addEventListener('mouseout', function(e) {
+                            var eventEl = e.target.closest('.fc-event') || 
+                                          e.target.closest('.fc-event-main') ||
+                                          e.target.closest('[data-title]');
+                            if (eventEl) {
+                                tooltip.style.display = "none";
+                            }
+                        });
+                    }
+                }
+            JS),
             'schedulerLicenseKey' => 'GPL-My-Project-Is-Open-Source',
+            'dayMaxEvents' => true, // Limitar eventos por día para mantener altura de celdas
         ];
     }
 

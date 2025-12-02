@@ -19,7 +19,6 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Saade\FilamentFullCalendar\FilamentFullCalendarPlugin;
 use Filament\View\PanelsRenderHook;
 use App\Filament\Pages\Auth\Login;
-
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel

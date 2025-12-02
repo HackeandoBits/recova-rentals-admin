@@ -12,6 +12,12 @@ class ReportsStatsOverviewWidget extends BaseWidget
 {
     public ?array $dateRange = null;
 
+    public function updateChartData(): void
+    {
+        // This method is called by Filament's polling mechanism
+        // Stats will auto-update when dateRange changes
+    }
+
     protected function getStats(): array
     {
         // Determinar el rango de fechas
