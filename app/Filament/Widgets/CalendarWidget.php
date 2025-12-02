@@ -101,6 +101,10 @@ class CalendarWidget extends FullCalendarWidget
             JS),
             'schedulerLicenseKey' => 'GPL-My-Project-Is-Open-Source',
             'dayMaxEvents' => true, // Limitar eventos por día para mantener altura de celdas
+            'titleFormat' => [
+                'year' => 'numeric',
+                'month' => 'long', // Nombre completo del mes
+            ],
         ];
     }
 
@@ -175,12 +179,8 @@ class CalendarWidget extends FullCalendarWidget
 
     protected function headerActions(): array
     {
-        return [
-            \Saade\FilamentFullCalendar\Actions\CreateAction::make()
-                ->label('Crear Reunión')
-                ->modalHeading('Crear Reunión')
-                ->form(fn ($form) => $form->schema(\App\Filament\Resources\Interviews\Schemas\InterviewForm::schema())),
-        ];
+        // Botón movido al header de la página Calendar.php
+        return [];
     }
 
     public function onEventClick(array $info): void
