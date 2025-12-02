@@ -1,0 +1,660 @@
+/* =========================================
+   Recova Rentals - Dashboard admin
+========================================= */
+
+/* Fondo general Recova: ocupa toda la pantalla */
+body.fi-body {
+    background: radial-gradient(
+        circle at top left,
+        rgba(236, 72, 153, 0.22) 0%,
+        rgba(15, 23, 42, 0.95) 40%,
+        #020617 100%
+    );
+    min-height: 100vh;
+}
+
+/* El main ahora es transparente, usa el fondo del body */
+body.fi-body .fi-main {
+    background: transparent !important;
+}
+
+
+/* =========================================
+   TOPBAR (barra superior) – Recova púrpura animado
+========================================= */
+
+body.fi-body .fi-topbar {
+    background: transparent !important;
+    box-shadow: none !important;
+    border-bottom: none !important;
+}
+
+/* El <nav> es el que se pinta con el degradado animado */
+body.fi-body .fi-topbar > nav {
+    background-image: linear-gradient(
+        120deg,
+        #4b164e 0%,
+        #7c2d78 30%,
+        #a855f7 60%,
+        #7c2d78 100%
+    ) !important;
+    background-size: 200% 100%;
+    animation: rr-topbar-wave 18s ease-in-out infinite;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.9) !important;
+}
+
+/* Animación del background que “recorre” el topbar */
+@keyframes rr-topbar-wave {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* =========================================
+   TOPBAR – Texto & iconos cyan
+========================================= */
+
+/* Base: todos los labels e iconos del menú */
+body.fi-body .fi-topbar .fi-topbar-item-label,
+body.fi-body .fi-topbar .fi-topbar-item-label.dark\:text-gray-200,
+body.fi-body .fi-topbar .fi-topbar-item-icon,
+body.fi-body .fi-topbar .fi-topbar-item-icon.dark\:text-gray-500 {
+    color: #22d3ee !important;   /* cyan brillante */
+    font-weight: 600;
+}
+
+/* Hover / focus: cyan más claro con glow */
+body.fi-body .fi-topbar .fi-topbar-item-button:hover .fi-topbar-item-label,
+body.fi-body .fi-topbar .fi-topbar-item-button:focus-visible .fi-topbar-item-label {
+    color: #a5f3fc !important;
+    text-shadow:
+        0 0 6px rgba(34, 211, 238, 0.7),
+        0 0 12px rgba(34, 211, 238, 0.45);
+    transition: 0.2s ease;
+}
+
+/* =========================================
+   TOPBAR – Ítem activo oscuro
+========================================= */
+
+/* Botón activo como pill oscura */
+body.fi-body .fi-topbar .fi-topbar-item-button[data-active] {
+    border-radius: 9999px;
+    background: radial-gradient(circle at top, #0b1220, #020617) !important; /* bien oscuro */
+    border: 1px solid rgba(34, 211, 238, 0.65);
+    box-shadow:
+        0 0 10px rgba(15, 23, 42, 0.9),
+        0 0 14px rgba(34, 211, 238, 0.55);
+}
+
+/* Mantener fondo oscuro en hover del activo */
+body.fi-body .fi-topbar .fi-topbar-item-button[data-active]:hover,
+body.fi-body .fi-topbar .fi-topbar-item-button[data-active]:focus-visible {
+    background: radial-gradient(circle at top, #0b1220, #020617) !important;
+}
+
+/* Texto e icono del activo: cyan más intenso pero no blanco */
+body.fi-body .fi-topbar .fi-topbar-item-button[data-active] .fi-topbar-item-label,
+body.fi-body .fi-topbar .fi-topbar-item-button[data-active] .fi-topbar-item-label.dark\:text-gray-200,
+body.fi-body .fi-topbar .fi-topbar-item-button[data-active] .fi-topbar-item-icon,
+body.fi-body .fi-topbar .fi-topbar-item-button[data-active] .fi-topbar-item-icon.dark\:text-gray-500 {
+    color: #38e8ff !important;
+    text-shadow:
+        0 0 4px rgba(34, 211, 238, 0.9),
+        0 0 10px rgba(34, 211, 238, 0.6);
+}
+
+/* =========================================
+   CARDS / WIDGETS
+========================================= */
+
+/* Estilo glass para la mayoría de las cards de Filament */
+body.fi-body .fi-main .fi-section,
+body.fi-body .fi-main .fi-widget,
+body.fi-body .fi-main .fi-widget-card,
+body.fi-body .fi-main .fi-infolist,
+body.fi-body .fi-main .fi-record-list,
+body.fi-body .fi-main .fi-resource-list,
+body.fi-body .fi-main .fi-resource-relation-manager {
+    background: rgba(15, 23, 42, 0.55) !important;
+    border-radius: 18px !important;
+    border: 1px solid rgba(56, 189, 248, 0.12) !important;
+    backdrop-filter: blur(16px) !important;
+    box-shadow:
+        0 0 12px rgba(236, 72, 153, 0.15),
+        0 0 25px rgba(56, 189, 248, 0.15) !important;
+}
+
+/* Stats del dashboard estilo Recova (más glow) */
+.rr-stat-card {
+    background: radial-gradient(
+        circle at top left,
+        rgba(56, 189, 248, 0.08),
+        rgba(15, 23, 42, 0.95)
+    );
+    border-radius: 18px;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    box-shadow:
+        0 14px 40px rgba(15, 23, 42, 0.94),
+        0 0 16px rgba(6, 182, 212, 0.55);
+    backdrop-filter: blur(18px);
+}
+
+.rr-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 18px 50px rgba(15, 23, 42, 0.98),
+        0 0 22px rgba(6, 182, 212, 0.85);
+    transition: all 0.25s ease;
+}
+
+/* =========================================
+   TIPOGRAFÍA / HEADERS
+========================================= */
+
+/* Títulos principales dentro de Filament */
+body.fi-body .fi-main .fi-header-heading {
+    color: #22d3ee !important;
+    text-shadow:
+        0 0 5px rgba(34, 211, 238, 0.55),
+        0 0 12px rgba(34, 211, 238, 0.25);
+}
+
+/* Subtítulos de headers */
+body.fi-body .fi-main .fi-header-subheading {
+    color: #67e8f9 !important;
+    opacity: 0.9;
+}
+
+/* =========================================
+   INPUTS / FORM ELEMENTS
+========================================= */
+
+body.fi-body .fi-main input.fi-input,
+body.fi-body .fi-main textarea.fi-input,
+body.fi-body .fi-main select.fi-input {
+    background-color: rgba(15, 23, 42, 0.6) !important;
+    border: 1px solid rgba(148, 163, 184, 0.35) !important;
+    color: #f9fafb !important;
+    border-radius: 8px !important;
+    transition: all 0.25s ease;
+}
+
+body.fi-body .fi-main input.fi-input:focus,
+body.fi-body .fi-main textarea.fi-input:focus,
+body.fi-body .fi-main select.fi-input:focus {
+    border-color: #22d3ee !important;
+    box-shadow: 0 0 12px rgba(34, 211, 238, 0.45) !important;
+}
+
+/* =========================================
+   TOPBAR – Search input Recova (cyan)
+========================================= */
+
+/* Wrapper del input de búsqueda */
+body.fi-body .fi-topbar .fi-input-wrp,
+body.fi-body .fi-topbar .fi-input-wrp-input {
+    background: rgba(15, 23, 42, 0.35) !important;
+    border: 1px solid #22d3ee !important;      /* borde cyan */
+    box-shadow:
+        0 0 8px rgba(34, 211, 238, 0.45);
+}
+
+/* Input en sí */
+body.fi-body .fi-topbar input.fi-input {
+    border: none !important;
+    background: transparent !important;
+    color: #e0faff !important;                 /* texto claro */
+}
+
+/* Placeholder en cyan suave */
+body.fi-body .fi-topbar input.fi-input::placeholder {
+    color: rgba(34, 211, 238, 0.7) !important;
+}
+
+/* Lupa (icono) en cyan */
+body.fi-body .fi-topbar .fi-input-wrp svg {
+    color: #22d3ee !important;
+    stroke: #22d3ee !important;
+}
+
+/* Focus: más glow cyan */
+body.fi-body .fi-topbar .fi-input-wrp:focus-within,
+body.fi-body .fi-topbar input.fi-input:focus {
+    border-color: #a5f3fc !important;
+    box-shadow:
+        0 0 10px rgba(34, 211, 238, 0.7);
+}
+
+/* =========================================
+   TOPBAR – Dropdown Agenda (Calendario / Bloqueos / Reuniones)
+========================================= */
+
+/* Panel del dropdown (el cuadrito flotante) */
+body.fi-body .fi-topbar .fi-dropdown-panel {
+    background: radial-gradient(
+        circle at top left,
+        rgba(56, 189, 248, 0.12),
+        rgba(15, 23, 42, 0.96)
+    ) !important;
+    border-radius: 14px !important;
+    border: 1px solid rgba(34, 211, 238, 0.6) !important;
+    box-shadow:
+        0 18px 45px rgba(15, 23, 42, 0.95),
+        0 0 18px rgba(34, 211, 238, 0.45) !important;
+    backdrop-filter: blur(16px) !important;
+    overflow: hidden;
+}
+
+/* Separación interna */
+body.fi-body .fi-topbar .fi-dropdown-list {
+    padding: 0.35rem 0.25rem !important;
+}
+
+/* Ítems del dropdown */
+body.fi-body .fi-topbar .fi-dropdown-list-item {
+    border-radius: 10px !important;
+}
+
+/* Icono + texto por defecto en cyan suave */
+body.fi-body .fi-topbar .fi-dropdown-list-item-icon,
+body.fi-body .fi-topbar .fi-dropdown-list-item-label,
+body.fi-body .fi-topbar .fi-dropdown-list-item-label.dark\:text-gray-200 {
+    color: #22d3ee !important;
+}
+
+/* Hover del ítem: fondo más cyan y glow */
+body.fi-body .fi-topbar .fi-dropdown-list-item:hover {
+    background: rgba(34, 211, 238, 0.18) !important;
+    box-shadow:
+        0 0 10px rgba(34, 211, 238, 0.5);
+}
+
+body.fi-body .fi-topbar .fi-dropdown-list-item:hover .fi-dropdown-list-item-label,
+body.fi-body .fi-topbar .fi-dropdown-list-item:hover .fi-dropdown-list-item-icon {
+    color: #e0faff !important;
+}
+
+/* =========================================
+   TABLA "Próximas Reservas" (Filament Table)
+========================================= */
+
+/* Contenedor principal de la tabla */
+body.fi-body .fi-main .fi-ta-ctn {
+    background: rgba(15, 23, 42, 0.75) !important; /* fondo oscuro glass */
+    border-radius: 18px !important;
+    border: 1px solid rgba(56, 189, 248, 0.25) !important;
+    box-shadow:
+        0 0 18px rgba(15, 23, 42, 0.95),
+        0 0 24px rgba(56, 189, 248, 0.25) !important;
+    backdrop-filter: blur(18px) !important;
+    overflow: hidden !important;
+}
+
+/* Header de la tabla (filtros, buscador interno, etc.) */
+body.fi-body .fi-main .fi-ta-header-ctn {
+    background: rgba(15, 23, 42, 0.9) !important;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.35) !important;
+}
+
+/* Zona de filas (body) */
+body.fi-body .fi-main .fi-ta-body-ctn {
+    background: transparent !important;
+}
+
+/* Estado vacío: icono + texto */
+body.fi-body .fi-main .fi-ta-empty-state-icon {
+    color: rgba(148, 163, 184, 0.9) !important;
+}
+
+body.fi-body .fi-main .fi-ta-empty-state-heading,
+body.fi-body .fi-main .fi-ta-empty-state-description {
+    color: #e5e7eb !important;
+}
+
+/* =========================================
+   REPORTES – Panel "Filtrar por Período"
+========================================= */
+
+/* Panel interno de la sección de filtros */
+body.fi-body .fi-main .fi-section .fi-section-content-ctn {
+    background: rgba(15, 23, 42, 0.92) !important;   /* fondo oscuro */
+    border-radius: 18px !important;
+    border: 1px solid rgba(56, 189, 248, 0.25) !important;
+    box-shadow:
+        0 14px 40px rgba(15, 23, 42, 0.96),
+        0 0 18px rgba(56, 189, 248, 0.28) !important;
+    backdrop-filter: blur(18px) !important;
+}
+
+/* Título "Filtrar por Período" */
+body.fi-body .fi-main .fi-section .fi-section-content-ctn h3 {
+    color: #e0faff !important;
+}
+
+/* Inputs de fecha dentro de ese panel */
+body.fi-body .fi-main .fi-section .fi-section-content-ctn input.fi-input[type="date"] {
+    background-color: rgba(15, 23, 42, 0.7) !important;
+    border: 1px solid rgba(148, 163, 184, 0.5) !important;
+    color: #f9fafb !important;
+    border-radius: 9999px !important;
+}
+
+/* Icono del calendario en cyan */
+body.fi-body .fi-main .fi-section .fi-section-content-ctn svg {
+    color: #22d3ee !important;
+}
+
+/* Botones de rango (Este mes, Últimos 30 días, etc.) */
+body.fi-body .fi-main .fi-section .fi-section-content-ctn button.fi-btn {
+    border-radius: 9999px !important;
+    background: rgba(15, 23, 42, 0.9) !important;
+    border: 1px solid rgba(56, 189, 248, 0.4) !important;
+    color: #e0faff !important;
+}
+
+/* Hover botones */
+body.fi-body .fi-main .fi-section .fi-section-content-ctn button.fi-btn:hover {
+    background: rgba(34, 211, 238, 0.18) !important;
+    box-shadow: 0 0 12px rgba(34, 211, 238, 0.6) !important;
+}
+
+/* =========================================
+   REPORTES – Tarjetas de estadísticas
+   (Reservas del Período / Próximas Reservas / Nuevos Clientes)
+========================================= */
+
+body.fi-body .fi-main .fi-stats-overview-stat {
+    background: radial-gradient(
+        circle at top left,
+        rgba(56, 189, 248, 0.10),
+        rgba(15, 23, 42, 0.96)
+    ) !important;
+    border-radius: 18px !important;
+    border: 1px solid rgba(56, 189, 248, 0.30) !important;
+    box-shadow:
+        0 14px 40px rgba(15, 23, 42, 0.95),
+        0 0 18px rgba(56, 189, 248, 0.35) !important;
+    backdrop-filter: blur(18px) !important;
+}
+
+/* Título de la tarjeta */
+body.fi-body .fi-main .fi-stats-overview-stat-header {
+    color: #e5e7eb !important;
+}
+
+/* Valor principal (número / %) */
+body.fi-body .fi-main .fi-stats-overview-stat-value {
+    color: #f9fafb !important;
+}
+
+/* Texto secundario / links */
+body.fi-body .fi-main .fi-stats-overview-stat-description,
+body.fi-body .fi-main .fi-stats-overview-stat-description a {
+    color: #e879f9 !important;            /* fucsia suave */
+}
+
+/* Hover de link en la descripción */
+body.fi-body .fi-main .fi-stats-overview-stat-description a:hover {
+    color: #f9a8ff !important;
+    text-shadow:
+        0 0 6px rgba(236, 72, 153, 0.7),
+        0 0 10px rgba(236, 72, 153, 0.45);
+}
+
+/* =========================================
+   REPORTES – Tarjetas de estadísticas
+   (Reservas del Período / Próximas Reservas / Nuevos Clientes)
+========================================= */
+
+body.fi-body .fi-main .fi-wi-stats-overview-stat {
+    background: radial-gradient(
+        circle at top left,
+        rgba(56, 189, 248, 0.10),
+        rgba(15, 23, 42, 0.96)
+    ) !important;
+    border-radius: 18px !important;
+    border: 1px solid rgba(56, 189, 248, 0.30) !important;
+    box-shadow:
+        0 14px 40px rgba(15, 23, 42, 0.95),
+        0 0 18px rgba(56, 189, 248, 0.35) !important;
+    backdrop-filter: blur(18px) !important;
+}
+
+/* =========================================
+   REPORTES – Botones de rango de fechas
+   (Este Mes / Últimos 30 Días)
+========================================= */
+
+body.fi-body .fi-main .fi-section .fi-section-content-ctn button.fi-btn {
+    border-radius: 9999px !important;
+    background: rgba(15, 23, 42, 0.9) !important;
+    border: 1px solid rgba(56, 189, 248, 0.6) !important;
+    color: #e0faff !important;           /* texto claro */
+}
+
+/* Texto interno del botón (por si viene con clases dark:text-*) */
+body.fi-body .fi-main .fi-section .fi-section-content-ctn button.fi-btn span {
+    color: #e0faff !important;
+}
+
+/* Icono calendario dentro del botón */
+body.fi-body .fi-main .fi-section .fi-section-content-ctn button.fi-btn svg {
+    color: #22d3ee !important;
+    stroke: #22d3ee !important;
+}
+
+/* Hover: un poco más cyan */
+body.fi-body .fi-main .fi-section .fi-section-content-ctn button.fi-btn:hover {
+    background: rgba(34, 211, 238, 0.20) !important;
+    box-shadow: 0 0 12px rgba(34, 211, 238, 0.7);
+}
+
+/* =========================================
+   REPORTES – Botones "Este Mes" / "Últimos 30 Días"
+========================================= */
+
+/* Botones de rango dentro del panel de filtros */
+body.fi-body .fi-main .fi-section .fi-section-content-ctn .flex.gap-2 > button.inline-flex {
+    border-radius: 9999px !important;
+    background: rgba(15, 23, 42, 0.9) !important;
+    border: 1px solid #22d3ee !important;          /* borde cyan */
+    color: #e0faff !important;                     /* texto claro */
+}
+
+/* Icono dentro del botón */
+body.fi-body .fi-main .fi-section .fi-section-content-ctn .flex.gap-2 > button.inline-flex svg {
+    color: #22d3ee !important;
+    stroke: #22d3ee !important;
+}
+
+/* Hover: un poco más cyan y glow suave */
+body.fi-body .fi-main .fi-section .fi-section-content-ctn .flex.gap-2 > button.inline-flex:hover {
+    background: rgba(34, 211, 238, 0.20) !important;
+    box-shadow: 0 0 10px rgba(34, 211, 238, 0.65);
+}
+
+/* =========================================
+   DATEPICKER – Recova Rentals
+========================================= */
+
+/* Panel general del calendario */
+body.fi-body .flatpickr-calendar {
+    background: radial-gradient(
+        circle at top left,
+        rgba(56, 189, 248, 0.12),
+        rgba(15, 23, 42, 0.98)
+    ) !important;
+    border-radius: 18px !important;
+    border: 1px solid rgba(34, 211, 238, 0.7) !important;
+    box-shadow:
+        0 22px 45px rgba(15, 23, 42, 0.98),
+        0 0 18px rgba(34, 211, 238, 0.45) !important;
+    overflow: hidden !important;
+}
+
+/* Texto base dentro del calendario */
+body.fi-body .flatpickr-calendar * {
+    color: #e5e7eb !important;
+    font-family: inherit !important;
+}
+
+/* Header (mes / año) */
+body.fi-body .flatpickr-calendar .flatpickr-months {
+    background: transparent !important;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.35) !important;
+}
+
+body.fi-body .flatpickr-calendar .flatpickr-current-month input.cur-year,
+body.fi-body .flatpickr-calendar .flatpickr-current-month .cur-month {
+    color: #e0faff !important;
+    font-weight: 600 !important;
+}
+
+/* Flechas de navegación */
+body.fi-body .flatpickr-calendar .flatpickr-prev-month,
+body.fi-body .flatpickr-calendar .flatpickr-next-month {
+    color: #22d3ee !important;
+}
+
+/* Días de la semana */
+body.fi-body .flatpickr-calendar .flatpickr-weekday {
+    color: #a5f3fc !important;
+    font-weight: 500 !important;
+}
+
+/* Día base */
+body.fi-body .flatpickr-calendar .flatpickr-day {
+    border-radius: 9999px !important;
+    color: #e5e7eb !important;
+}
+
+/* Días de otros meses */
+body.fi-body .flatpickr-calendar .flatpickr-day.prevMonthDay,
+body.fi-body .flatpickr-calendar .flatpickr-day.nextMonthDay {
+    color: rgba(148, 163, 184, 0.5) !important;
+}
+
+/* Hoy */
+body.fi-body .flatpickr-calendar .flatpickr-day.today {
+    border: 1px solid #22d3ee !important;
+    color: #22d3ee !important;
+}
+
+/* Seleccionado / rango */
+body.fi-body .flatpickr-calendar .flatpickr-day.selected,
+body.fi-body .flatpickr-calendar .flatpickr-day.startRange,
+body.fi-body .flatpickr-calendar .flatpickr-day.endRange {
+    background: linear-gradient(135deg, #22d3ee, #a855f7) !important;
+    color: #0b1120 !important;
+    box-shadow:
+        0 0 10px rgba(34, 211, 238, 0.8),
+        0 0 14px rgba(168, 85, 247, 0.6) !important;
+}
+
+/* Hover */
+body.fi-body .flatpickr-calendar .flatpickr-day:hover {
+    background: rgba(34, 211, 238, 0.18) !important;
+    color: #e0faff !important;
+}
+
+/* Botón "Limpiar" / footer */
+body.fi-body .flatpickr-calendar button {
+    border-radius: 9999px !important;
+    background: rgba(15, 23, 42, 0.9) !important;
+    border: 1px solid #22d3ee !important;
+    color: #e0faff !important;
+    padding: 0.35rem 0.9rem !important;
+}
+
+body.fi-body .flatpickr-calendar button:hover {
+    background: rgba(34, 211, 238, 0.2) !important;
+    box-shadow: 0 0 10px rgba(34, 211, 238, 0.7) !important;
+}
+
+/* =========================================
+   REPORTES – Inputs de fecha (Desde / Hasta)
+========================================= */
+
+body.fi-body .fi-main .fi-section input[type="date"] {
+    background-color: rgba(15, 23, 42, 0.85) !important;
+    border-radius: 9999px !important;
+    border: 1px solid rgba(56, 189, 248, 0.7) !important; /* borde cyan */
+    color: #e0faff !important;                             /* texto claro */
+    padding-inline: 1rem !important;
+}
+
+/* Placeholder / texto gris que mete el navegador */
+body.fi-body .fi-main .fi-section input[type="date"]::placeholder {
+    color: rgba(148, 163, 184, 0.9) !important;
+}
+
+/* Estado focus: más glow cyan */
+body.fi-body .fi-main .fi-section input[type="date"]:focus {
+    outline: none !important;
+    border-color: #22d3ee !important;
+    box-shadow:
+        0 0 10px rgba(34, 211, 238, 0.7),
+        0 0 16px rgba(56, 189, 248, 0.5) !important;
+}
+
+/* Icono de calendario que está al costado */
+body.fi-body .fi-main .fi-section svg[class*="calendar"] {
+    color: #22d3ee !important;
+    stroke: #22d3ee !important;
+}
+
+/* =========================================
+   PERFIL – Inputs sin amarillo de autofill
+========================================= */
+
+/* WebKit (Chrome, Edge, etc.) */
+body.fi-body input:-webkit-autofill,
+body.fi-body input:-webkit-autofill:hover,
+body.fi-body input:-webkit-autofill:focus,
+body.fi-body input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px rgba(15, 23, 42, 0.85) inset !important; /* mismo fondo oscuro glass */
+    -webkit-text-fill-color: #e0faff !important;  /* texto claro */
+    caret-color: #e0faff !important;
+}
+
+/* Firefox */
+body.fi-body input:-moz-autofill {
+    box-shadow: 0 0 0 1000px rgba(15, 23, 42, 0.85) inset !important;
+    -moz-text-fill-color: #e0faff !important;
+    caret-color: #e0faff !important;
+}
+
+/* Ajuste general de inputs del perfil (se integra con el tema) */
+body.fi-body .fi-main .fi-section-content-ctn input[type="text"],
+body.fi-body .fi-main .fi-section-content-ctn input[type="email"],
+body.fi-body .fi-main .fi-section-content-ctn input[type="password"],
+body.fi-body .fi-main .fi-section-content-ctn input[type="tel"] {
+    background-color: rgba(15, 23, 42, 0.85) !important;
+    border: 1px solid rgba(56, 189, 248, 0.6) !important;
+    color: #e0faff !important;
+    padding-inline: 1rem !important;
+}
+
+/* Focus con glow cyan */
+body.fi-body .fi-main .fi-section-content-ctn input[type="text"]:focus,
+body.fi-body .fi-main .fi-section-content-ctn input[type="email"]:focus,
+body.fi-body .fi-main .fi-section-content-ctn input[type="password"]:focus,
+body.fi-body .fi-main .fi-section-content-ctn input[type="tel"]:focus {
+    outline: none !important;
+    border-color: #22d3ee !important;
+    box-shadow:
+        0 0 10px rgba(34, 211, 238, 0.7),
+        0 0 16px rgba(56, 189, 248, 0.5) !important;
+}
+
+/* Icono del ojo (mostrar contraseña) en cyan */
+body.fi-body .fi-main .fi-section-content-ctn button[type="button"] svg {
+    color: #22d3ee !important;
+}

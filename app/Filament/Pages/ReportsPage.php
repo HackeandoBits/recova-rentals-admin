@@ -8,7 +8,6 @@ use App\Filament\Widgets\ReportHistoryTableWidget;
 use App\Filament\Widgets\ReportsStatsOverviewWidget;
 use App\Models\ReportLog;
 use Filament\Actions\Action;
-use Filament\Forms\Components\DatePicker;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Carbon;
@@ -29,6 +28,7 @@ class ReportsPage extends Page
     protected static ?string $title = 'Reportes y Estadísticas';
 
     protected static ?string $navigationGroup = 'Reportes'; // Agrupar para ordenar
+
     protected static ?int $navigationSort = 1;
 
     public ?array $dateRange = [
@@ -61,8 +61,8 @@ class ReportsPage extends Page
                 ->requiresConfirmation()
                 ->modalHeading('Generar Reporte para WhatsApp')
                 ->modalDescription(function () {
-                    $from = Carbon::parse($this->dateRange['from'])->format('d/m/Y');
-                    $to = Carbon::parse($this->dateRange['to'])->format('d/m/Y');
+                    $from = $this->dateRange['from'] ? Carbon::parse($this->dateRange['from'])->format('d/m/Y') : 'N/A';
+                    $to = $this->dateRange['to'] ? Carbon::parse($this->dateRange['to'])->format('d/m/Y') : 'N/A';
 
                     return "Se generará un reporte del período: {$from} - {$to} y se enviará por WhatsApp al número configurado.";
                 })
@@ -83,7 +83,7 @@ class ReportsPage extends Page
 
                     // Simulación de envío de WhatsApp
                     // TODO: Integrar con API de WhatsApp Business
-        
+
                     Notification::make()
                         ->title('Reporte Enviado Exitosamente')
                         ->success()
@@ -111,8 +111,8 @@ class ReportsPage extends Page
                         ->required(),
                 ])
                 ->modalDescription(function () {
-                    $from = Carbon::parse($this->dateRange['from'])->format('d/m/Y');
-                    $to = Carbon::parse($this->dateRange['to'])->format('d/m/Y');
+                    $from = $this->dateRange['from'] ? Carbon::parse($this->dateRange['from'])->format('d/m/Y') : 'N/A';
+                    $to = $this->dateRange['to'] ? Carbon::parse($this->dateRange['to'])->format('d/m/Y') : 'N/A';
 
                     return "Se exportará el reporte del período: {$from} - {$to}";
                 })
@@ -123,13 +123,13 @@ class ReportsPage extends Page
                         'to' => $this->dateRange['to'],
                         'format' => $data['format'],
                     ]);
-                    
+
                     Notification::make()
                         ->title('Generando Reporte')
                         ->success()
                         ->body('El reporte se descargará automáticamente.')
                         ->send();
-                    
+
                     // Redirigir a la descarga
                     $this->redirect($url, navigate: false);
                 })
@@ -166,5 +166,17 @@ class ReportsPage extends Page
     public function getTableWidget(): string
     {
         return ReportHistoryTableWidget::class;
+    }
+
+    public function updatedDateRange(): void
+    {
+        // Este método se llama automáticamente cuando dateRange cambia
+        // Los widgets se refrescarán automáticamente gracias a Livewire
+        $this->dispatch('updateChartData');
+    }
+
+    public function updateChartData(): void
+    {
+        // Stub to prevent "Method not found" error if called directly
     }
 }

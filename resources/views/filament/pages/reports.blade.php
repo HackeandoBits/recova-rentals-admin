@@ -84,11 +84,6 @@
         {{-- Tabla de Historial --}}
         <div>
             @livewire($this->getTableWidget())
-            =======
-            {{-- Tabla de Historial --}}
-            <div>
-                @livewire($this->getTableWidget())
-            </div>
-            >>>>>>> origin/feature/refactor-login-ui
         </div>
+    </div>
 </x-filament-panels::page>

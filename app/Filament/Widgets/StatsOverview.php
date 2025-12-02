@@ -21,7 +21,10 @@ class StatsOverview extends BaseWidget
             ->where('status', '!=', 'cancelled')
             ->count();
 
-        $pedidosMes = Interview::whereBetween('created_at', [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])->count();
+        $pedidosMes = Interview::whereBetween('created_at', [
+            Carbon::now()->startOfMonth(),
+            Carbon::now()->endOfMonth(),
+        ])->count();
 
         $totalBookings = Interview::count();
         $confirmedBookings = Interview::where('status', 'confirmed')->count();
@@ -36,22 +39,26 @@ class StatsOverview extends BaseWidget
             Stat::make('Pedidos Pendientes', $pedidosPendientes)
                 ->description('Requieren atención')
                 ->icon('heroicon-o-inbox-stack')
-                ->color($pedidosPendientes > 0 ? 'danger' : 'success'),
+                ->color($pedidosPendientes > 0 ? 'danger' : 'success')
+                ->extraAttributes(['class' => 'rr-stat-card']),
 
             Stat::make('Reuniones Hoy', $reunionesHoy)
                 ->description('Agenda del día')
                 ->icon('heroicon-o-calendar')
-                ->color('primary'),
+                ->color('primary')
+                ->extraAttributes(['class' => 'rr-stat-card']),
 
-            Stat::make('Tasa de Éxito', $successRate.'%')
+            Stat::make('Tasa de Éxito', $successRate . '%')
                 ->description('Reservas confirmadas')
                 ->icon('heroicon-o-chart-pie')
-                ->color('success'),
+                ->color('success')
+                ->extraAttributes(['class' => 'rr-stat-card']),
 
             Stat::make('Total Clientes', $totalClients)
                 ->description('Únicos registrados')
                 ->icon('heroicon-o-users')
-                ->color('info'),
+                ->color('info')
+                ->extraAttributes(['class' => 'rr-stat-card']),
         ];
     }
 }
