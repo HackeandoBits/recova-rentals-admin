@@ -1,0 +1,424 @@
+/* ===========================
+   RECOVA RENTALS – LOGIN
+   (solo se carga en /admin/login)
+=========================== */
+
+/* Fondo general y tipografía */
+body.fi-body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+}
+
+/* Layout base del login */
+body.fi-body .fi-simple-page {
+    background: radial-gradient(circle at center, #ec4899 0%, #7c2d78 40%, #020617 100%) !important;
+    min-height: 100vh !important;
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 1.5rem !important;
+}
+
+body.fi-body .fi-simple-main {
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+}
+
+/* Contenedor principal: logo + card */
+body.fi-body .fi-simple-page > section {
+    width: 100%;
+    max-width: 420px;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.9rem !important;
+    padding: 0;
+}
+
+/* ===========================
+   LOGO RECOVA – LOGIN & TOPBAR
+=========================== */
+
+/* Zona del logo en el login */
+body.fi-body .fi-simple-page .fi-simple-header > .fi-logo {
+    height: auto !important;
+    margin: 0 0 0.6rem 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: visible !important;
+}
+
+/* Wrapper genérico del logo */
+.rr-logo-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    position: relative;
+}
+
+/* Logo en login: grande + animado */
+body.fi-body .fi-simple-page .fi-simple-header .rr-logo-icon {
+    height: 4.5rem;
+    animation: rr-logo-glow 3.2s ease-in-out infinite,
+               rr-logo-float 6s ease-in-out infinite;
+}
+
+/* "Recova Rentals" */
+body.fi-body .fi-simple-page .fi-simple-header .rr-logo-title {
+    font-size: 2.3rem;
+    line-height: 1.05 !important;
+    text-align: center;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    text-transform: uppercase;
+
+    /* 🔹 Truco para el brillo que se mueve */
+    background-image: linear-gradient(
+        120deg,
+        #22d3ee 0%,
+        #e5e7eb 25%,
+        #22d3ee 50%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+
+    animation:
+        rr-title-glow 3.5s ease-in-out infinite,
+        rr-title-shine 2.8s linear infinite;
+}
+
+@keyframes rr-title-shine {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* "Admin Panel" */
+body.fi-body .fi-simple-page .fi-simple-header .rr-logo-subtitle {
+    display: block;
+    text-align: center;
+    margin-top: 0.35rem;
+    font-size: 1.2rem;                  /* antes 1rem */
+    font-weight: 600;                   /* más grueso */
+    color: #67e8f9;
+    opacity: 0.98;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+
+/* ===========================
+   LOGO EN LA TOPBAR (panel)
+   con los mismos efectos que el login
+=========================== */
+
+body.fi-body .fi-topbar .fi-logo {
+    padding-left: 0.75rem;
+}
+
+/* Wrapper del logo en la topbar */
+body.fi-body .fi-topbar .fi-logo .rr-logo-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.6rem;
+    position: relative;
+}
+
+/* Ícono edificio con glow + float */
+body.fi-body .fi-topbar .fi-logo .rr-logo-icon {
+    height: 1.9rem;
+    margin-bottom: 0;
+    animation: rr-logo-glow 3.2s ease-in-out infinite,
+               rr-logo-float 6s ease-in-out infinite;
+}
+
+/* Título "Recova Rentals" con glow */
+body.fi-body .fi-topbar .fi-logo .rr-logo-title {
+    font-size: 1.3rem;
+    line-height: 1.1;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #22d3ee;
+    animation: rr-title-glow 3.5s ease-in-out infinite;
+    white-space: nowrap;
+}
+
+/* Subtítulo "Admin Panel" debajo del título */
+body.fi-body .fi-topbar .fi-logo .rr-logo-subtitle {
+    display: block;
+    font-size: 0.65rem;
+    color: #67e8f9;
+    opacity: 0.9;
+    margin-top: 0.1rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+
+/* Animaciones del logo */
+@keyframes rr-logo-glow {
+    0%, 100% {
+        filter: drop-shadow(0 0 4px rgba(248, 250, 252, 0.6));
+    }
+    50% {
+        filter: drop-shadow(0 0 16px rgba(248, 250, 252, 1))
+                drop-shadow(0 0 30px rgba(236, 72, 153, 0.8));
+    }
+}
+
+@keyframes rr-logo-float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-4px);
+    }
+}
+
+@keyframes rr-title-glow {
+    0%, 100% {
+        text-shadow:
+            0 0 4px rgba(103, 232, 249, 0.7),
+            0 0 10px rgba(34, 211, 238, 0.7);
+    }
+    50% {
+        text-shadow:
+            0 0 10px rgba(103, 232, 249, 1),
+            0 0 22px rgba(34, 211, 238, 1),
+            0 0 36px rgba(236, 72, 153, 0.8); /* un toque de fucsia del fondo */
+    }
+}
+
+/* ===========================
+   CARD DEL FORMULARIO
+=========================== */
+
+body.fi-body .fi-simple-page form.fi-form {
+    background: rgba(10, 15, 30, 0.72);
+    backdrop-filter: blur(14px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow:
+        0 0 18px rgba(0, 0, 0, 0.35),
+        0 10px 35px rgba(0, 0, 0, 0.55);
+    padding: 1.4rem 2rem;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0rem !important;
+    margin-top: 0.2rem;
+}
+
+
+/* ===========================
+   CAMPOS & LABELS
+=========================== */
+
+body.fi-body .fi-simple-page form.fi-form label,
+body.fi-body .fi-simple-page form.fi-form .fi-fo-field-wrp-label span {
+    color: #22d3ee !important;
+    font-weight: 600 !important;
+    font-size: 0.75rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    text-shadow: 0 0 5px rgba(34, 211, 238, 0.4) !important;
+}
+
+body.fi-body .fi-simple-page form.fi-form .fi-input-wrp {
+    background-color: rgba(15, 23, 42, 0.7) !important;
+    border: 1px solid rgba(148, 163, 184, 0.25) !important;
+    border-radius: 8px !important;
+    transition: all 0.25s ease !important;
+    overflow: hidden !important;
+}
+
+body.fi-body .fi-simple-page form.fi-form .fi-input-wrp:focus-within {
+    border-color: #06b6d4 !important;
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.35) !important;
+}
+
+body.fi-body .fi-simple-page form.fi-form .fi-input {
+    color: #ffffff !important;
+    background: transparent !important;
+}
+
+body.fi-body .fi-simple-page form.fi-form .fi-input::placeholder {
+    color: #64748b !important;
+}
+
+/* Checkbox "Remember me" */
+body.fi-body .fi-simple-page form.fi-form .fi-checkbox-input {
+    color: #06b6d4 !important;
+    background-color: rgba(15, 23, 42, 0.8) !important;
+    border-color: rgba(148, 163, 184, 0.5) !important;
+    border-radius: 4px !important;
+}
+
+body.fi-body .fi-simple-page form.fi-form .fi-checkbox-input:checked {
+    background-color: #06b6d4 !important;
+    border-color: #06b6d4 !important;
+}
+
+/* ===========================
+   BOTÓN "Sign in"
+=========================== */
+
+body.fi-body .fi-simple-page form.fi-form .fi-ac-btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: linear-gradient(90deg, #22d3ee 0%, #a855f7 50%, #ec4899 100%) !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    border: none !important;
+    border-radius: 9999px !important;
+    padding:0.7rem 1.4rem !important;
+    width: 100% !important;
+    box-shadow:
+        0 0 20px rgba(56, 189, 248, 0.6),
+        0 10px 30px rgba(15, 23, 42, 0.8) !important;
+    cursor: pointer !important;
+    margin-top:1rem !important;
+    min-height: 2.7rem !important;
+    font-size: 0.8rem;
+}
+
+body.fi-body .fi-simple-page form.fi-form .fi-ac-btn-action:hover {
+    transform: translateY(-2px) !important;
+    box-shadow:
+        0 0 25px rgba(56, 189, 248, 0.9),
+        0 15px 40px rgba(15, 23, 42, 0.9) !important;
+    filter: brightness(1.08) !important;
+}
+
+body.fi-body .fi-simple-page form.fi-form .fi-ac-btn-action:disabled,
+body.fi-body .fi-simple-page form.fi-form .fi-ac-btn-action[disabled] {
+    opacity: 0.75;
+    cursor: wait;
+    transform: none !important;
+}
+
+/* Ocultar spinner interno del botón */
+body.fi-body .fi-simple-page form.fi-form .fi-ac-btn-action .fi-loading-indicator,
+body.fi-body .fi-simple-page form.fi-form .fi-ac-btn-action svg.fi-loading-indicator {
+    display: none !important;
+}
+
+/* ===========================
+   AUTOFILL
+=========================== */
+
+body.fi-body .fi-simple-page form.fi-form input:-webkit-autofill,
+body.fi-body .fi-simple-page form.fi-form input:-webkit-autofill:hover,
+body.fi-body .fi-simple-page form.fi-form input:-webkit-autofill:focus,
+body.fi-body .fi-simple-page form.fi-form input:-webkit-autofill:active {
+    -webkit-text-fill-color: #ffffff !important;
+    caret-color: #ffffff !important;
+    -webkit-box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.4) inset !important;
+    box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.4) inset !important;
+    border-color: #06b6d4 !important;
+    transition: background-color 9999s ease-out, color 9999s ease-out !important;
+}
+
+body.fi-body .fi-simple-page form.fi-form input:-moz-autofill {
+    color: #ffffff !important;
+    caret-color: #ffffff !important;
+    box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.4) inset !important;
+    border-color: #06b6d4 !important;
+}
+
+/* ===========================
+   HEADER DENTRO DE LA CARD
+   (títulos del login)
+=========================== */
+
+.rr-login-card-header {
+    text-align: center;
+    margin-bottom: 0rem; /* espacio entre el título y el primer input */
+}
+
+/* Título principal dentro de la card */
+.rr-login-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: #e0f2fe;
+    text-shadow:
+        0 0 4px rgba(103, 232, 249, 0.8),
+        0 0 12px rgba(34, 211, 238, 0.9);
+    margin: 0 0 0.25rem 0;
+}
+
+/* Subtítulo dentro de la card */
+.rr-login-subtitle {
+    font-size: 0.85rem;
+    color: #cbd5f5;
+    max-width: 22rem;
+    margin: 0 auto;
+    line-height: 1.4;
+    opacity: 0.9;
+}
+
+/* ===========================
+   LOGO EN SIDEBAR DEL PANEL
+   (con mismos efectos que el login)
+=========================== */
+
+body.fi-body .fi-sidebar .fi-logo {
+    padding: 1rem 1rem 1.1rem 0.4rem;
+}
+
+/* Wrapper del logo en la sidebar */
+body.fi-body .fi-sidebar .fi-logo .rr-logo-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.7rem;
+    position: relative;
+}
+
+/* Ícono edificio con glow + float (igual que login pero un poco más chico) */
+body.fi-body .fi-sidebar .fi-logo .rr-logo-icon {
+    height: 2.5rem;
+    animation: rr-logo-glow 3.2s ease-in-out infinite,
+               rr-logo-float 6s ease-in-out infinite;
+}
+
+/* Título "Recova Rentals" con glow (mismo estilo que login, escala menor) */
+body.fi-body .fi-sidebar .fi-logo .rr-logo-title {
+    font-size: 1.15rem;
+    line-height: 1.1;
+    font-weight: 600;
+    letter-spacing: 0.04rem;
+    text-transform: uppercase;
+    color: #22d3ee;
+    animation: rr-title-glow 3.5s ease-in-out infinite;
+    white-space: nowrap;
+}
+
+/* Subtítulo "Admin Panel" debajo del título */
+body.fi-body .fi-sidebar .fi-logo .rr-logo-subtitle {
+    display: block;
+    font-size: 0.7rem;
+    color: #67e8f9;
+    opacity: 0.9;
+    margin-top: 0.15rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}

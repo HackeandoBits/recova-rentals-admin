@@ -17,6 +17,8 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Saade\FilamentFullCalendar\FilamentFullCalendarPlugin;
+use Filament\View\PanelsRenderHook;
+use App\Filament\Pages\Auth\Login;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -26,10 +28,10 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
-            ->brandName('Recova Rentals Admin')
-            ->topNavigation()
+            ->login(Login::class)
+            ->brandLogo(fn() => view('filament.components.recova-logo'))
             ->authGuard('web') // Usa el guard web de Laravel
+            ->topNavigation()
             ->colors([
                 'primary' => [
                     50 => '#fdf2fb',
@@ -47,6 +49,10 @@ class AdminPanelProvider extends PanelProvider
                 'gray' => Color::Zinc,
             ])
             ->darkMode(true) // Forzar o asegurar modo oscuro por defecto si es posible, o dejar que el usuario lo elija pero con paleta oscura bien definida
+            ->renderHook(
+                PanelsRenderHook::HEAD_START,
+                fn() => view('filament.hooks.login-styles'),
+            )
             ->plugin(FilamentFullCalendarPlugin::make())
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverResources(in: app_path('Filament/Resources/Interviews'), for: 'App\\Filament\\Resources\\Interviews')
@@ -69,12 +75,12 @@ class AdminPanelProvider extends PanelProvider
             ->userMenuItems([
                 \Filament\Navigation\MenuItem::make()
                     ->label('Mi Perfil')
-                    ->url(fn (): string => \App\Filament\Pages\Profile::getUrl())
+                    ->url(fn(): string => \App\Filament\Pages\Profile::getUrl())
                     ->icon('heroicon-o-user-circle'),
                 \Filament\Navigation\MenuItem::make()
-                    ->label(fn () => auth()->user()?->googleToken()->exists() ? 'Desconectar Google' : 'Conectar Google')
-                    ->url(fn () => auth()->user()?->googleToken()->exists() ? route('google.disconnect') : route('google.redirect'))
-                    ->icon(fn () => auth()->user()?->googleToken()->exists() ? 'heroicon-o-x-circle' : 'heroicon-o-link'),
+                    ->label(fn() => auth()->user()?->googleToken()->exists() ? 'Desconectar Google' : 'Conectar Google')
+                    ->url(fn() => auth()->user()?->googleToken()->exists() ? route('google.disconnect') : route('google.redirect'))
+                    ->icon(fn() => auth()->user()?->googleToken()->exists() ? 'heroicon-o-x-circle' : 'heroicon-o-link'),
             ])
             ->navigation(function (NavigationBuilder $builder): NavigationBuilder {
                 return $builder
@@ -93,49 +99,30 @@ class AdminPanelProvider extends PanelProvider
             })
             ->renderHook(
                 'panels::head.end',
-                fn (): string => <<<'HTML'
-                    <style>
-                        /* Forzar orden visual usando Flexbox */
-                        .fi-topbar-nav > ul {
-                            display: flex;
-                            gap: 0.5rem; /* Espaciado consistente */
-                        }
+                fn(): string => <<<'HTML'
 
-                        /* Por defecto todos tienen orden 0 */
-                        .fi-topbar-item, .fi-topbar-group {
-                            order: 0;
-                        }
+        <script>
+            // Usar delegación de eventos global para manejar actualizaciones de Livewire y asegurar detección
+            document.addEventListener('mouseover', (e) => {
+                // Verificar si estamos dentro de la navegación superior
+                const nav = e.target.closest('.fi-topbar-nav');
+                if (!nav) return;
 
-                        /* Mover Reportes al final (identificado por su enlace) */
-                        .fi-topbar-item:has(a[href*="reports"]) {
-                            order: 100 !important;
-                        }
-                        
-                        /* Asegurar que Agenda (Grupo) esté antes que Reportes pero después de Dashboard */
-                        /* Dashboard suele ser el primero por defecto */
-                    </style>
+                // Verificar si estamos sobre un item
+                const item = e.target.closest('.fi-topbar-item');
+                if (!item) return;
 
-                    <script>
-                        // Usar delegación de eventos global para manejar actualizaciones de Livewire y asegurar detección
-                        document.addEventListener('mouseover', (e) => {
-                            // Verificar si estamos dentro de la navegación superior
-                            const nav = e.target.closest('.fi-topbar-nav');
-                            if (!nav) return;
+                // Buscar el botón disparador (que tenga aria-expanded)
+                const button = item.querySelector('button[aria-expanded]');
 
-                            // Verificar si estamos sobre un item
-                            const item = e.target.closest('.fi-topbar-item');
-                            if (!item) return;
-
-                            // Buscar el botón disparador (que tenga aria-expanded)
-                            const button = item.querySelector('button[aria-expanded]');
-                            
-                            // Si el botón existe y el menú está cerrado, simular click para abrir
-                            if (button && button.getAttribute('aria-expanded') === 'false') {
-                                button.click();
-                            }
-                        });
-                    </script>
+                // Si el botón existe y el menú está cerrado, simular click para abrir
+                if (button && button.getAttribute('aria-expanded') === 'false') {
+                    button.click();
+                }
+            });
+        </script>
 HTML,
             );
+
     }
 }

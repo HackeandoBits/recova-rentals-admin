@@ -50,8 +50,8 @@ class ReportsPage extends Page
                 ->requiresConfirmation()
                 ->modalHeading('Generar Reporte para WhatsApp')
                 ->modalDescription(function () {
-                    $from = Carbon::parse($this->dateRange['from'])->format('d/m/Y');
-                    $to = Carbon::parse($this->dateRange['to'])->format('d/m/Y');
+                    $from = $this->dateRange['from'] ? Carbon::parse($this->dateRange['from'])->format('d/m/Y') : 'N/A';
+                    $to = $this->dateRange['to'] ? Carbon::parse($this->dateRange['to'])->format('d/m/Y') : 'N/A';
 
                     return "Se generará un reporte del período: {$from} - {$to} y se enviará por WhatsApp al número configurado.";
                 })
@@ -72,7 +72,7 @@ class ReportsPage extends Page
 
                     // Simulación de envío de WhatsApp
                     // TODO: Integrar con API de WhatsApp Business
-
+        
                     Notification::make()
                         ->title('Reporte Enviado Exitosamente')
                         ->success()
@@ -90,8 +90,8 @@ class ReportsPage extends Page
                 ->requiresConfirmation()
                 ->modalHeading('Exportar Reporte')
                 ->modalDescription(function () {
-                    $from = Carbon::parse($this->dateRange['from'])->format('d/m/Y');
-                    $to = Carbon::parse($this->dateRange['to'])->format('d/m/Y');
+                    $from = $this->dateRange['from'] ? Carbon::parse($this->dateRange['from'])->format('d/m/Y') : 'N/A';
+                    $to = $this->dateRange['to'] ? Carbon::parse($this->dateRange['to'])->format('d/m/Y') : 'N/A';
 
                     return "Se exportará el reporte del período: {$from} - {$to}";
                 })
@@ -154,5 +154,11 @@ class ReportsPage extends Page
     {
         // Este método se llama automáticamente cuando dateRange cambia
         // Los widgets se refrescarán automáticamente gracias a Livewire
+        $this->dispatch('updateChartData');
+    }
+
+    public function updateChartData(): void
+    {
+        // Stub to prevent "Method not found" error if called directly
     }
 }
