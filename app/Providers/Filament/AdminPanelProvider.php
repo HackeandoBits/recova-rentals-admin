@@ -4,11 +4,13 @@ namespace App\Providers\Filament;
 
 use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\Dashboard as AdminDashboard;
+use App\Filament\Pages\Profile;                    // 👈 IMPORTANTE
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Navigation\NavigationBuilder;
+use Filament\Navigation\MenuItem;                  // 👈 IMPORTANTE
+use Filament\Navigation\NavigationBuilder;         // 👈 AGREGADO para navigation()
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -19,7 +21,6 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Saade\FilamentFullCalendar\FilamentFullCalendarPlugin;
-use Filament\View\PanelsRenderHook;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -54,11 +55,39 @@ class AdminPanelProvider extends PanelProvider
             ->darkMode(true)
             ->plugin(FilamentFullCalendarPlugin::make())
 
+            // 👇 Ítem "Mi Perfil" en el menú de usuario (dropdown arriba a la derecha)
+            ->userMenuItems([
+                MenuItem::make()
+                    ->label('Mi Perfil')
+                    ->url(fn() => Profile::getUrl())
+                    ->icon('heroicon-o-user-circle'),
 
+                // Conectar / Desconectar Google
+                MenuItem::make()
+                    ->label(
+                        fn() => auth()->user()?->googleToken()->exists()
+                        ? 'Desconectar Google'
+                        : 'Conectar Google'
+                    )
+                    ->url(
+                        fn() => auth()->user()?->googleToken()->exists()
+                        ? route('google.disconnect')
+                        : route('google.redirect')
+                    )
+                    ->icon(
+                        fn() => auth()->user()?->googleToken()->exists()
+                        ? 'heroicon-o-x-circle'
+                        : 'heroicon-o-link'
+                    ),
+            ])
+
+
+            // Descubrimiento automático de resources, pages y widgets
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverResources(in: app_path('Filament/Resources/Interviews'), for: 'App\\Filament\\Resources\\Interviews')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
+
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

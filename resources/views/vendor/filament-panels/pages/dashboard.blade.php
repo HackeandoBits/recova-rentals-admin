@@ -1,4 +1,6 @@
-<x-filament-panels::page class="fi-dashboard-page">
+{{-- resources/views/filament/pages/dashboard.blade.php --}}
+
+<x-filament-panels::page>
     @if (method_exists($this, 'filtersForm'))
         {{ $this->filtersForm }}
     @endif

@@ -13,6 +13,14 @@
     [data-field-wrapper] {
         scroll-margin-top: 8rem;
     }
+
+    /* Fix: flechas múltiples en selects */
+    body.fi-body select.fi-select-input {
+        background-image: none !important;
+        /* quitamos las flechas duplicadas */
+        background-repeat: no-repeat !important;
+        background-position: right 0.75rem center !important;
+    }
 }
 
 /* =======================================================
@@ -24,7 +32,6 @@
 /* Contenedor de la zona de logo en el login */
 body.fi-body .fi-simple-page .fi-simple-header>.fi-logo {
     height: auto !important;
-    /* anula style="height: 1.5rem;" */
     margin: 0 0 0.6rem 0 !important;
     display: flex !important;
     align-items: center !important;
@@ -68,13 +75,11 @@ body.fi-body .fi-topbar .fi-logo .rr-logo-wrapper {
     gap: 0.4rem;
 }
 
-/* Imagen más chica en el topbar */
 body.fi-body .fi-topbar .fi-logo .rr-logo-icon {
     height: 2rem;
     margin-bottom: 0;
 }
 
-/* Título más chico en el topbar */
 body.fi-body .fi-topbar .fi-logo .rr-logo-title {
     font-size: 1.5rem;
     margin-bottom: 0.5rem;
@@ -87,12 +92,9 @@ body.fi-body .fi-topbar .fi-logo .rr-logo-subtitle {
 
 /* =======================================================
    2) LOGIN – SIMPLE PAGE (solo afecta login/auth)
-   Scoped a: body.fi-body .fi-simple-page ...
 ======================================================= */
 
-/* --------------------------------------------------------------------
-   Layout general simple page (fondo)
----------------------------------------------------------------------*/
+/* Layout general simple page (fondo) */
 
 body.fi-body .fi-simple-main {
     background: transparent !important;
@@ -107,7 +109,6 @@ body.fi-body .fi-simple-page {
     background: radial-gradient(circle at center, #1e1b4b 0%, #0f172a 40%, #000000 100%) !important;
     min-height: 100vh !important;
     width: 100% !important;
-
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -122,17 +123,13 @@ body.fi-body .fi-simple-page>section {
     flex-direction: column !important;
     align-items: stretch !important;
     gap: 0.9rem !important;
-    /* espacio entre header (logo) y form */
     padding: 0;
-    /* la card va en el form, no en el section */
     border: none;
     background: none;
     box-shadow: none;
 }
 
-/* =========================================
-   Dashboard: header + widgets más pegados
-   ========================================= */
+
 
 body.fi-body .fi-dashboard-page>section {
     /* Menos padding vertical que py-8 */
@@ -147,16 +144,16 @@ body.fi-body .fi-dashboard-page>section {
 /* --------------------------------------------------------------------
    Header del login (logo fuera de la card)
 ---------------------------------------------------------------------*/
+=======
 
-body.fi-body .fi-simple-page .fi-simple-header {
+/* Header del login (logo fuera de la card) */
+>>>>>>>origin/feature/refactor-login-ui body.fi-body .fi-simple-page .fi-simple-header {
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
 }
 
-/* Si por alguna razón Filament generara heading/subheading,
-   los dejamos con poco margen (siguen FUERA de la card). */
 body.fi-body .fi-simple-page .fi-simple-header-heading {
     color: #ffffff !important;
     font-weight: 700 !important;
@@ -168,9 +165,7 @@ body.fi-body .fi-simple-page .fi-simple-header-subheading {
     margin: 0 0 0.4rem 0 !important;
 }
 
-/* --------------------------------------------------------------------
-   CARD: formulario de login
----------------------------------------------------------------------*/
+/* CARD: formulario de login */
 
 body.fi-body .fi-simple-page form.fi-form {
     background: rgba(15, 23, 42, 0.96);
@@ -183,7 +178,7 @@ body.fi-body .fi-simple-page form.fi-form {
     display: flex !important;
     flex-direction: column !important;
     gap: 0.7rem !important;
-    /* espacio entre título interno, campos y botón */
+
 }
 
 /* Contenedor del título dentro del form */
@@ -208,9 +203,7 @@ body.fi-body .fi-simple-page form.fi-form .rr-login-subtitle {
     margin-bottom: 0;
 }
 
-/* --------------------------------------------------------------------
-   Labels y campos
----------------------------------------------------------------------*/
+/* Labels y campos */
 
 body.fi-body .fi-simple-page form.fi-form label,
 body.fi-body .fi-simple-page form.fi-form .fi-fo-field-wrp-label span {
@@ -222,12 +215,10 @@ body.fi-body .fi-simple-page form.fi-form .fi-fo-field-wrp-label span {
     text-shadow: 0 0 5px rgba(34, 211, 238, 0.4) !important;
 }
 
-/* Separación compacta entre campos */
 body.fi-body .fi-simple-page form.fi-form .fi-fo-field-wrp {
     margin-bottom: 0.45rem !important;
 }
 
-/* Wrapper de inputs (email / password) */
 body.fi-body .fi-simple-page form.fi-form .fi-input-wrp {
     background-color: rgba(0, 0, 0, 0.4) !important;
     border: 1px solid rgba(148, 163, 184, 0.2) !important;
@@ -250,9 +241,7 @@ body.fi-body .fi-simple-page form.fi-form .fi-input::placeholder {
     color: #64748b !important;
 }
 
-/* --------------------------------------------------------------------
-   Checkbox "Recordar"
----------------------------------------------------------------------*/
+/* Checkbox "Recordar" */
 
 body.fi-body .fi-simple-page form.fi-form .fi-checkbox-input {
     color: #06b6d4 !important;
@@ -266,16 +255,13 @@ body.fi-body .fi-simple-page form.fi-form .fi-checkbox-input:checked {
     border-color: #06b6d4 !important;
 }
 
-/* --------------------------------------------------------------------
-   Botón principal "Iniciar sesión"
----------------------------------------------------------------------*/
+/* Botón principal "Iniciar sesión" */
 
 body.fi-body .fi-simple-page form.fi-form .fi-ac-btn-action {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-
     background: linear-gradient(90deg,
             #22d3ee 0%,
             #a855f7 50%,
@@ -284,12 +270,10 @@ body.fi-body .fi-simple-page form.fi-form .fi-ac-btn-action {
     font-weight: 700 !important;
     text-transform: uppercase !important;
     letter-spacing: 0.05em !important;
-
     border: none !important;
     border-radius: 9999px !important;
     padding: 0.6rem 1.3rem !important;
     width: 100% !important;
-
     box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4) !important;
     cursor: pointer !important;
     margin-top: 0.35rem !important;
@@ -315,9 +299,7 @@ body.fi-body .fi-simple-page form.fi-form .fi-ac-btn-action svg.fi-loading-indic
     display: none !important;
 }
 
-/* --------------------------------------------------------------------
-   Autofill
----------------------------------------------------------------------*/
+/* Autofill */
 
 body.fi-body .fi-simple-page form.fi-form input:-webkit-autofill,
 body.fi-body .fi-simple-page form.fi-form input:-webkit-autofill:hover,
@@ -325,10 +307,8 @@ body.fi-body .fi-simple-page form.fi-form input:-webkit-autofill:focus,
 body.fi-body .fi-simple-page form.fi-form input:-webkit-autofill:active {
     -webkit-text-fill-color: #ffffff !important;
     caret-color: #ffffff !important;
-
     -webkit-box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.4) inset !important;
     box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.4) inset !important;
-
     border-color: #06b6d4 !important;
     transition: background-color 9999s ease-out, color 9999s ease-out !important;
 }
@@ -336,28 +316,22 @@ body.fi-body .fi-simple-page form.fi-form input:-webkit-autofill:active {
 body.fi-body .fi-simple-page form.fi-form input:-moz-autofill {
     color: #ffffff !important;
     caret-color: #ffffff !important;
-
     box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.4) inset !important;
     border-color: #06b6d4 !important;
 }
 
-/* --------------------------------------------------------------------
-   Contenedor de componentes del form
-   (antes: grid con gap-6, ahora columna compacta)
----------------------------------------------------------------------*/
+/* Contenedor de componentes del form (antes grid) */
 
 body.fi-body .fi-simple-page form.fi-form .fi-fo-component-ctn {
     display: flex !important;
     flex-direction: column !important;
     gap: 0.7rem !important;
-    /* en vez de gap-6 de Tailwind */
+
 }
 
-/* ============================
-   LAYOUT GENERAL DEL PANEL
-   (no afecta al login porque
-   el login usa .fi-simple-page)
-   ============================ */
+/* =======================================================
+   3) LAYOUT GENERAL DEL PANEL
+======================================================= */
 
 .fi-layout {
     background: radial-gradient(circle at top, #1a1024 0, #05030a 45%, #02010a 100%);
@@ -365,16 +339,17 @@ body.fi-body .fi-simple-page form.fi-form .fi-fo-component-ctn {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
 }
 
-/* Main + sidebar */
 .fi-sidebar {
     background: linear-gradient(180deg, #05030a, #05030f);
     border-right: 1px solid rgba(248, 113, 222, 0.25);
-    /* rosa neón suave */
+
     box-shadow: 0 0 30px rgba(236, 72, 153, 0.25);
 }
 
-.fi-main {
-    /* Deja espacio, pero sin romper los paddings de Filament */
+main.fi-main {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin-inline: 0 !important;
     padding-inline: 1.75rem;
     padding-block: 1.5rem 2rem;
 }
@@ -385,34 +360,40 @@ body.fi-body .fi-simple-page form.fi-form .fi-fo-component-ctn {
     margin-inline: auto;
 }
 
-/* ============================
-   TIPOGRAFÍA Y HEADERS
-   ============================ */
+/* Dashboard: header + widgets más pegados */
 
-/* Título principal del dashboard / páginas */
+body.fi-body .fi-dashboard-page>section {
+    padding-top: 1rem;
+    padding-bottom: 1.75rem;
+    row-gap: 1rem;
+}
+
+/* =======================================================
+   4) TIPOGRAFÍA Y HEADERS
+======================================================= */
+
 .fi-page-header-heading {
     font-size: 1.5rem;
-    /* ~24px */
+
     line-height: 1.2;
     letter-spacing: 0.03em;
     font-weight: 700;
     background: linear-gradient(90deg, #f97316, #e11d48, #a855f7);
+    background-clip: text;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
 }
 
-/* Subtítulo / descripción de página */
 .fi-page-header-subheading {
     font-size: 0.9rem;
     color: #9ca3af;
 }
 
-/* ============================
-   CARDS / WIDGETS
-   ============================ */
+/* =======================================================
+   5) CARDS / WIDGETS
+======================================================= */
 
-/* Card genérica (Filament usa paneles con fondo) */
 .fi-section,
 .fi-stats-overview-widget,
 .fi-widget {
@@ -425,7 +406,6 @@ body.fi-body .fi-simple-page form.fi-form .fi-fo-component-ctn {
     padding: 1.25rem;
 }
 
-/* Título dentro de cada card */
 .fi-section-header,
 .fi-widget-header {
     margin-bottom: 0.75rem;
@@ -440,7 +420,6 @@ body.fi-body .fi-simple-page form.fi-form .fi-fo-component-ctn {
     color: #e5e7eb;
 }
 
-/* Contenido interno de la card: un poco más de aire */
 .fi-section-content,
 .fi-widget-content {
     display: flex;
@@ -448,13 +427,11 @@ body.fi-body .fi-simple-page form.fi-form .fi-fo-component-ctn {
     gap: 0.75rem;
 }
 
-/* Contenedor de los widgets en dashboard */
 .fi-widgets {
     display: grid;
     gap: 1.25rem;
 }
 
-/* Responsive básico (ajustaremos mejor cuando vea tu HTML real) */
 @media (min-width: 768px) {
     .fi-widgets {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -467,12 +444,11 @@ body.fi-body .fi-simple-page form.fi-form .fi-fo-component-ctn {
     }
 }
 
-/* ============================
-   TABLAS / INDEX
-   ============================ */
+/* =======================================================
+   6) TABLAS / INDEX
+======================================================= */
 
 .fi-ta {
-    /* wrapper de la tabla */
     background: rgba(15, 23, 42, 0.85);
     border-radius: 0.9rem;
     border: 1px solid rgba(148, 163, 184, 0.3);
@@ -495,19 +471,13 @@ body.fi-body .fi-simple-page form.fi-form .fi-fo-component-ctn {
     transform: translateY(-1px);
 }
 
-/* Que el <main> del panel ocupe todo el ancho */
-main.fi-main {
-    max-width: 100% !important;
-    width: 100% !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-}
-
-/* Quitar el header automático (título "Dashboard") solo en el dashboard */
-body.fi-body .fi-page.fi-dashboard-page .fi-header {
+/* (Opcional) Quitar headers automáticos de ciertas páginas
+body.fi-body .fi-page.fi-dashboard-page .fi-header,
+body.fi-body .fi-page.fi-reports-page .fi-header,
+body.fi-body .fi-page.fi-calendar-page .fi-header,
+body.fi-body .fi-page.fi-profile-page .fi-header {
     display: none !important;
 }
-
 /* ============================
    FIX: SELECT ARROWS
    ============================ */
@@ -692,3 +662,96 @@ select,
         margin-left: auto !important;
     }
 }
+
+=======*/
+/* =======================================================
+   7) FIX: TOPBAR & USER MENU
+======================================================= */
+
+.fi-topbar {
+    z-index: 50 !important;
+    position: sticky !important;
+    top: 0 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    overflow: visible !important;
+}
+
+.fi-user-menu,
+.fi-user-menu-trigger {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* =======================================================
+   8) PROFILE PAGE: FULL WIDTH & GRID 2 COLS
+======================================================= */
+
+/* Wrapper principal del contenido de Profile */
+body.fi-body .fi-page.fi-profile-page section.flex.flex-col.gap-y-8>div {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-inline: 0 !important;
+}
+
+/* Form y secciones a todo el ancho */
+body.fi-body .fi-profile-page form.fi-form {
+    max-width: 100% !important;
+    margin-inline: 0 !important;
+}
+
+/* Grid que contiene “Información Personal” y “Seguridad” */
+body.fi-body .fi-profile-page .fi-fo-component-ctn {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 1.5rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* Cada columna (wrapper de la fi-section) ocupa una columna */
+body.fi-body .fi-profile-page .fi-fo-component-ctn>.col-\[\-\-col-span-default\] {
+    grid-column: span 1 / span 1 !important;
+    width: 100%;
+    height: 100%;
+}
+
+/* Cards del perfil a ancho completo y misma altura */
+body.fi-body .fi-profile-page .fi-section {
+    max-width: 100% !important;
+    margin-inline: 0 !important;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* El contenido interno se estira dentro de la card */
+body.fi-body .fi-profile-page .fi-section-content-ctn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* En pantallas chicas, una sola columna */
+@media (max-width: 768px) {
+    body.fi-body .fi-profile-page .fi-fo-component-ctn {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+}
+
+/* =======================================================
+   9) DASHBOARD HEADER OFFSET
+======================================================= */
+
+/* Solo el header del dashboard */
+body.fi-body .fi-page.fi-dashboard-page .fi-header {
+    padding-left: 15.5rem;
+}
+
+/* Contenido del dashboard (widgets + secciones), sin tocar el header */
+body.fi-body .fi-page.fi-dashboard-page>section> :not(.fi-header) {
+    margin-right: 10.75rem !important;
+}
+
+>>>>>>>origin/feature/refactor-login-ui

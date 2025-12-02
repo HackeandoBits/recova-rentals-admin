@@ -19,6 +19,11 @@ class Calendar extends Page
 
     protected static string $view = 'filament.pages.calendar';
 
+    public function getSubheading(): ?string
+    {
+        return 'Gestiona tus eventos y recordatorios.';
+    }
+
     public static function getNavigationBadge(): ?string
     {
         // Mostrar el número de eventos de hoy
@@ -51,8 +56,6 @@ class Calendar extends Page
 
     protected function getHeaderWidgets(): array
     {
-        return [
-            CalendarWidget::class,
-        ];
+        return [];
     }
 }
