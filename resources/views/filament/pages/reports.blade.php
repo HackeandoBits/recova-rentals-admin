@@ -73,8 +73,8 @@
         {{-- Gráficos --}}
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
             @foreach ($this->getChartWidgets() as $widget)
-                <div>
-                    @livewire($widget, ['dateRange' => $dateRange])
+                <div wire:key="{{ $widget }}">
+                    @livewire($widget, ['dateRange' => $dateRange], key($widget))
                 </div>
             @endforeach
         </div>

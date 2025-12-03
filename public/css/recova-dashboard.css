@@ -441,6 +441,32 @@ body.fi-body .fi-main .fi-stats-overview-stat {
         0 14px 40px rgba(15, 23, 42, 0.95),
         0 0 18px rgba(56, 189, 248, 0.35) !important;
     backdrop-filter: blur(18px) !important;
+
+    /* Centrado de contenido */
+    text-align: center !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 1.5rem !important;
+}
+
+/* Forzar centrado en TODOS los contenedores internos */
+body.fi-body .fi-main .fi-stats-overview-stat>div,
+body.fi-body .fi-main .fi-stats-overview-stat .grid,
+body.fi-body .fi-main .fi-stats-overview-stat .flex {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    width: 100% !important;
+}
+
+/* Alinear textos específicos */
+body.fi-body .fi-main .fi-stats-overview-stat span,
+body.fi-body .fi-main .fi-stats-overview-stat div {
+    text-align: center !important;
 }
 
 /* Título de la tarjeta */

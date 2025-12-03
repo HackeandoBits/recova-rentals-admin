@@ -3,7 +3,6 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Interview;
-use App\Models\User;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Carbon;
@@ -11,6 +10,10 @@ use Illuminate\Support\Carbon;
 class ReportsStatsOverviewWidget extends BaseWidget
 {
     public ?array $dateRange = null;
+
+    protected static ?string $pollingInterval = null;
+
+    protected $listeners = ['updateChartData' => '$refresh'];
 
     public function updateChartData(): void
     {

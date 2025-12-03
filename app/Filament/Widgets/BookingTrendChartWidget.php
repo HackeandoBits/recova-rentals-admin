@@ -16,6 +16,10 @@ class BookingTrendChartWidget extends ChartWidget
 
     protected static ?string $maxHeight = '300px';
 
+    protected static ?string $pollingInterval = null;
+
+    protected $listeners = ['updateChartData' => '$refresh'];
+
     public ?array $dateRange = null;
 
     public function updateChartData(): void
