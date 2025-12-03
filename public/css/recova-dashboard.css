@@ -4,12 +4,10 @@
 
 /* Fondo general Recova: ocupa toda la pantalla */
 body.fi-body {
-    background: radial-gradient(
-        circle at top left,
-        rgba(236, 72, 153, 0.22) 0%,
-        rgba(15, 23, 42, 0.95) 40%,
-        #020617 100%
-    );
+    background: radial-gradient(circle at top left,
+            rgba(236, 72, 153, 0.22) 0%,
+            rgba(15, 23, 42, 0.95) 40%,
+            #020617 100%);
     min-height: 100vh;
 }
 
@@ -30,14 +28,12 @@ body.fi-body .fi-topbar {
 }
 
 /* El <nav> es el que se pinta con el degradado animado */
-body.fi-body .fi-topbar > nav {
-    background-image: linear-gradient(
-        120deg,
-        #4b164e 0%,
-        #7c2d78 30%,
-        #a855f7 60%,
-        #7c2d78 100%
-    ) !important;
+body.fi-body .fi-topbar>nav {
+    background-image: linear-gradient(120deg,
+            #4b164e 0%,
+            #7c2d78 30%,
+            #a855f7 60%,
+            #7c2d78 100%) !important;
     background-size: 200% 100%;
     animation: rr-topbar-wave 18s ease-in-out infinite;
     border-bottom: 1px solid rgba(15, 23, 42, 0.9) !important;
@@ -48,9 +44,11 @@ body.fi-body .fi-topbar > nav {
     0% {
         background-position: 0% 50%;
     }
+
     50% {
         background-position: 100% 50%;
     }
+
     100% {
         background-position: 0% 50%;
     }
@@ -65,7 +63,8 @@ body.fi-body .fi-topbar .fi-topbar-item-label,
 body.fi-body .fi-topbar .fi-topbar-item-label.dark\:text-gray-200,
 body.fi-body .fi-topbar .fi-topbar-item-icon,
 body.fi-body .fi-topbar .fi-topbar-item-icon.dark\:text-gray-500 {
-    color: #22d3ee !important;   /* cyan brillante */
+    color: #22d3ee !important;
+    /* cyan brillante */
     font-weight: 600;
 }
 
@@ -86,7 +85,8 @@ body.fi-body .fi-topbar .fi-topbar-item-button:focus-visible .fi-topbar-item-lab
 /* Botón activo como pill oscura */
 body.fi-body .fi-topbar .fi-topbar-item-button[data-active] {
     border-radius: 9999px;
-    background: radial-gradient(circle at top, #0b1220, #020617) !important; /* bien oscuro */
+    background: radial-gradient(circle at top, #0b1220, #020617) !important;
+    /* bien oscuro */
     border: 1px solid rgba(34, 211, 238, 0.65);
     box-shadow:
         0 0 10px rgba(15, 23, 42, 0.9),
@@ -133,17 +133,23 @@ body.fi-body .fi-main .fi-resource-relation-manager {
 
 /* Stats del dashboard estilo Recova (más glow) */
 .rr-stat-card {
-    background: radial-gradient(
-        circle at top left,
-        rgba(56, 189, 248, 0.08),
-        rgba(15, 23, 42, 0.95)
-    );
+    background: radial-gradient(circle at top left,
+            rgba(56, 189, 248, 0.08),
+            rgba(15, 23, 42, 0.95));
     border-radius: 18px;
     border: 1px solid rgba(148, 163, 184, 0.35);
     box-shadow:
         0 14px 40px rgba(15, 23, 42, 0.94),
         0 0 16px rgba(6, 182, 212, 0.55);
     backdrop-filter: blur(18px);
+
+    /* Centrado de contenido */
+    text-align: center !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 1.5rem !important;
 }
 
 .rr-stat-card:hover {
@@ -170,6 +176,59 @@ body.fi-body .fi-main .fi-header-heading {
 body.fi-body .fi-main .fi-header-subheading {
     color: #67e8f9 !important;
     opacity: 0.9;
+}
+
+/* =========================================
+   DASHBOARD – GRID LAYOUT
+========================================= */
+
+/* Remover restricción de max-width en dashboard */
+.fi-dashboard-page .max-w-7xl {
+    max-width: 100% !important;
+}
+
+/* Asegurar que el contenedor de widgets use grid correctamente */
+.fi-dashboard-page x-filament-widgets\:\:widgets,
+.fi-dashboard-page [x-data*="widgets"] {
+    width: 100% !important;
+}
+
+/* Forzar que los widgets respeten el grid layout con los valores de columnSpan */
+@media (min-width: 1280px) {
+
+    /* El contenedor de widgets en el dashboard */
+    .fi-dashboard-page [x-data]>div[class*="grid"],
+    .fi-dashboard-page .fi-wi {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 1.5rem !important;
+    }
+
+    /* Widget 1: StatsOverview - 4 columnas (full width) */
+    .fi-dashboard-page [x-data]>div[class*="grid"]>div:nth-child(1),
+    .fi-dashboard-page .fi-wi>div:nth-child(1) {
+        grid-column: span 4 !important;
+    }
+
+    /* Widget 2: UpcomingInterviews (TableWidget) - 3 columnas */
+    .fi-dashboard-page [x-data]>div[class*="grid"]>div:nth-child(2),
+    .fi-dashboard-page .fi-wi>div:nth-child(2) {
+        grid-column: span 3 !important;
+    }
+
+    /* Widget 3: QuickStats - 1 columna */
+    .fi-dashboard-page [x-data]>div[class*="grid"]>div:nth-child(3),
+    .fi-dashboard-page .fi-wi>div:nth-child(3) {
+        grid-column: span 1 !important;
+    }
+
+    /* Asegurar que el contenido de los widgets no se desborde */
+    .fi-dashboard-page [x-data]>div[class*="grid"]>div,
+    .fi-dashboard-page .fi-wi>div {
+        min-width: 0;
+        /* Importante para que el grid funcione correctamente */
+        width: 100%;
+    }
 }
 
 /* =========================================
@@ -201,7 +260,8 @@ body.fi-body .fi-main select.fi-input:focus {
 body.fi-body .fi-topbar .fi-input-wrp,
 body.fi-body .fi-topbar .fi-input-wrp-input {
     background: rgba(15, 23, 42, 0.35) !important;
-    border: 1px solid #22d3ee !important;      /* borde cyan */
+    border: 1px solid #22d3ee !important;
+    /* borde cyan */
     box-shadow:
         0 0 8px rgba(34, 211, 238, 0.45);
 }
@@ -210,7 +270,8 @@ body.fi-body .fi-topbar .fi-input-wrp-input {
 body.fi-body .fi-topbar input.fi-input {
     border: none !important;
     background: transparent !important;
-    color: #e0faff !important;                 /* texto claro */
+    color: #e0faff !important;
+    /* texto claro */
 }
 
 /* Placeholder en cyan suave */
@@ -238,11 +299,9 @@ body.fi-body .fi-topbar input.fi-input:focus {
 
 /* Panel del dropdown (el cuadrito flotante) */
 body.fi-body .fi-topbar .fi-dropdown-panel {
-    background: radial-gradient(
-        circle at top left,
-        rgba(56, 189, 248, 0.12),
-        rgba(15, 23, 42, 0.96)
-    ) !important;
+    background: radial-gradient(circle at top left,
+            rgba(56, 189, 248, 0.12),
+            rgba(15, 23, 42, 0.96)) !important;
     border-radius: 14px !important;
     border: 1px solid rgba(34, 211, 238, 0.6) !important;
     box-shadow:
@@ -287,7 +346,8 @@ body.fi-body .fi-topbar .fi-dropdown-list-item:hover .fi-dropdown-list-item-icon
 
 /* Contenedor principal de la tabla */
 body.fi-body .fi-main .fi-ta-ctn {
-    background: rgba(15, 23, 42, 0.75) !important; /* fondo oscuro glass */
+    background: rgba(15, 23, 42, 0.75) !important;
+    /* fondo oscuro glass */
     border-radius: 18px !important;
     border: 1px solid rgba(56, 189, 248, 0.25) !important;
     box-shadow:
@@ -324,7 +384,8 @@ body.fi-body .fi-main .fi-ta-empty-state-description {
 
 /* Panel interno de la sección de filtros */
 body.fi-body .fi-main .fi-section .fi-section-content-ctn {
-    background: rgba(15, 23, 42, 0.92) !important;   /* fondo oscuro */
+    background: rgba(15, 23, 42, 0.92) !important;
+    /* fondo oscuro */
     border-radius: 18px !important;
     border: 1px solid rgba(56, 189, 248, 0.25) !important;
     box-shadow:
@@ -371,11 +432,9 @@ body.fi-body .fi-main .fi-section .fi-section-content-ctn button.fi-btn:hover {
 ========================================= */
 
 body.fi-body .fi-main .fi-stats-overview-stat {
-    background: radial-gradient(
-        circle at top left,
-        rgba(56, 189, 248, 0.10),
-        rgba(15, 23, 42, 0.96)
-    ) !important;
+    background: radial-gradient(circle at top left,
+            rgba(56, 189, 248, 0.10),
+            rgba(15, 23, 42, 0.96)) !important;
     border-radius: 18px !important;
     border: 1px solid rgba(56, 189, 248, 0.30) !important;
     box-shadow:
@@ -397,7 +456,8 @@ body.fi-body .fi-main .fi-stats-overview-stat-value {
 /* Texto secundario / links */
 body.fi-body .fi-main .fi-stats-overview-stat-description,
 body.fi-body .fi-main .fi-stats-overview-stat-description a {
-    color: #e879f9 !important;            /* fucsia suave */
+    color: #e879f9 !important;
+    /* fucsia suave */
 }
 
 /* Hover de link en la descripción */
@@ -414,11 +474,9 @@ body.fi-body .fi-main .fi-stats-overview-stat-description a:hover {
 ========================================= */
 
 body.fi-body .fi-main .fi-wi-stats-overview-stat {
-    background: radial-gradient(
-        circle at top left,
-        rgba(56, 189, 248, 0.10),
-        rgba(15, 23, 42, 0.96)
-    ) !important;
+    background: radial-gradient(circle at top left,
+            rgba(56, 189, 248, 0.10),
+            rgba(15, 23, 42, 0.96)) !important;
     border-radius: 18px !important;
     border: 1px solid rgba(56, 189, 248, 0.30) !important;
     box-shadow:
@@ -436,7 +494,8 @@ body.fi-body .fi-main .fi-section .fi-section-content-ctn button.fi-btn {
     border-radius: 9999px !important;
     background: rgba(15, 23, 42, 0.9) !important;
     border: 1px solid rgba(56, 189, 248, 0.6) !important;
-    color: #e0faff !important;           /* texto claro */
+    color: #e0faff !important;
+    /* texto claro */
 }
 
 /* Texto interno del botón (por si viene con clases dark:text-*) */
@@ -461,21 +520,23 @@ body.fi-body .fi-main .fi-section .fi-section-content-ctn button.fi-btn:hover {
 ========================================= */
 
 /* Botones de rango dentro del panel de filtros */
-body.fi-body .fi-main .fi-section .fi-section-content-ctn .flex.gap-2 > button.inline-flex {
+body.fi-body .fi-main .fi-section .fi-section-content-ctn .flex.gap-2>button.inline-flex {
     border-radius: 9999px !important;
     background: rgba(15, 23, 42, 0.9) !important;
-    border: 1px solid #22d3ee !important;          /* borde cyan */
-    color: #e0faff !important;                     /* texto claro */
+    border: 1px solid #22d3ee !important;
+    /* borde cyan */
+    color: #e0faff !important;
+    /* texto claro */
 }
 
 /* Icono dentro del botón */
-body.fi-body .fi-main .fi-section .fi-section-content-ctn .flex.gap-2 > button.inline-flex svg {
+body.fi-body .fi-main .fi-section .fi-section-content-ctn .flex.gap-2>button.inline-flex svg {
     color: #22d3ee !important;
     stroke: #22d3ee !important;
 }
 
 /* Hover: un poco más cyan y glow suave */
-body.fi-body .fi-main .fi-section .fi-section-content-ctn .flex.gap-2 > button.inline-flex:hover {
+body.fi-body .fi-main .fi-section .fi-section-content-ctn .flex.gap-2>button.inline-flex:hover {
     background: rgba(34, 211, 238, 0.20) !important;
     box-shadow: 0 0 10px rgba(34, 211, 238, 0.65);
 }
@@ -486,11 +547,9 @@ body.fi-body .fi-main .fi-section .fi-section-content-ctn .flex.gap-2 > button.i
 
 /* Panel general del calendario */
 body.fi-body .flatpickr-calendar {
-    background: radial-gradient(
-        circle at top left,
-        rgba(56, 189, 248, 0.12),
-        rgba(15, 23, 42, 0.98)
-    ) !important;
+    background: radial-gradient(circle at top left,
+            rgba(56, 189, 248, 0.12),
+            rgba(15, 23, 42, 0.98)) !important;
     border-radius: 18px !important;
     border: 1px solid rgba(34, 211, 238, 0.7) !important;
     box-shadow:
@@ -585,8 +644,10 @@ body.fi-body .flatpickr-calendar button:hover {
 body.fi-body .fi-main .fi-section input[type="date"] {
     background-color: rgba(15, 23, 42, 0.85) !important;
     border-radius: 9999px !important;
-    border: 1px solid rgba(56, 189, 248, 0.7) !important; /* borde cyan */
-    color: #e0faff !important;                             /* texto claro */
+    border: 1px solid rgba(56, 189, 248, 0.7) !important;
+    /* borde cyan */
+    color: #e0faff !important;
+    /* texto claro */
     padding-inline: 1rem !important;
 }
 
@@ -619,8 +680,10 @@ body.fi-body input:-webkit-autofill,
 body.fi-body input:-webkit-autofill:hover,
 body.fi-body input:-webkit-autofill:focus,
 body.fi-body input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 1000px rgba(15, 23, 42, 0.85) inset !important; /* mismo fondo oscuro glass */
-    -webkit-text-fill-color: #e0faff !important;  /* texto claro */
+    -webkit-box-shadow: 0 0 0 1000px rgba(15, 23, 42, 0.85) inset !important;
+    /* mismo fondo oscuro glass */
+    -webkit-text-fill-color: #e0faff !important;
+    /* texto claro */
     caret-color: #e0faff !important;
 }
 

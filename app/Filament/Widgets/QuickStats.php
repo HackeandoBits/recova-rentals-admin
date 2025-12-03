@@ -13,7 +13,7 @@ class QuickStats extends Widget
     protected int|string|array $columnSpan = [
         'sm' => 1,
         'lg' => 2,
-        'xl' => 2,
+        'xl' => 1,
     ];
 
     protected function getViewData(): array
@@ -21,14 +21,14 @@ class QuickStats extends Widget
         // 1. Interviews este mes
         $interviewsThisMonth = \App\Models\Interview::whereBetween('created_at', [
             \Carbon\Carbon::now()->startOfMonth(),
-            \Carbon\Carbon::now()->endOfMonth()
+            \Carbon\Carbon::now()->endOfMonth(),
         ])->count();
 
         // 2. Cancelaciones del mes
         $cancellationsThisMonth = \App\Models\Interview::where('status', 'cancelled')
             ->whereBetween('created_at', [
                 \Carbon\Carbon::now()->startOfMonth(),
-                \Carbon\Carbon::now()->endOfMonth()
+                \Carbon\Carbon::now()->endOfMonth(),
             ])->count();
 
         // 3. Día más popular (de la semana)
@@ -45,7 +45,7 @@ class QuickStats extends Widget
             4 => 'Miércoles',
             5 => 'Jueves',
             6 => 'Viernes',
-            7 => 'Sábado'
+            7 => 'Sábado',
         ];
 
         $mostPopularDay = $popularDay ? $daysOfWeek[$popularDay->day_of_week] : 'Sin datos';

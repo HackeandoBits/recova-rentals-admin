@@ -14,7 +14,7 @@
                 <div class="flex items-center justify-between">
                     <dt class="flex items-center gap-2 text-sm text-gray-500">
                         <x-filament::icon icon="heroicon-o-calendar-days" class="w-4 h-4" />
-                        <span>Interviews Este Mes</span>
+                        <span>Reuniones Este Mes</span>
                     </dt>
                     <dd class="text-sm font-semibold">
                         {{ $interviewsThisMonth }}

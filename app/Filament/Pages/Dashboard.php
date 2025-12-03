@@ -16,18 +16,6 @@ class Dashboard extends BaseDashboard
 
     protected static ?int $navigationSort = -2;
 
-    protected static string $view = 'filament.pages.dashboard';
-
-    public function getHeading(): string
-    {
-        return 'Dashboard';
-    }
-
-    public function getSubheading(): ?string
-    {
-        return '¡Bienvenido! Aquí tienes un resumen de tu negocio de alquiler.';
-    }
-
     public function getColumns(): int|array
     {
         // 4 columnas en XL para lograr el layout:
@@ -36,6 +24,7 @@ class Dashboard extends BaseDashboard
         return [
             'default' => 1,
             'lg' => 2,
+            'xl' => 4,
         ];
     }
 

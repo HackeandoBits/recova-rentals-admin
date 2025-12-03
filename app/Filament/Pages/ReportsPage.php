@@ -27,8 +27,6 @@ class ReportsPage extends Page
 
     protected static ?string $title = 'Reportes y Estadísticas';
 
-    protected static ?string $navigationGroup = 'Reportes'; // Agrupar para ordenar
-
     protected static ?int $navigationSort = 1;
 
     public ?array $dateRange = [
@@ -167,10 +165,5 @@ class ReportsPage extends Page
         // Este método se llama automáticamente cuando dateRange cambia
         // Los widgets se refrescarán automáticamente gracias a Livewire
         $this->dispatch('updateChartData');
-    }
-
-    public function updateChartData(): void
-    {
-        // Stub to prevent "Method not found" error if called directly
     }
 }
