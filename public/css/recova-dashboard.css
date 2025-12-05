@@ -1072,7 +1072,9 @@ body.fi-body .fi-main .fi-section-content-ctn button[type="button"] svg {
     color: #22d3ee !important;
 }
 
-/* Capitalize Calendar Title */
-.fc .fc-toolbar-title {
+/* =========================================
+   FULLCALENDAR – Título Capitalizado
+========================================= */
+.fc-toolbar-title {
     text-transform: capitalize !important;
 }
