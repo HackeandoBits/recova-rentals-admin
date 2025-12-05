@@ -40,22 +40,31 @@ class CalendarWidget extends FullCalendarWidget
             // 'eventDidMount' => ... (Debug removed)
             'datesSet' => \Filament\Support\RawJs::make(<<<'JS'
                 function(info) {
-                    // Remover "de" del título (Ej: Diciembre de 2025 -> Diciembre 2025)
+                    // Esperar renderizado y limpiar título
                     setTimeout(() => {
-                        const titleEl = document.querySelector('.fc-toolbar-title');
-                        if (titleEl) {
-                            titleEl.textContent = titleEl.textContent.replace(' de ', ' ');
-                            // Aseguramos mayúscula inicial también por JS por si acaso
-                            titleEl.style.textTransform = 'capitalize';
-                        }
+                        const titles = document.querySelectorAll('.fc-toolbar-title');
+                        titles.forEach(el => {
+                            // Reemplaza " de " por espacio, ignora mayúsculas
+                            el.textContent = el.textContent.replace(/\sde\s/gi, ' ');
+                            el.style.textTransform = 'capitalize';
+                        });
                     }, 50);
+                    // Segundo intento por si el renderizado tarda
+                    setTimeout(() => {
+                        const titles = document.querySelectorAll('.fc-toolbar-title');
+                        titles.forEach(el => {
+                            if (el.textContent.match(/\sde\s/i)) {
+                                el.textContent = el.textContent.replace(/\sde\s/gi, ' ');
+                            }
+                        });
+                    }, 300);
                 }
             JS),
             'schedulerLicenseKey' => 'GPL-My-Project-Is-Open-Source',
-            'dayMaxEvents' => true, // Limitar eventos por día para mantener altura de celdas
+            'dayMaxEvents' => true,
             'titleFormat' => [
                 'year' => 'numeric',
-                'month' => 'long', // Nombre completo del mes
+                'month' => 'long',
             ],
         ];
     }
