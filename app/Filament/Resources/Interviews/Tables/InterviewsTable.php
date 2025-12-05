@@ -155,6 +155,7 @@ class InterviewsTable
             ->persistFiltersInSession()
             ->persistSortInSession()
             ->persistSearchInSession()
-            ->persistColumnSearchesInSession();
+            ->persistColumnSearchesInSession()
+            ->defaultSort('created_at', 'desc');
     }
 }
