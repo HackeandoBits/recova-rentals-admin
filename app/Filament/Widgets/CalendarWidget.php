@@ -101,6 +101,7 @@ class CalendarWidget extends FullCalendarWidget
             JS),
             'schedulerLicenseKey' => 'GPL-My-Project-Is-Open-Source',
             'dayMaxEvents' => true, // Limitar eventos por día para mantener altura de celdas
+            'fixedWeekCount' => false, // No forzar 6 semanas si no son necesarias
             'titleFormat' => [
                 'year' => 'numeric',
                 'month' => 'long', // Nombre completo del mes
