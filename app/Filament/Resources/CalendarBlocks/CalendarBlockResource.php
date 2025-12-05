@@ -16,7 +16,9 @@ class CalendarBlockResource extends Resource
 {
     protected static ?string $model = CalendarBlock::class;
 
-    // Navegación (mismos tipos que tu InterviewResource)
+    protected static ?string $slug = 'bloqueos';
+
+    // Navegación (mismos tipos que tu Interview Resource)
     protected static ?string $navigationIcon = 'heroicon-o-lock-closed';
 
     protected static ?string $navigationLabel = 'Bloqueos';

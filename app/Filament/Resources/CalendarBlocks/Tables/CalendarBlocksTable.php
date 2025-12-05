@@ -77,6 +77,14 @@ class CalendarBlocksTable
                     ->dateTime('d/m/Y H:i')
                     ->label('Sincronizado')
                     ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 \Filament\Tables\Filters\TrashedFilter::make(),
@@ -118,6 +126,7 @@ class CalendarBlocksTable
             ->persistFiltersInSession()
             ->persistSortInSession()
             ->persistSearchInSession()
-            ->persistColumnSearchesInSession();
+            ->persistColumnSearchesInSession()
+            ->defaultSort('created_at', 'desc');
     }
 }

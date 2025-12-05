@@ -379,6 +379,330 @@ body.fi-body .fi-main .fi-ta-empty-state-description {
 }
 
 /* =========================================
+   WIDGET UPCOMING INTERVIEWS – Estilos Detallados
+========================================= */
+
+/* Header del widget (título "Próximas Reservas") */
+body.fi-body .fi-main .fi-wi-header {
+    padding: 1.25rem 1.5rem !important;
+    border-bottom: 1px solid rgba(34, 211, 238, 0.2) !important;
+    background: linear-gradient(135deg,
+            rgba(34, 211, 238, 0.08) 0%,
+            rgba(15, 23, 42, 0.4) 100%) !important;
+}
+
+/* Título del widget */
+body.fi-body .fi-main .fi-wi-header-heading {
+    color: #22d3ee !important;
+    font-weight: 700 !important;
+    font-size: 1.15rem !important;
+    letter-spacing: 0.03em !important;
+    text-shadow:
+        0 0 8px rgba(34, 211, 238, 0.5),
+        0 0 15px rgba(34, 211, 238, 0.25) !important;
+}
+
+/* Tabla dentro del widget */
+body.fi-body .fi-main .fi-wi .fi-ta {
+    border-radius: 0 0 18px 18px !important;
+}
+
+/* Encabezados de columna */
+body.fi-body .fi-main .fi-wi .fi-ta-header-cell {
+    background: rgba(15, 23, 42, 0.7) !important;
+    color: #67e8f9 !important;
+    font-weight: 600 !important;
+    font-size: 0.8rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    border-bottom: 1px solid rgba(34, 211, 238, 0.3) !important;
+    padding: 0.85rem 1rem !important;
+}
+
+/* Filas de datos */
+body.fi-body .fi-main .fi-wi .fi-ta-row {
+    background: transparent !important;
+    border-bottom: 1px solid rgba(56, 189, 248, 0.08) !important;
+    transition: all 0.2s ease !important;
+}
+
+/* Hover en filas */
+body.fi-body .fi-main .fi-wi .fi-ta-row:hover {
+    background: rgba(34, 211, 238, 0.06) !important;
+    border-left: 2px solid #22d3ee !important;
+    box-shadow:
+        inset 0 0 20px rgba(34, 211, 238, 0.08),
+        0 0 12px rgba(34, 211, 238, 0.15) !important;
+    transform: translateX(2px) !important;
+}
+
+/* Celdas de datos */
+body.fi-body .fi-main .fi-wi .fi-ta-cell {
+    padding: 1rem 1rem !important;
+    color: #e5e7eb !important;
+    font-size: 0.875rem !important;
+}
+
+/* Columna de Fecha - resaltar con cyan suave */
+body.fi-body .fi-main .fi-wi .fi-ta-cell:first-child {
+    color: #a5f3fc !important;
+    font-weight: 600 !important;
+    text-shadow: 0 0 4px rgba(34, 211, 238, 0.3) !important;
+}
+
+/* Columna de Cliente - texto blanco puro */
+body.fi-body .fi-main .fi-wi .fi-ta-cell:nth-child(2) {
+    color: #ffffff !important;
+    font-weight: 500 !important;
+}
+
+/* Columna de Teléfono - con icono cyan */
+body.fi-body .fi-main .fi-wi .fi-ta-cell:nth-child(3) svg {
+    color: #22d3ee !important;
+    filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.6)) !important;
+}
+
+body.fi-body .fi-main .fi-wi .fi-ta-cell:nth-child(3) {
+    color: #cbd5e1 !important;
+    font-family: 'Courier New', monospace !important;
+    font-size: 0.85rem !important;
+}
+
+/* Badges de estado - estilización específica */
+body.fi-body .fi-main .fi-wi .fi-badge {
+    border-radius: 9999px !important;
+    padding: 0.35rem 0.75rem !important;
+    font-weight: 600 !important;
+    font-size: 0.75rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    border: 1px solid !important;
+    box-shadow: 0 0 10px !important;
+}
+
+/* Badge Pendiente (warning/amarillo) */
+body.fi-body .fi-main .fi-wi .fi-badge-warning {
+    background: linear-gradient(135deg,
+            rgba(251, 191, 36, 0.25),
+            rgba(234, 179, 8, 0.15)) !important;
+    color: #fde047 !important;
+    border-color: rgba(251, 191, 36, 0.6) !important;
+    box-shadow:
+        0 0 10px rgba(251, 191, 36, 0.4),
+        0 0 20px rgba(251, 191, 36, 0.2) !important;
+    text-shadow: 0 0 6px rgba(251, 191, 36, 0.6) !important;
+}
+
+/* Badge Confirmada (success/verde) */
+body.fi-body .fi-main .fi-wi .fi-badge-success {
+    background: linear-gradient(135deg,
+            rgba(34, 197, 94, 0.25),
+            rgba(22, 163, 74, 0.15)) !important;
+    color: #86efac !important;
+    border-color: rgba(34, 197, 94, 0.6) !important;
+    box-shadow:
+        0 0 10px rgba(34, 197, 94, 0.4),
+        0 0 20px rgba(34, 197, 94, 0.2) !important;
+    text-shadow: 0 0 6px rgba(34, 197, 94, 0.6) !important;
+}
+
+/* Badge Cancelada (danger/rojo) */
+body.fi-body .fi-main .fi-wi .fi-badge-danger {
+    background: linear-gradient(135deg,
+            rgba(239, 68, 68, 0.25),
+            rgba(220, 38, 38, 0.15)) !important;
+    color: #fca5a5 !important;
+    border-color: rgba(239, 68, 68, 0.6) !important;
+    box-shadow:
+        0 0 10px rgba(239, 68, 68, 0.4),
+        0 0 20px rgba(239, 68, 68, 0.2) !important;
+    text-shadow: 0 0 6px rgba(239, 68, 68, 0.6) !important;
+}
+
+/* Badge Completada (info/azul) */
+body.fi-body .fi-main .fi-wi .fi-badge-info {
+    background: linear-gradient(135deg,
+            rgba(59, 130, 246, 0.25),
+            rgba(37, 99, 235, 0.15)) !important;
+    color: #93c5fd !important;
+    border-color: rgba(59, 130, 246, 0.6) !important;
+    box-shadow:
+        0 0 10px rgba(59, 130, 246, 0.4),
+        0 0 20px rgba(59, 130, 246, 0.2) !important;
+    text-shadow: 0 0 6px rgba(59, 130, 246, 0.6) !important;
+}
+
+/* Efecto hover en los badges */
+body.fi-body .fi-main .fi-wi .fi-badge:hover {
+    transform: scale(1.05) !important;
+    filter: brightness(1.15) !important;
+    transition: all 0.2s ease !important;
+}
+
+/* Icono de teléfono copiable - efectos sutiles */
+body.fi-body .fi-main .fi-wi button[title*="copiado"],
+body.fi-body .fi-main .fi-wi button[title*="Copiar"] {
+    transition: all 0.2s ease !important;
+}
+
+body.fi-body .fi-main .fi-wi button[title*="copiado"]:hover,
+body.fi-body .fi-main .fi-wi button[title*="Copiar"]:hover {
+    transform: scale(1.15) !important;
+    filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.8)) !important;
+}
+
+/* Sin filas - estado vacío personalizado */
+body.fi-body .fi-main .fi-wi .fi-ta-empty {
+    padding: 3rem 1.5rem !important;
+    text-align: center !important;
+}
+
+body.fi-body .fi-main .fi-wi .fi-ta-empty-state-icon {
+    color: rgba(34, 211, 238, 0.3) !important;
+    filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.2)) !important;
+}
+
+body.fi-body .fi-main .fi-wi .fi-ta-empty-state-heading {
+    color: #67e8f9 !important;
+    text-shadow: 0 0 6px rgba(103, 232, 249, 0.4) !important;
+}
+
+body.fi-body .fi-main .fi-wi .fi-ta-empty-state-description {
+    color: #94a3b8 !important;
+}
+
+/* Buscador interno del widget - estilo cyan como topbar */
+body.fi-body .fi-main .fi-wi .fi-ta-search {
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* Wrapper del input de búsqueda en el widget */
+body.fi-body .fi-main .fi-wi .fi-input-wrp,
+body.fi-body .fi-main .fi-wi .fi-ta-search .fi-input-wrp {
+    background: rgba(15, 23, 42, 0.35) !important;
+    border: 1px solid #22d3ee !important;
+    border-radius: 8px !important;
+    box-shadow: 0 0 8px rgba(34, 211, 238, 0.45) !important;
+}
+
+/* Input en sí dentro del widget */
+body.fi-body .fi-main .fi-wi input.fi-input,
+body.fi-body .fi-main .fi-wi .fi-ta-search input.fi-input {
+    border: none !important;
+    background: transparent !important;
+    color: #e0faff !important;
+}
+
+/* Placeholder cyan suave */
+body.fi-body .fi-main .fi-wi input.fi-input::placeholder,
+body.fi-body .fi-main .fi-wi .fi-ta-search input.fi-input::placeholder {
+    color: rgba(34, 211, 238, 0.7) !important;
+}
+
+/* Lupa (icono) en cyan */
+body.fi-body .fi-main .fi-wi .fi-input-wrp svg,
+body.fi-body .fi-main .fi-wi .fi-ta-search svg {
+    color: #22d3ee !important;
+    stroke: #22d3ee !important;
+}
+
+/* Focus: más glow cyan */
+body.fi-body .fi-main .fi-wi .fi-input-wrp:focus-within,
+body.fi-body .fi-main .fi-wi input.fi-input:focus {
+    border-color: #a5f3fc !important;
+    box-shadow: 0 0 10px rgba(34, 211, 238, 0.7) !important;
+}
+
+/* =========================================
+   PAGINACIÓN – Números legibles cuando están activos/hover
+========================================= */
+
+/* Contenedor de paginación - centrar todo */
+body.fi-body .fi-ta-pagination,
+body.fi-body nav[role="navigation"][aria-label*="pagination"],
+body.fi-body nav[role="navigation"][aria-label*="paginación"] {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Botones de paginación base */
+body.fi-body .fi-pagination-item,
+body.fi-body .fi-ta-pagination button,
+body.fi-body .fi-ta-pagination a {
+    color: #e5e7eb !important;
+    transition: all 0.2s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+}
+
+/* Botón activo (página actual) - texto negro sobre fondo claro */
+body.fi-body .fi-pagination-item-active,
+body.fi-body .fi-pagination-item[aria-current="page"],
+body.fi-body .fi-ta-pagination button[aria-current="page"],
+body.fi-body .fi-ta-pagination a[aria-current="page"] {
+    color: #0f172a !important;
+    /* Negro/azul muy oscuro para contraste */
+    font-weight: 700 !important;
+    background: rgba(34, 211, 238, 0.3) !important;
+}
+
+/* Hover en botones de paginación - texto negro */
+body.fi-body .fi-pagination-item:hover,
+body.fi-body .fi-ta-pagination button:hover,
+body.fi-body .fi-ta-pagination a:hover {
+    color: #0f172a !important;
+    /* Negro/azul muy oscuro */
+    background: rgba(34, 211, 238, 0.25) !important;
+}
+
+/* Texto "por página" en cyan - ESPECÍFICO */
+body.fi-body .fi-ta-pagination .fi-input-wrp-prefix span,
+body.fi-body .fi-ta-pagination .fi-input-wrp-prefix,
+body.fi-body .fi-ta-pagination label.fi-pagination-records-per-page-select span,
+body.fi-body .fi-ta-pagination-records-per-page-label,
+body.fi-body .fi-ta-pagination div[class*="flex"]>span {
+    color: #22d3ee !important;
+    /* Cyan brillante */
+}
+
+/* Centrar el select de "por página" */
+body.fi-body .fi-ta-pagination select {
+    text-align: center !important;
+    text-align-last: center !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+}
+
+/* Selector de "por página" (5, 10, 50, Todos) - NÚMEROS */
+body.fi-body .fi-ta-pagination-records-per-page-select,
+body.fi-body .fi-ta-pagination select {
+    color: #e5e7eb !important;
+    background: rgba(15, 23, 42, 0.6) !important;
+    border: 1px solid rgba(148, 163, 184, 0.35) !important;
+    border-radius: 6px !important;
+    font-weight: 600 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Opciones del selector cuando está abierto - texto negro para dropdown */
+body.fi-body .fi-ta-pagination-records-per-page-select option,
+body.fi-body .fi-ta-pagination select option {
+    color: #0f172a !important;
+    /* Negro para que se vea en el dropdown */
+    background: #f1f5f9 !important;
+    text-align: center !important;
+}
+
+/* =========================================
    REPORTES – Panel "Filtrar por Período"
 ========================================= */
 
@@ -746,4 +1070,9 @@ body.fi-body .fi-main .fi-section-content-ctn input[type="tel"]:focus {
 /* Icono del ojo (mostrar contraseña) en cyan */
 body.fi-body .fi-main .fi-section-content-ctn button[type="button"] svg {
     color: #22d3ee !important;
+}
+
+/* Capitalize Calendar Title */
+.fc .fc-toolbar-title {
+    text-transform: capitalize !important;
 }
