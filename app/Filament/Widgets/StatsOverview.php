@@ -40,6 +40,7 @@ class StatsOverview extends BaseWidget
                 ->description('Requieren atención')
                 ->icon('heroicon-o-inbox-stack')
                 ->color($pedidosPendientes > 0 ? 'danger' : 'success')
+                ->url(route('filament.admin.resources.interviews.interviews.index'))
                 ->extraAttributes(['class' => 'rr-stat-card']),
 
             Stat::make('Reuniones Hoy', $reunionesHoy)

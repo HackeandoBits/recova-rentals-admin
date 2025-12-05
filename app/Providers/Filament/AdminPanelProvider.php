@@ -31,7 +31,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login(Login::class)
-            ->brandLogo(fn () => view('filament.components.recova-logo'))
+            ->brandLogo(fn() => view('filament.components.recova-logo'))
             ->authGuard('web') // Usa el guard web de Laravel
             ->topNavigation()
             ->colors([
@@ -53,11 +53,11 @@ class AdminPanelProvider extends PanelProvider
             ->darkMode(true)
             ->renderHook(
                 PanelsRenderHook::HEAD_START,
-                fn () => view('filament.hooks.login-styles'),
+                fn() => view('filament.hooks.login-styles'),
             )
             ->renderHook(
                 'panels::auth.login.form.after',
-                fn (): string => <<<'HTML'
+                fn(): string => <<<'HTML'
                 <div style="margin-top: 0.9rem; display: flex; flex-direction: column; gap: 0.4rem; align-items: stretch;">
                     <div style="position: relative; text-align: center; margin-block: 0.3rem;">
                         <div style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: rgba(148, 163, 184, 0.3);"></div>
@@ -94,12 +94,12 @@ class AdminPanelProvider extends PanelProvider
             ->userMenuItems([
                 MenuItem::make()
                     ->label('Mi Perfil')
-                    ->url(fn () => Profile::getUrl())
+                    ->url(fn() => Profile::getUrl())
                     ->icon('heroicon-o-user-circle'),
             ])
 
-            // Descubrimiento automático de resources, pages y widgets
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
+            // Descubrimiento explícito de resources (evita duplicación)
+            ->discoverResources(in: app_path('Filament/Resources/CalendarBlocks'), for: 'App\\Filament\\Resources\\CalendarBlocks')
             ->discoverResources(in: app_path('Filament/Resources/Interviews'), for: 'App\\Filament\\Resources\\Interviews')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
@@ -138,7 +138,7 @@ class AdminPanelProvider extends PanelProvider
             })
             ->renderHook(
                 'panels::head.end',
-                fn (): string => <<<'HTML'
+                fn(): string => <<<'HTML'
 
         <script>
             // Usar delegación de eventos global para manejar actualizaciones de Livewire y asegurar detección

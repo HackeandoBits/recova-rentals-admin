@@ -20,6 +20,11 @@ class UpcomingInterviews extends BaseWidget
         'xl' => 3,
     ];
 
+    protected function isTableSearchable(): bool
+    {
+        return true;
+    }
+
     protected function getTableQuery(): Builder
     {
         $now = Carbon::now();
@@ -47,13 +52,13 @@ class UpcomingInterviews extends BaseWidget
             Tables\Columns\TextColumn::make('customer_phone')
                 ->label('Teléfono')
                 ->formatStateUsing(function ($state) {
-                    if (! $state) {
+                    if (!$state) {
                         return '—';
                     }
 
                     // Formatear teléfono argentino
                     if (strlen($state) >= 10) {
-                        return '+54 '.substr($state, 0, 3).' '.substr($state, 3);
+                        return '+54 ' . substr($state, 0, 3) . ' ' . substr($state, 3);
                     }
 
                     return $state;
@@ -65,7 +70,7 @@ class UpcomingInterviews extends BaseWidget
             Tables\Columns\TextColumn::make('status')
                 ->label('Estado')
                 ->badge()
-                ->formatStateUsing(fn (string $state) => match ($state) {
+                ->formatStateUsing(fn(string $state) => match ($state) {
                     'pending' => 'Pendiente',
                     'confirmed' => 'Confirmada',
                     'cancelled' => 'Cancelada',
