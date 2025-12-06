@@ -1,8 +1,6 @@
 // Navbar Hover Behavior for Filament Admin (Global Delegation)
 // Version 7: Dropdown Handoff Strategy
 
-console.log('Recova Navbar Hover V7 Loaded');
-
 document.addEventListener('mouseover', (e) => {
 
     // Find the closest topbar active item
@@ -20,14 +18,12 @@ document.addEventListener('mouseover', (e) => {
     const openMenu = () => {
         if (closeTimeout) clearTimeout(closeTimeout);
 
-        const isExpanded = button.getAttribute('aria-expanded') === 'true';
-        if (!isExpanded) {
+        if (button.getAttribute('aria-expanded') !== 'true') {
             button.click();
         }
     };
 
     const forceClose = () => {
-        // console.log('Hover: Force closing...');
         document.body.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
         document.body.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
         document.body.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
@@ -45,8 +41,6 @@ document.addEventListener('mouseover', (e) => {
 
             if (isHoveringDropdown) {
                 // User moved to the dropdown. Do NOT close yet.
-                // console.log('Hover: Saved by the dropdown!');
-
                 // Find the dropdown being hovered to attach a leave listener
                 const dropdown = Array.from(hoveredElements).find(el =>
                     el.classList.contains('fi-dropdown-panel') ||
@@ -73,4 +67,9 @@ document.addEventListener('mouseover', (e) => {
 
     item.addEventListener('mouseenter', openMenu);
     item.addEventListener('mouseleave', closeMenu);
+
+    // Trigger open immediately since we're already hovering
+    if (button) {
+        openMenu();
+    }
 });

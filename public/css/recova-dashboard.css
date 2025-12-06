@@ -438,7 +438,8 @@ body.fi-body .fi-main .fi-wi .fi-ta-row:hover {
 
 /* Celdas de datos */
 body.fi-body .fi-main .fi-wi .fi-ta-cell {
-    padding: 1rem 1rem !important;
+    padding: 0.25rem 1rem !important;
+    /* Ajuste ultra compactado */
     color: #e5e7eb !important;
     font-size: 0.875rem !important;
 }
@@ -571,24 +572,26 @@ body.fi-body .fi-main .fi-wi .fi-ta-empty-state-description {
     color: #94a3b8 !important;
 }
 
-/* Buscador interno del widget - estilo cyan como topbar */
-body.fi-body .fi-main .fi-wi .fi-ta-search {
+/* Buscador interno de TABLAS (Global) - estilo cyan como topbar */
+body.fi-body .fi-main .fi-ta-search {
     display: flex !important;
     align-items: center !important;
 }
 
-/* Wrapper del input de búsqueda en el widget */
+/* Wrapper del input de búsqueda en CUALQUIER tabla (Widget o Página) */
 body.fi-body .fi-main .fi-wi .fi-input-wrp,
-body.fi-body .fi-main .fi-wi .fi-ta-search .fi-input-wrp {
+body.fi-body .fi-main .fi-ta-search .fi-input-wrp,
+body.fi-body .fi-main .fi-ta-header-toolbar .fi-input-wrp {
     background: rgba(15, 23, 42, 0.35) !important;
     border: 1px solid #22d3ee !important;
     border-radius: 8px !important;
     box-shadow: 0 0 8px rgba(34, 211, 238, 0.45) !important;
 }
 
-/* Input en sí dentro del widget */
+/* Input en sí dentro de tablas */
 body.fi-body .fi-main .fi-wi input.fi-input,
-body.fi-body .fi-main .fi-wi .fi-ta-search input.fi-input {
+body.fi-body .fi-main .fi-ta-search input.fi-input,
+body.fi-body .fi-main .fi-ta-header-toolbar input.fi-input {
     border: none !important;
     background: transparent !important;
     color: #e0faff !important;
@@ -596,20 +599,26 @@ body.fi-body .fi-main .fi-wi .fi-ta-search input.fi-input {
 
 /* Placeholder cyan suave */
 body.fi-body .fi-main .fi-wi input.fi-input::placeholder,
-body.fi-body .fi-main .fi-wi .fi-ta-search input.fi-input::placeholder {
+body.fi-body .fi-main .fi-ta-search input.fi-input::placeholder,
+body.fi-body .fi-main .fi-ta-header-toolbar input.fi-input::placeholder {
     color: rgba(34, 211, 238, 0.7) !important;
 }
 
 /* Lupa (icono) en cyan */
 body.fi-body .fi-main .fi-wi .fi-input-wrp svg,
-body.fi-body .fi-main .fi-wi .fi-ta-search svg {
+body.fi-body .fi-main .fi-ta-search svg,
+body.fi-body .fi-main .fi-ta-header-toolbar .fi-input-wrp svg {
     color: #22d3ee !important;
     stroke: #22d3ee !important;
 }
 
 /* Focus: más glow cyan */
 body.fi-body .fi-main .fi-wi .fi-input-wrp:focus-within,
-body.fi-body .fi-main .fi-wi input.fi-input:focus {
+body.fi-body .fi-main .fi-ta-search .fi-input-wrp:focus-within,
+body.fi-body .fi-main .fi-ta-header-toolbar .fi-input-wrp:focus-within,
+body.fi-body .fi-main .fi-wi input.fi-input:focus,
+body.fi-body .fi-main .fi-ta-search input.fi-input:focus,
+body.fi-body .fi-main .fi-ta-header-toolbar input.fi-input:focus {
     border-color: #a5f3fc !important;
     box-shadow: 0 0 10px rgba(34, 211, 238, 0.7) !important;
 }
@@ -1077,4 +1086,58 @@ body.fi-body .fi-main .fi-section-content-ctn button[type="button"] svg {
 ========================================= */
 .fc-toolbar-title {
     text-transform: capitalize !important;
+}
+
+/* =========================================
+   FIX ALINEACIÓN TÍTULO + TOOLBAR
+   ========================================= */
+
+/* Alineación horizontal de título y toolbar en tablas */
+body.fi-body .fi-main .fi-ta-header-ctn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: wrap !important;
+    gap: 1rem !important;
+    padding: 1rem 1.5rem !important;
+}
+
+/* Ajustes para el título cuando está dentro del header - Estilo blanco limpio */
+body.fi-body .fi-main .fi-ta-header-heading {
+    margin-bottom: 0 !important;
+    line-height: 1.2 !important;
+    color: #e5e7eb !important;
+    /* Blanco suave igual a Estadísticas */
+    font-weight: 600 !important;
+    font-size: 1.1rem !important;
+    letter-spacing: 0.01em !important;
+    text-shadow: none !important;
+    /* Sin neón */
+}
+
+/* Quitar márgenes/paddings internos para que queden alineados */
+body.fi-body .fi-main .fi-ta-header {
+    padding-bottom: 0 !important;
+    border-bottom: none !important;
+    margin-bottom: 0 !important;
+    flex-grow: 1;
+    /* Permitir que el título ocupe espacio disponible */
+}
+
+body.fi-body .fi-main .fi-ta-header-toolbar {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    margin-left: auto;
+    /* Empujar toolbar a la derecha */
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+/* Reducir altura de filas en la tabla del widget - Ultra Compacto */
+body.fi-body .fi-main .fi-wi .fi-ta-cell {
+    padding: 0.25rem 1rem !important;
+    /* Reducido al mínimo */
+    color: #e5e7eb !important;
+    font-size: 0.875rem !important;
 }
