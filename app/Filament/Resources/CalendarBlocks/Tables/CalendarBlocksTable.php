@@ -117,11 +117,12 @@ class CalendarBlocksTable
                     ->visible(fn ($record) => $record->trashed()),
             ])
             ->bulkActions([
-                \Filament\Tables\Actions\BulkActionGroup::make([
-                    \Filament\Tables\Actions\DeleteBulkAction::make(),
-                    \Filament\Tables\Actions\RestoreBulkAction::make(),
-                    \Filament\Tables\Actions\ForceDeleteBulkAction::make(),
-                ]),
+                \Filament\Tables\Actions\DeleteBulkAction::make()
+                    ->label('Eliminar seleccionados'),
+                \Filament\Tables\Actions\RestoreBulkAction::make()
+                    ->label('Restaurar seleccionados'),
+                \Filament\Tables\Actions\ForceDeleteBulkAction::make()
+                    ->label('Borrar definitivamente'),
             ])
             ->persistFiltersInSession()
             ->persistSortInSession()

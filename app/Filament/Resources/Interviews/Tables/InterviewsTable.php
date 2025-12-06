@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Interviews\Tables;
 
-use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\SelectColumn;
@@ -143,14 +142,32 @@ class InterviewsTable
             ->recordUrl(null)
             ->recordAction('view')
             ->filters([
+                \Filament\Tables\Filters\SelectFilter::make('channel')
+                    ->label('Canal')
+                    ->options([
+                        'whatsapp' => 'WhatsApp',
+                        'physical_meeting' => 'Reunión Física',
+                    ])
+                    ->placeholder('Todos los canales'),
+
+                \Filament\Tables\Filters\SelectFilter::make('status')
+                    ->label('Estado')
+                    ->options([
+                        'pending' => 'Pendiente',
+                        'confirmed' => 'Confirmada',
+                        'cancelled' => 'Cancelada',
+                    ])
+                    ->placeholder('Todos los estados'),
+
                 \Filament\Tables\Filters\TrashedFilter::make(),
             ])
             ->bulkActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                    \Filament\Tables\Actions\RestoreBulkAction::make(),
-                    \Filament\Tables\Actions\ForceDeleteBulkAction::make(),
-                ]),
+                DeleteBulkAction::make()
+                    ->label('Eliminar seleccionados'),
+                \Filament\Tables\Actions\RestoreBulkAction::make()
+                    ->label('Restaurar seleccionados'),
+                \Filament\Tables\Actions\ForceDeleteBulkAction::make()
+                    ->label('Borrar definitivamente'),
             ])
             ->persistFiltersInSession()
             ->persistSortInSession()
