@@ -1,4 +1,4 @@
-// Global Calendar Tooltip for FullCalendar Events
+ // Global Calendar Tooltip for FullCalendar Events
 document.addEventListener('DOMContentLoaded', () => {
     const tooltip = document.createElement('div');
     tooltip.id = 'rr-global-tooltip';
@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const showTooltip = (e, text) => {
         tooltip.innerText = text;
-        tooltip.style.display = 'block';
+        tooltip.style.display = 'block'; 
         moveTooltip(e);
     };
 

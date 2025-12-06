@@ -138,36 +138,6 @@ class AdminPanelProvider extends PanelProvider
                                 ...\App\Filament\Pages\ReportsPage::getNavigationItems(),
                             ]),
                     ]);
-            })
-            ->renderHook(
-                'panels::body.end',
-                fn (): string => <<<'HTML'
-
-        <script>
-            document.addEventListener('mouseover', (e) => {
-                const item = e.target.closest('.fi-topbar-item');
-                if (!item) return;
-
-                // Si ya estamos "dentro" (marcado por nosotros), no hacer nada
-                if (item.dataset.hovering === 'true') return;
-
-                // Marcar como hovering
-                item.dataset.hovering = 'true';
-
-                // Limpiar marca al salir
-                item.addEventListener('mouseleave', () => {
-                    delete item.dataset.hovering;
-                }, { once: true });
-
-                // Buscar botón y abrir si es necesario
-                const button = item.querySelector('button[aria-expanded="false"]');
-                if (button) {
-                    button.click();
-                }
             });
-        </script>
-HTML,
-            );
-
     }
 }
