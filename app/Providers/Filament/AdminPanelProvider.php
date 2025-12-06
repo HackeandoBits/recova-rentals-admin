@@ -52,6 +52,10 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->darkMode(true)
             ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn () => view('filament.hooks.custom-assets'),
+            )
+            ->renderHook(
                 PanelsRenderHook::HEAD_START,
                 fn () => view('filament.hooks.login-styles'),
             )
