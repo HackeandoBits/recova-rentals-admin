@@ -77,6 +77,14 @@ class CalendarBlocksTable
                     ->dateTime('d/m/Y H:i')
                     ->label('Sincronizado')
                     ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 \Filament\Tables\Filters\TrashedFilter::make(),
@@ -109,15 +117,13 @@ class CalendarBlocksTable
                     ->visible(fn ($record) => $record->trashed()),
             ])
             ->bulkActions([
-                \Filament\Tables\Actions\BulkActionGroup::make([
-                    \Filament\Tables\Actions\DeleteBulkAction::make(),
-                    \Filament\Tables\Actions\RestoreBulkAction::make(),
-                    \Filament\Tables\Actions\ForceDeleteBulkAction::make(),
-                ]),
+                \Filament\Tables\Actions\DeleteBulkAction::make()
+                    ->label('Eliminar seleccionados'),
+                \Filament\Tables\Actions\RestoreBulkAction::make()
+                    ->label('Restaurar seleccionados'),
+                \Filament\Tables\Actions\ForceDeleteBulkAction::make()
+                    ->label('Borrar definitivamente'),
             ])
-            ->persistFiltersInSession()
-            ->persistSortInSession()
-            ->persistSearchInSession()
-            ->persistColumnSearchesInSession();
+            ->defaultSort('created_at', 'desc');
     }
 }

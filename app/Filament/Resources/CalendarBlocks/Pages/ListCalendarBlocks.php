@@ -20,42 +20,6 @@ class ListCalendarBlocks extends ListRecords
 {
     protected static string $resource = CalendarBlockResource::class;
 
-    use \App\Filament\Traits\PersistsTableConfig;
-
-    public function mountPersistsTableConfig(): void
-    {
-        // Hydrate filters
-        if ($filters = $this->getUserTableSettings('filters')) {
-            $this->tableFilters = array_merge($this->tableFilters ?? [], $filters);
-        }
-
-        // Hydrate sort
-        if ($sortColumn = $this->getUserTableSettings('sort_column')) {
-            $this->tableSortColumn = $sortColumn;
-        }
-        if ($sortDirection = $this->getUserTableSettings('sort_direction')) {
-            $this->tableSortDirection = $sortDirection;
-        }
-
-        // Hydrate search
-        if ($search = $this->getUserTableSettings('search')) {
-            $this->tableSearchQuery = $search;
-        }
-
-        // Hydrate columns
-        if ($columns = $this->getUserTableSettings('column_visibility')) {
-            if (property_exists($this, 'toggledTableColumns')) {
-                $this->toggledTableColumns = array_merge($this->toggledTableColumns ?? [], $columns);
-            }
-            if (property_exists($this, 'toggledHiddenColumns')) {
-                $this->toggledHiddenColumns = array_merge($this->toggledHiddenColumns ?? [], $columns);
-            }
-            if (property_exists($this, 'tableColumnToggledHiddenState')) {
-                $this->tableColumnToggledHiddenState = array_merge($this->tableColumnToggledHiddenState ?? [], $columns);
-            }
-        }
-    }
-
     protected static ?string $title = 'Listado de Bloqueos';
 
     protected function getHeaderActions(): array
@@ -106,11 +70,11 @@ class ListCalendarBlocks extends ListRecords
                     DatePicker::make('desde')
                         ->label('Desde')
                         ->required()
-                        ->visible(fn($get) => $get('mode') === 'range')
-                        ->dehydrated(fn($get) => $get('mode') === 'range')
+                        ->visible(fn ($get) => $get('mode') === 'range')
+                        ->dehydrated(fn ($get) => $get('mode') === 'range')
                         // No permitir seleccionar fechas anteriores a hoy
-                        ->minDate(fn() => Carbon::today())
-                        ->live()
+                        ->minDate(fn () => Carbon::today())
+                        ->live(debounce: 500)
                         ->afterStateUpdated(function ($state, callable $set, callable $get) {
                             // Si se selecciona fecha de inicio, copiar a fecha fin por defecto
                             if ($state) {
@@ -121,10 +85,10 @@ class ListCalendarBlocks extends ListRecords
                         ->label('Hasta')
                         ->required()
                         ->rule('after_or_equal:desde')
-                        ->visible(fn($get) => $get('mode') === 'range')
-                        ->dehydrated(fn($get) => $get('mode') === 'range')
+                        ->visible(fn ($get) => $get('mode') === 'range')
+                        ->dehydrated(fn ($get) => $get('mode') === 'range')
                         // La fecha mínima de fin es "desde" o, en su defecto, hoy
-                        ->minDate(fn(callable $get) => $get('desde')
+                        ->minDate(fn (callable $get) => $get('desde')
                             ? Carbon::parse($get('desde'))
                             : Carbon::today()),
                     ToggleButtons::make('all_day_r')
@@ -133,8 +97,8 @@ class ListCalendarBlocks extends ListRecords
                         ->inline()
                         ->default(0)
                         ->live()
-                        ->visible(fn($get) => $get('mode') === 'range')
-                        ->dehydrated(fn($get) => $get('mode') === 'range')
+                        ->visible(fn ($get) => $get('mode') === 'range')
+                        ->dehydrated(fn ($get) => $get('mode') === 'range')
                         ->afterStateUpdated(function ($state, callable $set, callable $get) {
                             if ($state == 1) {
                                 // Al activar día completo, igualar fechas si ya hay "desde"
@@ -147,10 +111,10 @@ class ListCalendarBlocks extends ListRecords
                     TimePicker::make('desde_hora_r')
                         ->label('Hora inicio')
                         ->seconds(false)
-                        ->required(fn($get) => $get('mode') === 'range' && !((bool) $get('all_day_r')))
-                        ->visible(fn($get) => $get('mode') === 'range' && !((bool) $get('all_day_r')))
-                        ->dehydrated(fn($get) => $get('mode') === 'range' && !((bool) $get('all_day_r')))
-                        ->live()
+                        ->required(fn ($get) => $get('mode') === 'range' && ! ((bool) $get('all_day_r')))
+                        ->visible(fn ($get) => $get('mode') === 'range' && ! ((bool) $get('all_day_r')))
+                        ->dehydrated(fn ($get) => $get('mode') === 'range' && ! ((bool) $get('all_day_r')))
+                        ->live(onBlur: true)
                         ->afterStateUpdated(function ($state, callable $set) {
                             if ($state) {
                                 // Al poner hora inicio, sugerir hora fin +1 hora
@@ -166,9 +130,9 @@ class ListCalendarBlocks extends ListRecords
                         ->label('Hora fin')
                         ->seconds(false)
                         ->rule('after:desde_hora_r')
-                        ->required(fn($get) => $get('mode') === 'range' && !((bool) $get('all_day_r')))
-                        ->visible(fn($get) => $get('mode') === 'range' && !((bool) $get('all_day_r')))
-                        ->dehydrated(fn($get) => $get('mode') === 'range' && !((bool) $get('all_day_r'))),
+                        ->required(fn ($get) => $get('mode') === 'range' && ! ((bool) $get('all_day_r')))
+                        ->visible(fn ($get) => $get('mode') === 'range' && ! ((bool) $get('all_day_r')))
+                        ->dehydrated(fn ($get) => $get('mode') === 'range' && ! ((bool) $get('all_day_r'))),
 
                     // --- Campos del modo DÍAS ---
                     ToggleButtons::make('dias')
@@ -184,33 +148,33 @@ class ListCalendarBlocks extends ListRecords
                         ])
                         ->inline()
                         ->multiple()
-                        ->required(fn($get) => $get('mode') === 'days')
-                        ->visible(fn($get) => $get('mode') === 'days')
-                        ->dehydrated(fn($get) => $get('mode') === 'days'),
+                        ->required(fn ($get) => $get('mode') === 'days')
+                        ->visible(fn ($get) => $get('mode') === 'days')
+                        ->dehydrated(fn ($get) => $get('mode') === 'days'),
                     TextInput::make('semanas')
                         ->label('Semanas a generar')
                         ->numeric()
                         ->minValue(1)
                         ->maxValue(26)
                         ->default(4)
-                        ->required(fn($get) => $get('mode') === 'days')
-                        ->visible(fn($get) => $get('mode') === 'days')
-                        ->dehydrated(fn($get) => $get('mode') === 'days'),
+                        ->required(fn ($get) => $get('mode') === 'days')
+                        ->visible(fn ($get) => $get('mode') === 'days')
+                        ->dehydrated(fn ($get) => $get('mode') === 'days'),
                     ToggleButtons::make('all_day_d')
                         ->label('Día completo')
                         ->options([0 => 'No', 1 => 'Sí'])
                         ->inline()
                         ->default(0)
                         ->live()
-                        ->visible(fn($get) => $get('mode') === 'days')
-                        ->dehydrated(fn($get) => $get('mode') === 'days'),
+                        ->visible(fn ($get) => $get('mode') === 'days')
+                        ->dehydrated(fn ($get) => $get('mode') === 'days'),
                     TimePicker::make('desde_hora_d')
                         ->label('Hora inicio')
                         ->seconds(false)
-                        ->required(fn($get) => $get('mode') === 'days' && !((bool) $get('all_day_d')))
-                        ->visible(fn($get) => $get('mode') === 'days' && !((bool) $get('all_day_d')))
-                        ->dehydrated(fn($get) => $get('mode') === 'days' && !((bool) $get('all_day_d')))
-                        ->live()
+                        ->required(fn ($get) => $get('mode') === 'days' && ! ((bool) $get('all_day_d')))
+                        ->visible(fn ($get) => $get('mode') === 'days' && ! ((bool) $get('all_day_d')))
+                        ->dehydrated(fn ($get) => $get('mode') === 'days' && ! ((bool) $get('all_day_d')))
+                        ->live(onBlur: true)
                         ->afterStateUpdated(function ($state, callable $set) {
                             if ($state) {
                                 // Al poner hora inicio, sugerir hora fin +1 hora
@@ -226,9 +190,9 @@ class ListCalendarBlocks extends ListRecords
                         ->label('Hora fin')
                         ->seconds(false)
                         ->rule('after:desde_hora_d')
-                        ->required(fn($get) => $get('mode') === 'days' && !((bool) $get('all_day_d')))
-                        ->visible(fn($get) => $get('mode') === 'days' && !((bool) $get('all_day_d')))
-                        ->dehydrated(fn($get) => $get('mode') === 'days' && !((bool) $get('all_day_d'))),
+                        ->required(fn ($get) => $get('mode') === 'days' && ! ((bool) $get('all_day_d')))
+                        ->visible(fn ($get) => $get('mode') === 'days' && ! ((bool) $get('all_day_d')))
+                        ->dehydrated(fn ($get) => $get('mode') === 'days' && ! ((bool) $get('all_day_d'))),
 
                     // Motivo (aplica a ambos modos)
                     TextInput::make('reason')
@@ -285,12 +249,12 @@ class ListCalendarBlocks extends ListRecords
                         // UI 1 (Lun) → Carbon 1 (Lun): se queda igual
                         // UI 2-6 (Mar-Sáb) → Carbon 2-6: se quedan igual
                         // UI 7 (Dom) → Carbon 0 (Dom): convertir a 0
-        
+
                         // DEBUG: Ver qué días vienen del formulario
                         \Log::info('GENERAR BLOQUEOS - Días recibidos:', ['dias_raw' => $data['dias'] ?? []]);
 
                         $diasElegidos = collect($data['dias'] ?? [])
-                            ->map(fn($d) => $d == 7 ? 0 : (int) $d)
+                            ->map(fn ($d) => $d == 7 ? 0 : (int) $d)
                             ->values();
 
                         \Log::info('GENERAR BLOQUEOS - Días convertidos:', ['dias_carbon' => $diasElegidos->toArray()]);
@@ -309,7 +273,7 @@ class ListCalendarBlocks extends ListRecords
                         $endWindow = $startWindow->copy()->addWeeks($semanas)->endOfDay();
 
                         for ($cursor = $startWindow->copy(); $cursor->lte($endWindow); $cursor = $cursor->addDay()) {
-                            if (!$diasElegidos->contains($cursor->dayOfWeek)) {
+                            if (! $diasElegidos->contains($cursor->dayOfWeek)) {
                                 continue;
                             }
 
@@ -362,7 +326,7 @@ class ListCalendarBlocks extends ListRecords
                     SyncBlocksRangeJob::dispatchSync($minStart);
 
                     // (Código de worker eliminado)
-        
+
                     Notification::make()
                         ->title("Bloques creados: {$inserted}. La sincronización está en curso.")
                         ->success()

@@ -67,14 +67,18 @@
 
         {{-- Widgets de Estadísticas --}}
         <div>
-            @livewire($this->getStatsWidget(), ['dateRange' => $dateRange])
+            @livewire($this->getStatsWidget(), [
+                'dateRange' => $dateRange
+            ], key('stats-' . ($dateRange['from'] ?? '') . '-' . ($dateRange['to'] ?? '')))
         </div>
 
         {{-- Gráficos --}}
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
             @foreach ($this->getChartWidgets() as $widget)
                 <div wire:key="{{ $widget }}">
-                    @livewire($widget, ['dateRange' => $dateRange], key($widget))
+                    @livewire($widget, [
+                        'dateRange' => $dateRange
+                    ], key($widget . '-' . ($dateRange['from'] ?? '') . '-' . ($dateRange['to'] ?? '')))
                 </div>
             @endforeach
         </div>

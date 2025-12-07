@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Interview;
+use App\Services\TwilioService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -47,7 +48,7 @@ class BookingController extends Controller
                                     : ($validated['meeting_date']
                                         ? \Carbon\Carbon::parse($validated['meeting_date'])
                                         : now()->addDay()->setHour(9)->setMinute(0)),
-                    
+
                     'end_at' => $validated['request_type'] === 'whatsapp'
                                     ? now()->addHour()
                                     : ($validated['meeting_date']
@@ -79,11 +80,22 @@ class BookingController extends Controller
             });
 
             // 3. Respuesta Exitosa
-            return response()->json([
+            // 3. Respuesta Exitosa
+            $response = response()->json([
                 'message' => 'Solicitud recibida correctamente',
                 'booking_id' => $result->id, // Mantenemos booking_id por compatibilidad con frontend si es necesario, o cambiamos a interview_id
                 'interview_id' => $result->id,
             ], 201);
+
+            // 3. Notificar al Dueño por WhatsApp (Async)
+            \App\Jobs\SendNewBookingNotification::dispatch([
+                'customer_name' => $validated['customer']['name'],
+                'customer_phone' => $validated['customer']['phone'],
+                'request_type' => $validated['request_type'],
+                'start_at' => $result->start_at,
+            ])->afterResponse();
+
+            return $response;
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['error' => $e->getMessage()], 422);
@@ -91,7 +103,7 @@ class BookingController extends Controller
             // 4. Manejo de Errores
             Log::error('Error creando booking desde API: '.$e->getMessage());
 
-            return response()->json(['error' => 'Error interno al procesar el pedido: ' . $e->getMessage()], 500);
+            return response()->json(['error' => 'Error interno al procesar el pedido: '.$e->getMessage()], 500);
         }
     }
 
@@ -113,17 +125,17 @@ class BookingController extends Controller
         // Lo más seguro es traer un rango amplio y filtrar en PHP, o confiar en whereDate si la DB está alineada.
         // Para ser precisos con Timezones, convertimos el rango del día local a UTC.
         $startOfDayUtc = $date->copy()->startOfDay()->setTimezone('UTC');
-        $endOfDayUtc   = $date->copy()->endOfDay()->setTimezone('UTC');
+        $endOfDayUtc = $date->copy()->endOfDay()->setTimezone('UTC');
 
         $interviews = Interview::where('status', '!=', 'cancelled')
             ->where(function ($q) use ($startOfDayUtc, $endOfDayUtc) {
                 $q->whereBetween('start_at', [$startOfDayUtc, $endOfDayUtc])
-                  ->orWhereBetween('end_at', [$startOfDayUtc, $endOfDayUtc])
+                    ->orWhereBetween('end_at', [$startOfDayUtc, $endOfDayUtc])
                   // También incluir los que envuelven el día (empiezan antes y terminan después)
-                  ->orWhere(function ($q2) use ($startOfDayUtc, $endOfDayUtc) {
-                      $q2->where('start_at', '<', $startOfDayUtc)
-                         ->where('end_at', '>', $endOfDayUtc);
-                  });
+                    ->orWhere(function ($q2) use ($startOfDayUtc, $endOfDayUtc) {
+                        $q2->where('start_at', '<', $startOfDayUtc)
+                            ->where('end_at', '>', $endOfDayUtc);
+                    });
             })
             ->get();
 
@@ -131,12 +143,12 @@ class BookingController extends Controller
         $blocks = \App\Models\CalendarBlock::whereNull('canceled_at')
             ->where(function ($q) use ($startOfDayUtc, $endOfDayUtc) {
                 $q->whereBetween('starts_at', [$startOfDayUtc, $endOfDayUtc])
-                  ->orWhereBetween('ends_at', [$startOfDayUtc, $endOfDayUtc])
+                    ->orWhereBetween('ends_at', [$startOfDayUtc, $endOfDayUtc])
                   // También incluir los que envuelven el día (empiezan antes y terminan después)
-                  ->orWhere(function ($q2) use ($startOfDayUtc, $endOfDayUtc) {
-                      $q2->where('starts_at', '<', $startOfDayUtc)
-                         ->where('ends_at', '>', $endOfDayUtc);
-                  });
+                    ->orWhere(function ($q2) use ($startOfDayUtc, $endOfDayUtc) {
+                        $q2->where('starts_at', '<', $startOfDayUtc)
+                            ->where('ends_at', '>', $endOfDayUtc);
+                    });
             })
             ->get();
 
@@ -146,7 +158,7 @@ class BookingController extends Controller
         foreach ($interviews as $interview) {
             // Convertir a Timezone Local
             $meetingStart = Carbon::parse($interview->start_at)->setTimezone($tz);
-            $meetingEnd   = Carbon::parse($interview->end_at)->setTimezone($tz);
+            $meetingEnd = Carbon::parse($interview->end_at)->setTimezone($tz);
 
             $diffMinutes = abs($meetingEnd->diffInMinutes($meetingStart));
             $slotsCount = ceil($diffMinutes / 30);
@@ -163,7 +175,7 @@ class BookingController extends Controller
         // B) Procesar CalendarBlocks
         foreach ($blocks as $block) {
             $blockStart = Carbon::parse($block->starts_at)->setTimezone($tz);
-            $blockEnd   = Carbon::parse($block->ends_at)->setTimezone($tz);
+            $blockEnd = Carbon::parse($block->ends_at)->setTimezone($tz);
 
             if ($block->is_all_day) {
                 // Si es todo el día, bloqueamos todo el rango operativo (ej 09:00 a 21:00)
@@ -171,17 +183,18 @@ class BookingController extends Controller
                 // Verificamos si este bloque "toca" el día solicitado.
                 // Como ya filtramos en SQL, asumimos que sí.
                 // Pero ojo con los multi-día.
-                
+
                 // Si el bloque cubre todo el día solicitado:
                 if ($blockStart->lte($date->copy()->endOfDay()) && $blockEnd->gte($date->copy()->startOfDay())) {
-                     $startOfDay = $date->copy()->setTime(9, 0);
-                     $endOfDay = $date->copy()->setTime(21, 0); // Extendemos a 21:00 por si acaso
+                    $startOfDay = $date->copy()->setTime(9, 0);
+                    $endOfDay = $date->copy()->setTime(21, 0); // Extendemos a 21:00 por si acaso
 
-                     while ($startOfDay->lte($endOfDay)) {
-                         $blockedSlots[] = $startOfDay->format('H:i');
-                         $startOfDay->addMinutes(30);
-                     }
+                    while ($startOfDay->lte($endOfDay)) {
+                        $blockedSlots[] = $startOfDay->format('H:i');
+                        $startOfDay->addMinutes(30);
+                    }
                 }
+
                 continue;
             }
 
@@ -230,7 +243,7 @@ class BookingController extends Controller
         foreach ($blocks as $block) {
             // Convertir a Timezone Local para iterar fechas correctas
             $start = Carbon::parse($block->starts_at)->setTimezone($tz);
-            $end   = Carbon::parse($block->ends_at)->setTimezone($tz);
+            $end = Carbon::parse($block->ends_at)->setTimezone($tz);
 
             // Iteramos día por día
             $curr = $start->copy()->startOfDay();

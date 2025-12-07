@@ -7,8 +7,11 @@ use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Carbon;
 
+use Livewire\Attributes\Reactive;
+
 class ReportsStatsOverviewWidget extends BaseWidget
 {
+    #[Reactive]
     public ?array $dateRange = null;
 
     protected static ?string $pollingInterval = null;

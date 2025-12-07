@@ -31,7 +31,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login(Login::class)
-            ->brandLogo(fn() => view('filament.components.recova-logo'))
+            ->brandLogo(fn () => view('filament.components.recova-logo'))
             ->authGuard('web') // Usa el guard web de Laravel
             ->topNavigation()
             ->colors([
@@ -52,16 +52,20 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->darkMode(true)
             ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn () => view('filament.hooks.custom-assets'),
+            )
+            ->renderHook(
                 PanelsRenderHook::HEAD_START,
-                fn() => view('filament.hooks.login-styles'),
+                fn () => view('filament.hooks.login-styles'),
             )
             ->renderHook(
                 'panels::auth.login.form.after',
-                fn(): string => <<<'HTML'
+                fn (): string => <<<'HTML'
                 <div style="margin-top: 0.9rem; display: flex; flex-direction: column; gap: 0.4rem; align-items: stretch;">
                     <div style="position: relative; text-align: center; margin-block: 0.3rem;">
                         <div style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: rgba(148, 163, 184, 0.3);"></div>
-                        <span style="position: relative; background: rgba(15, 23, 42, 0.96); padding-inline: 0.8rem; color: #9ca3af; font-size: 0.8rem;">O continúa con</span>
+                        <span style="position: relative; background: rgba(15, 23, 42, 0.96); padding-inline: 0.8rem; color: #9ca3af; font-size: 0.8rem;">O</span>
                     </div>
                     <a href="/auth/google/login"
                        style="display: inline-flex;
@@ -83,7 +87,7 @@ class AdminPanelProvider extends PanelProvider
                             <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
                             <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                         </svg>
-                        Google
+                        Continuar con Google
                     </a>
                 </div>
                 HTML
@@ -94,13 +98,12 @@ class AdminPanelProvider extends PanelProvider
             ->userMenuItems([
                 MenuItem::make()
                     ->label('Mi Perfil')
-                    ->url(fn() => Profile::getUrl())
+                    ->url(fn () => Profile::getUrl())
                     ->icon('heroicon-o-user-circle'),
             ])
 
-            // Descubrimiento explícito de resources (evita duplicación)
-            ->discoverResources(in: app_path('Filament/Resources/CalendarBlocks'), for: 'App\\Filament\\Resources\\CalendarBlocks')
-            ->discoverResources(in: app_path('Filament/Resources/Interviews'), for: 'App\\Filament\\Resources\\Interviews')
+            // Descubrimiento automático de resources, pages y widgets
+            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
 
@@ -135,33 +138,6 @@ class AdminPanelProvider extends PanelProvider
                                 ...\App\Filament\Pages\ReportsPage::getNavigationItems(),
                             ]),
                     ]);
-            })
-            ->renderHook(
-                'panels::head.end',
-                fn(): string => <<<'HTML'
-
-        <script>
-            // Usar delegación de eventos global para manejar actualizaciones de Livewire y asegurar detección
-            document.addEventListener('mouseover', (e) => {
-                // Verificar si estamos dentro de la navegación superior
-                const nav = e.target.closest('.fi-topbar-nav');
-                if (!nav) return;
-
-                // Verificar si estamos sobre un item
-                const item = e.target.closest('.fi-topbar-item');
-                if (!item) return;
-
-                // Buscar el botón disparador (que tenga aria-expanded)
-                const button = item.querySelector('button[aria-expanded]');
-
-                // Si el botón existe y el menú está cerrado, simular click para abrir
-                if (button && button.getAttribute('aria-expanded') === 'false') {
-                    button.click();
-                }
             });
-        </script>
-HTML,
-            );
-
     }
 }

@@ -609,9 +609,9 @@ html body.fi-body .fi-main .fi-wi-header.fi-wi-header,
 html body.fi-body .fi-main .fi-section-header.fi-section-header {
     padding: 1.25rem 1.5rem !important;
     border-bottom: 1px solid rgba(34, 211, 238, 0.2) !important;
-    background: linear-gradient(135deg, 
-        rgba(34, 211, 238, 0.08) 0%, 
-        rgba(15, 23, 42, 0.4) 100%) !important;
+    background: linear-gradient(135deg,
+            rgba(34, 211, 238, 0.08) 0%,
+            rgba(15, 23, 42, 0.4) 100%) !important;
 }
 
 /* Título del widget */
@@ -620,7 +620,7 @@ body.fi-body .fi-main .fi-wi-header-heading {
     font-weight: 700 !important;
     font-size: 1.15rem !important;
     letter-spacing: 0.03em !important;
-    text-shadow: 
+    text-shadow:
         0 0 8px rgba(34, 211, 238, 0.5),
         0 0 15px rgba(34, 211, 238, 0.25) !important;
 }
@@ -631,7 +631,9 @@ body.fi-body .fi-main .fi-wi .fi-ta {
 }
 
 /* Encabezados de columna */
-body.fi-body .fi-main .fi-wi .fi-ta-header-cell {
+body.fi-body .fi-main .fi-wi .fi-ta-header-cell,
+body.fi-body .fi-main .fi-wi .fi-ta-header th,
+body.fi-body .fi-main .fi-wi .fi-ta-actions-header-cell {
     background: rgba(15, 23, 42, 0.7) !important;
     color: #67e8f9 !important;
     font-weight: 600 !important;
@@ -653,7 +655,7 @@ body.fi-body .fi-main .fi-wi .fi-ta-row {
 body.fi-body .fi-main .fi-wi .fi-ta-row:hover {
     background: rgba(34, 211, 238, 0.06) !important;
     border-left: 2px solid #22d3ee !important;
-    box-shadow: 
+    box-shadow:
         inset 0 0 20px rgba(34, 211, 238, 0.08),
         0 0 12px rgba(34, 211, 238, 0.15) !important;
     transform: translateX(2px) !important;
@@ -661,7 +663,8 @@ body.fi-body .fi-main .fi-wi .fi-ta-row:hover {
 
 /* Celdas de datos */
 body.fi-body .fi-main .fi-wi .fi-ta-cell {
-    padding: 1rem 1rem !important;
+    padding: 0.25rem 1rem !important;
+    /* Ajuste ultra compactado */
     color: #e5e7eb !important;
     font-size: 0.875rem !important;
 }
@@ -691,8 +694,9 @@ body.fi-body .fi-main .fi-wi .fi-ta-cell:nth-child(3) {
     font-size: 0.85rem !important;
 }
 
-/* Badges de estado - estilización específica */
-body.fi-body .fi-main .fi-wi .fi-badge {
+/* Badges de estado - estilización específica (Solo Widgets y Modales) */
+body.fi-body .fi-main .fi-wi .fi-badge,
+body.fi-body .fi-modal-window .fi-badge {
     border-radius: 9999px !important;
     padding: 0.35rem 0.75rem !important;
     font-weight: 600 !important;
@@ -704,59 +708,84 @@ body.fi-body .fi-main .fi-wi .fi-badge {
 }
 
 /* Badge Pendiente (warning/amarillo) */
-body.fi-body .fi-main .fi-wi .fi-badge-warning {
-    background: linear-gradient(135deg, 
-        rgba(251, 191, 36, 0.25), 
-        rgba(234, 179, 8, 0.15)) !important;
+body.fi-body .fi-main .fi-wi .fi-badge-warning,
+body.fi-body .fi-modal-window .fi-badge-color-warning,
+body.fi-body .fi-modal-window .fi-badge.text-warning-600 {
+    background: linear-gradient(135deg,
+            rgba(251, 191, 36, 0.25),
+            rgba(234, 179, 8, 0.15)) !important;
     color: #fde047 !important;
     border-color: rgba(251, 191, 36, 0.6) !important;
-    box-shadow: 
+    box-shadow:
         0 0 10px rgba(251, 191, 36, 0.4),
         0 0 20px rgba(251, 191, 36, 0.2) !important;
     text-shadow: 0 0 6px rgba(251, 191, 36, 0.6) !important;
 }
 
-/* Badge Confirmada (success/verde) */
-body.fi-body .fi-main .fi-wi .fi-badge-success {
-    background: linear-gradient(135deg, 
-        rgba(34, 197, 94, 0.25), 
-        rgba(22, 163, 74, 0.15)) !important;
+/* Badge Primary (Reunión Física/Pink) - Neon style */
+body.fi-body .fi-main .fi-wi .fi-badge-primary,
+body.fi-body .fi-modal-window .fi-badge-color-primary,
+body.fi-body .fi-modal-window .fi-badge.text-primary-600 {
+    background: linear-gradient(135deg,
+            rgba(236, 72, 153, 0.25),
+            rgba(219, 39, 119, 0.15)) !important;
+    color: #f9a8d4 !important;
+    /* Pink-300ish */
+    border-color: rgba(236, 72, 153, 0.6) !important;
+    box-shadow:
+        0 0 10px rgba(236, 72, 153, 0.4),
+        0 0 20px rgba(236, 72, 153, 0.2) !important;
+    text-shadow: 0 0 6px rgba(236, 72, 153, 0.6) !important;
+}
+
+/* Badge Confirmada (success/verde) - WhatsApp suele usar success */
+body.fi-body .fi-main .fi-wi .fi-badge-success,
+body.fi-body .fi-modal-window .fi-badge-color-success,
+body.fi-body .fi-modal-window .fi-badge.text-success-600 {
+    background: linear-gradient(135deg,
+            rgba(34, 197, 94, 0.25),
+            rgba(22, 163, 74, 0.15)) !important;
     color: #86efac !important;
     border-color: rgba(34, 197, 94, 0.6) !important;
-    box-shadow: 
+    box-shadow:
         0 0 10px rgba(34, 197, 94, 0.4),
         0 0 20px rgba(34, 197, 94, 0.2) !important;
     text-shadow: 0 0 6px rgba(34, 197, 94, 0.6) !important;
 }
 
 /* Badge Cancelada (danger/rojo) */
-body.fi-body .fi-main .fi-wi .fi-badge-danger {
-    background: linear-gradient(135deg, 
-        rgba(239, 68, 68, 0.25), 
-        rgba(220, 38, 38, 0.15)) !important;
+body.fi-body .fi-main .fi-wi .fi-badge-danger,
+body.fi-body .fi-modal-window .fi-badge-color-danger,
+body.fi-body .fi-modal-window .fi-badge.text-danger-600 {
+    background: linear-gradient(135deg,
+            rgba(239, 68, 68, 0.25),
+            rgba(220, 38, 38, 0.15)) !important;
     color: #fca5a5 !important;
     border-color: rgba(239, 68, 68, 0.6) !important;
-    box-shadow: 
+    box-shadow:
         0 0 10px rgba(239, 68, 68, 0.4),
         0 0 20px rgba(239, 68, 68, 0.2) !important;
     text-shadow: 0 0 6px rgba(239, 68, 68, 0.6) !important;
 }
 
 /* Badge Completada (info/azul) */
-body.fi-body .fi-main .fi-wi .fi-badge-info {
-    background: linear-gradient(135deg, 
-        rgba(59, 130, 246, 0.25), 
-        rgba(37, 99, 235, 0.15)) !important;
+body.fi-body .fi-main .fi-wi .fi-badge-info,
+body.fi-body .fi-modal-window .fi-badge-color-info,
+body.fi-body .fi-modal-window .fi-badge.text-info-600 {
+    background: linear-gradient(135deg,
+            rgba(59, 130, 246, 0.25),
+            rgba(37, 99, 235, 0.15)) !important;
     color: #93c5fd !important;
     border-color: rgba(59, 130, 246, 0.6) !important;
-    box-shadow: 
+    box-shadow:
         0 0 10px rgba(59, 130, 246, 0.4),
         0 0 20px rgba(59, 130, 246, 0.2) !important;
     text-shadow: 0 0 6px rgba(59, 130, 246, 0.6) !important;
 }
 
 /* Efecto hover en los badges */
-body.fi-body .fi-main .fi-wi .fi-badge:hover {
+body.fi-body .fi-main .fi-wi .fi-badge:hover,
+body.fi-body .fi-modal-window .fi-badge:hover {
     transform: scale(1.05) !important;
     filter: brightness(1.15) !important;
     transition: all 0.2s ease !important;
@@ -794,27 +823,53 @@ body.fi-body .fi-main .fi-wi .fi-ta-empty-state-description {
     color: #94a3b8 !important;
 }
 
-/* Input en sí dentro del widget */
-body.fi-body .fi-main .fi-wi input.fi-input {
+/* Buscador interno de TABLAS (Global) - estilo cyan como topbar */
+body.fi-body .fi-main .fi-ta-search {
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* Wrapper del input de búsqueda en CUALQUIER tabla (Widget o Página) */
+body.fi-body .fi-main .fi-wi .fi-input-wrp,
+body.fi-body .fi-main .fi-ta-search .fi-input-wrp,
+body.fi-body .fi-main .fi-ta-header-toolbar .fi-input-wrp {
+    background: rgba(15, 23, 42, 0.35) !important;
+    border: 1px solid #22d3ee !important;
+    border-radius: 8px !important;
+    box-shadow: 0 0 8px rgba(34, 211, 238, 0.45) !important;
+}
+
+/* Input en sí dentro de tablas */
+body.fi-body .fi-main .fi-wi input.fi-input,
+body.fi-body .fi-main .fi-ta-search input.fi-input,
+body.fi-body .fi-main .fi-ta-header-toolbar input.fi-input {
     border: none !important;
     background: transparent !important;
     color: #e0faff !important;
 }
 
 /* Placeholder cyan suave */
-body.fi-body .fi-main .fi-wi input.fi-input::placeholder {
+body.fi-body .fi-main .fi-wi input.fi-input::placeholder,
+body.fi-body .fi-main .fi-ta-search input.fi-input::placeholder,
+body.fi-body .fi-main .fi-ta-header-toolbar input.fi-input::placeholder {
     color: rgba(34, 211, 238, 0.7) !important;
 }
 
 /* Lupa (icono) en cyan */
-body.fi-body .fi-main .fi-wi .fi-input-wrp svg {
+body.fi-body .fi-main .fi-wi .fi-input-wrp svg,
+body.fi-body .fi-main .fi-ta-search svg,
+body.fi-body .fi-main .fi-ta-header-toolbar .fi-input-wrp svg {
     color: #22d3ee !important;
     stroke: #22d3ee !important;
 }
 
 /* Focus: más glow cyan */
 body.fi-body .fi-main .fi-wi .fi-input-wrp:focus-within,
-body.fi-body .fi-main .fi-wi input.fi-input:focus {
+body.fi-body .fi-main .fi-ta-search .fi-input-wrp:focus-within,
+body.fi-body .fi-main .fi-ta-header-toolbar .fi-input-wrp:focus-within,
+body.fi-body .fi-main .fi-wi input.fi-input:focus,
+body.fi-body .fi-main .fi-ta-search input.fi-input:focus,
+body.fi-body .fi-main .fi-ta-header-toolbar input.fi-input:focus {
     border-color: #a5f3fc !important;
     box-shadow: 0 0 10px rgba(34, 211, 238, 0.7) !important;
 }
@@ -869,7 +924,7 @@ body.fi-body .fi-ta-pagination .fi-input-wrp-prefix span,
 body.fi-body .fi-ta-pagination .fi-input-wrp-prefix,
 body.fi-body .fi-ta-pagination label.fi-pagination-records-per-page-select span,
 body.fi-body .fi-ta-pagination-records-per-page-label,
-body.fi-body .fi-ta-pagination div[class*="flex"] > span {
+body.fi-body .fi-ta-pagination div[class*="flex"]>span {
     color: #22d3ee !important;
     /* Cyan brillante */
 }
@@ -1270,6 +1325,124 @@ body.fi-body .fi-main .fi-section-content-ctn input[type="tel"]:focus {
 /* Icono del ojo (mostrar contraseña) en cyan */
 body.fi-body .fi-main .fi-section-content-ctn button[type="button"] svg {
     color: #22d3ee !important;
+}
+
+/* =========================================
+   FULLCALENDAR – Título Capitalizado
+========================================= */
+.fc-toolbar-title {
+    text-transform: capitalize !important;
+}
+
+/* =========================================
+   FIX ALINEACIÓN TÍTULO + TOOLBAR
+   ========================================= */
+
+/* Alineación horizontal de título y toolbar en tablas */
+body.fi-body .fi-main .fi-ta-header-ctn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: wrap !important;
+    gap: 1rem !important;
+    padding: 1rem 1.5rem !important;
+}
+
+/* Ajustes para el título cuando está dentro del header - Estilo blanco limpio */
+body.fi-body .fi-main .fi-ta-header-heading {
+    margin-bottom: 0 !important;
+    line-height: 1.2 !important;
+    color: #e5e7eb !important;
+    /* Blanco suave igual a Estadísticas */
+    font-weight: 600 !important;
+    font-size: 1.1rem !important;
+    letter-spacing: 0.01em !important;
+    text-shadow: none !important;
+    /* Sin neón */
+}
+
+/* Quitar márgenes/paddings internos para que queden alineados */
+body.fi-body .fi-main .fi-ta-header {
+    padding-bottom: 0 !important;
+    border-bottom: none !important;
+    margin-bottom: 0 !important;
+    flex-grow: 1;
+    /* Permitir que el título ocupe espacio disponible */
+}
+
+body.fi-body .fi-main .fi-ta-header-toolbar {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    margin-left: auto;
+    /* Empujar toolbar a la derecha */
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+/* Reducir altura de filas en la tabla del widget - Ultra Compacto */
+body.fi-body .fi-main .fi-wi .fi-ta-cell {
+    padding: 0.25rem 1rem !important;
+    /* Reducido al mínimo */
+    color: #e5e7eb !important;
+    font-size: 0.875rem !important;
+}
+
+/* =========================================
+   MODALES - Estilo Recova (Azulado / Glass)
+========================================= */
+
+/* Ventana del modal (contenedor principal) */
+body.fi-body .fi-modal-window {
+    background: radial-gradient(circle at top left,
+            rgba(56, 189, 248, 0.15),
+            rgba(15, 23, 42, 0.98)) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(56, 189, 248, 0.3) !important;
+    box-shadow:
+        0 25px 50px -12px rgba(15, 23, 42, 0.95),
+        0 0 30px rgba(56, 189, 248, 0.15) !important;
+    border-radius: 20px !important;
+}
+
+/* Header del modal */
+body.fi-body .fi-modal-header {
+    border-bottom: 1px solid rgba(34, 211, 238, 0.15) !important;
+    padding: 1.25rem 1.5rem !important;
+    background: linear-gradient(to right,
+            rgba(34, 211, 238, 0.05),
+            transparent) !important;
+}
+
+/* Título del modal */
+body.fi-body .fi-modal-heading {
+    color: #22d3ee !important;
+    text-shadow: 0 0 8px rgba(34, 211, 238, 0.4) !important;
+    font-size: 1.25rem !important;
+}
+
+/* Botón de cerrar (X) */
+body.fi-body .fi-modal-close-btn {
+    color: rgba(148, 163, 184, 0.6) !important;
+    transition: all 0.2s ease !important;
+}
+
+body.fi-body .fi-modal-close-btn:hover {
+    color: #22d3ee !important;
+    background: rgba(34, 211, 238, 0.15) !important;
+    transform: rotate(90deg) !important;
+}
+
+/* Contenido del modal */
+body.fi-body .fi-modal-content {
+    padding: 1.5rem !important;
+}
+
+/* Footer del modal (botones de acción) */
+body.fi-body .fi-modal-footer {
+    border-top: 1px solid rgba(34, 211, 238, 0.15) !important;
+    background: rgba(15, 23, 42, 0.4) !important;
+    padding: 1rem 1.5rem !important;
 }
 
 /* =========================================
