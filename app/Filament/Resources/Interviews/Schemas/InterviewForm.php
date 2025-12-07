@@ -121,12 +121,12 @@ class InterviewForm
                                         $repeater->deleteItem($key);
                                     }),
                             ])
-                            ->columnSpan(1)
-                            ->verticalAlignment(\Filament\Support\Enums\VerticalAlignment::Center),
+                                ->columnSpan(1)
+                                ->verticalAlignment(\Filament\Support\Enums\VerticalAlignment::Center),
                         ])
                         ->columns(12)
                         ->defaultItems(0)
-                        ->addActionLabel('Agregar Producto'),
+                        ->addAction(fn(\Filament\Forms\Components\Actions\Action $action) => $action->label('Agregar Producto')->color('info')),
                 ])
                 ->collapsible()
                 ->compact(),
@@ -221,20 +221,20 @@ class InterviewForm
             // Campos ocultos
             \Filament\Forms\Components\Hidden::make('start_at')
                 ->dehydrated()
-                ->default(fn ($record) => $record?->start_at),
+                ->default(fn($record) => $record?->start_at),
 
             \Filament\Forms\Components\Hidden::make('end_at')
                 ->dehydrated()
-                ->default(fn ($record) => $record?->end_at)
+                ->default(fn($record) => $record?->end_at)
                 ->rules([
-                    fn ($get) => function (string $attribute, $value, \Closure $fail) use ($get) {
+                    fn($get) => function (string $attribute, $value, \Closure $fail) use ($get) {
                         $start = $get('start_at');
                         if ($start && $value && Carbon::parse($value)->lte(Carbon::parse($start))) {
                             $fail('La hora de fin debe ser posterior al inicio.');
                         }
                     },
-                    fn ($get, $record) => new NoOverlapRule($get('start_at'), $record?->id, 60),
-                    fn ($get) => new NoOverlapWithBlocks($get('start_at'), (int) env('OWNER_CAL_USER_ID', 1)),
+                    fn($get, $record) => new NoOverlapRule($get('start_at'), $record?->id, 60),
+                    fn($get) => new NoOverlapWithBlocks($get('start_at'), (int) env('OWNER_CAL_USER_ID', 1)),
                 ]),
 
             Select::make('status')

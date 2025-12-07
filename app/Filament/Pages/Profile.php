@@ -63,7 +63,8 @@ class Profile extends Page implements HasForms
                         TextInput::make('whatsapp')
                             ->label('WhatsApp'),
                     ])
-                    ->columns(1),
+                    ->columns(1)
+                    ->columnSpan(1),
 
                 // ============= BLOQUE 2: CAMBIAR CONTRASEÑA ============
                 Section::make('Cambiar Contraseña')
@@ -88,8 +89,23 @@ class Profile extends Page implements HasForms
                             ->revealable()
                             ->same('new_password')
                             ->requiredWith('new_password'),
+
+                        \Filament\Forms\Components\Actions::make([
+                            \Filament\Forms\Components\Actions\Action::make('save')
+                                ->label('Guardar Cambios')
+                                ->action('submit')
+                                ->extraAttributes([
+                                    'class' => 'rr-profile-save-btn',
+                                    'id' => 'rr-profile-save-btn-id' // ID ÚNICO para asegurar estilos CSS
+                                ]),
+                        ])->alignment(\Filament\Support\Enums\Alignment::Center),
                     ])
-                    ->columns(1), // todos los campos de password a una sola columna
+                    ->columns(1)
+                    ->columnSpan(1), // todos los campos de password a una sola columna
+            ])
+            ->columns([
+                'default' => 1,
+                'md' => 2,
             ])
             ->statePath('data');
     }

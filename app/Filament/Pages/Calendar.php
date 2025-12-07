@@ -48,8 +48,8 @@ class Calendar extends Page
                 ->icon('heroicon-o-plus-circle')
                 ->color('primary')
                 ->action(function () {
-                    // Redirigir al recurso de Interviews para crear
-                    return redirect()->route('filament.admin.resources.interviews.create');
+                    // Usar getUrl() es más seguro que hardcodear la ruta
+                    return redirect()->to(\App\Filament\Resources\Interviews\InterviewResource::getUrl('create'));
                 }),
         ];
     }

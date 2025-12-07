@@ -29,15 +29,25 @@ body.fi-body .fi-topbar {
 
 /* El <nav> es el que se pinta con el degradado animado */
 body.fi-body .fi-topbar>nav {
+    /* Degradado intermedio: ni tan claro como el primero
+       ni tan oscuro como el último */
     background-image: linear-gradient(120deg,
-            #4b164e 0%,
-            #7c2d78 30%,
-            #a855f7 60%,
-            #7c2d78 100%) !important;
+        #3a1340 0%,    /* fucsia más oscuro pero visible */
+        #5a1c5d 25%,
+        #7c2d78 50%,   /* tu fucsia principal */
+        #2a2152 75%,   /* violeta azulado */
+        #040b1e 100%   /* azul muy oscuro al final */
+    ) !important;
     background-size: 200% 100%;
     animation: rr-topbar-wave 18s ease-in-out infinite;
     border-bottom: 1px solid rgba(15, 23, 42, 0.9) !important;
+
+    /* Sombra interna más suave que antes */
+    box-shadow:
+        inset 0 -8px 22px rgba(15, 23, 42, 0.55),
+        0 1px 0 rgba(15, 23, 42, 0.7);
 }
+
 
 /* Animación del background que “recorre” el topbar */
 @keyframes rr-topbar-wave {
@@ -115,13 +125,14 @@ body.fi-body .fi-topbar .fi-topbar-item-button[data-active] .fi-topbar-item-icon
 ========================================= */
 
 /* Estilo glass para la mayoría de las cards de Filament */
-body.fi-body .fi-main .fi-section,
-body.fi-body .fi-main .fi-widget,
-body.fi-body .fi-main .fi-widget-card,
-body.fi-body .fi-main .fi-infolist,
-body.fi-body .fi-main .fi-record-list,
-body.fi-body .fi-main .fi-resource-list,
-body.fi-body .fi-main .fi-resource-relation-manager {
+/* Estilo glass para la mayoría de las cards de Filament - ALTA ESPECIFICIDAD */
+html body.fi-body .fi-main .fi-section.fi-section,
+html body.fi-body .fi-main .fi-widget.fi-widget,
+html body.fi-body .fi-main .fi-widget-card.fi-widget-card,
+html body.fi-body .fi-main .fi-infolist.fi-infolist,
+html body.fi-body .fi-main .fi-record-list.fi-record-list,
+html body.fi-body .fi-main .fi-resource-list.fi-resource-list,
+html body.fi-body .fi-main .fi-resource-relation-manager.fi-resource-relation-manager {
     background: rgba(15, 23, 42, 0.55) !important;
     border-radius: 18px !important;
     border: 1px solid rgba(56, 189, 248, 0.12) !important;
@@ -131,33 +142,205 @@ body.fi-body .fi-main .fi-resource-relation-manager {
         0 0 25px rgba(56, 189, 248, 0.15) !important;
 }
 
-/* Stats del dashboard estilo Recova (más glow) */
+/* =========================================
+   STATS WIDGETS - Estilo Neon Premium
+========================================= */
+
+/* Widgets de estadísticas (targeting específico para Stats Widgets de Filament) */
+body.fi-body .fi-wi-stats-overview-stat {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative !important;
+    text-align: center !important;
+    overflow: hidden !important;
+}
+
+/* Efecto de brillo animado sutil en el borde */
+body.fi-body .fi-wi-stats-overview-stat::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, 
+        transparent 30%, 
+        rgba(34, 211, 238, 0.3) 50%, 
+        transparent 70%);
+    border-radius: 20px;
+    opacity: 0;
+    z-index: -1;
+    animation: borderGlow 3s ease-in-out infinite;
+}
+
+@keyframes borderGlow {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+}
+
+/* Hover state más impresionante */
+body.fi-body .fi-wi-stats-overview-stat:hover {
+    transform: translateY(-4px) scale(1.02) !important;
+    border-color: rgba(34, 211, 238, 0.7) !important;
+    box-shadow:
+        0 20px 60px rgba(15, 23, 42, 0.98),
+        0 0 35px rgba(34, 211, 238, 0.6),
+        0 0 50px rgba(168, 85, 247, 0.3),
+        inset 0 1px 2px rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Iconos de los widgets con glow */
+body.fi-body .fi-wi-stats-overview-stat .fi-wi-stats-overview-stat-icon {
+    color: #22d3ee !important;
+    filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.6));
+    transition: all 0.3s ease !important;
+}
+
+body.fi-body .fi-wi-stats-overview-stat:hover .fi-wi-stats-overview-stat-icon {
+    filter: drop-shadow(0 0 15px rgba(34, 211, 238, 0.9));
+    transform: scale(1.1);
+}
+
+/* Labels de los widgets */
+body.fi-body .fi-wi-stats-overview-stat .fi-wi-stats-overview-stat-label {
+    color: #22d3ee !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    font-size: 0.75rem !important;
+    text-align: center !important;
+    display: block !important;
+}
+
+/* Valores numéricos con efecto glow */
+body.fi-body .fi-wi-stats-overview-stat .fi-wi-stats-overview-stat-value {
+    color: #e0faff !important;
+    font-weight: 700 !important;
+    font-size: 2rem !important;
+    text-shadow: 0 0 20px rgba(34, 211, 238, 0.4) !important;
+    transition: all 0.3s ease !important;
+    text-align: center !important;
+    display: block !important;
+}
+
+body.fi-body .fi-wi-stats-overview-stat:hover .fi-wi-stats-overview-stat-value {
+    text-shadow: 0 0 30px rgba(34, 211, 238, 0.7) !important;
+    transform: scale(1.05);
+}
+
+/* Descripción/cambio (si existe) */
+body.fi-body .fi-wi-stats-overview-stat .fi-wi-stats-overview-stat-description {
+    color: #67e8f9 !important;
+    font-size: 0.875rem !important;
+    text-align: center !important;
+    display: block !important;
+    font-weight: 500 !important;
+}
+
+/* Stats del dashboard estilo Recova (clase custom - por compatibilidad) */
 .rr-stat-card {
     background: radial-gradient(circle at top left,
-            rgba(56, 189, 248, 0.08),
-            rgba(15, 23, 42, 0.95));
-    border-radius: 18px;
-    border: 1px solid rgba(148, 163, 184, 0.35);
+            rgba(34, 211, 238, 0.15),
+            rgba(15, 23, 42, 0.98));
+    border-radius: 20px;
+    border: 1.5px solid rgba(34, 211, 238, 0.4);
     box-shadow:
-        0 14px 40px rgba(15, 23, 42, 0.94),
-        0 0 16px rgba(6, 182, 212, 0.55);
-    backdrop-filter: blur(18px);
-
-    /* Centrado de contenido */
+        0 14px 40px rgba(15, 23, 42, 0.95),
+        0 0 20px rgba(34, 211, 238, 0.4);
+    backdrop-filter: blur(20px);
     text-align: center !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
     padding: 1.5rem !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .rr-stat-card:hover {
-    transform: translateY(-2px);
+    transform: translateY(-4px) scale(1.02);
+    border-color: rgba(34, 211, 238, 0.7);
     box-shadow:
-        0 18px 50px rgba(15, 23, 42, 0.98),
-        0 0 22px rgba(6, 182, 212, 0.85);
-    transition: all 0.25s ease;
+        0 20px 60px rgba(15, 23, 42, 0.98),
+        0 0 35px rgba(34, 211, 238, 0.6),
+        0 0 50px rgba(168, 85, 247, 0.3);
+}
+
+/* =========================================
+   QUICK STATS WIDGET - Estadísticas Rápidas
+========================================= */
+
+/* Título principal del widget */
+body.fi-body .fi-wi h2:has(+ p:contains("Resumen general")),
+body.fi-body .fi-wi h2.text-lg {
+    color: #22d3ee !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+}
+
+/* Subtítulo/descripción */
+body.fi-body .fi-wi p.text-gray-400 {
+    color: #67e8f9 !important;
+}
+
+/* Items de estadísticas (dt) */
+body.fi-body .fi-wi dt.text-gray-500,
+body.fi-body .fi-wi dt span {
+    color: #a5f3fc !important;
+    font-weight: 500 !important;
+}
+
+/* Valores de estadísticas (dd) */
+body.fi-body .fi-wi dd.text-sm,
+body.fi-body .fi-wi dd.font-semibold {
+    color: #e0faff !important;
+    font-weight: 700 !important;
+    text-shadow: 0 0 10px rgba(34, 211, 238, 0.4) !important;
+}
+
+/* Íconos en el widget */
+body.fi-body .fi-wi dt svg {
+    color: #22d3ee !important;
+    filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.6));
+}
+
+/* Borde separador */
+body.fi-body .fi-wi .border-gray-200,
+body.fi-body .fi-wi .dark\\:border-gray-700 {
+    border-color: rgba(34, 211, 238, 0.2) !important;
+}
+
+/* Título de "Productos Más Populares" */
+body.fi-body .fi-wi h3.text-sm {
+    color: #22d3ee !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.025em !important;
+}
+
+/* Lista de productos */
+body.fi-body .fi-wi ul.text-gray-500 li {
+    color: #a5f3fc !important;
+    padding: 0.5rem 0 !important;
+    border-bottom: 1px solid rgba(34, 211, 238, 0.1) !important;
+    transition: all 0.2s ease !important;
+}
+
+body.fi-body .fi-wi ul.text-gray-500 li:last-child {
+    border-bottom: none !important;
+}
+
+body.fi-body .fi-wi ul.text-gray-500 li:hover {
+    background: rgba(34, 211, 238, 0.05) !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+    border-radius: 6px !important;
+}
+
+/* Porcentajes de productos */
+body.fi-body .fi-wi ul.text-gray-500 li span.font-semibold {
+    color: #e0faff !important;
+    font-weight: 700 !important;
 }
 
 /* =========================================
@@ -256,41 +439,79 @@ body.fi-body .fi-main select.fi-input:focus {
    TOPBAR – Search input Recova (cyan)
 ========================================= */
 
-/* Wrapper del input de búsqueda */
-body.fi-body .fi-topbar .fi-input-wrp,
-body.fi-body .fi-topbar .fi-input-wrp-input {
-    background: rgba(15, 23, 42, 0.35) !important;
+/* Wrapper/contenedor del buscador en TOPBAR */
+body.fi-body .fi-topbar .fi-input-wrp {
+    position: relative !important;
+    background: rgba(15, 23, 42, 0.5) !important;
     border: 1px solid #22d3ee !important;
-    /* borde cyan */
-    box-shadow:
-        0 0 8px rgba(34, 211, 238, 0.45);
+    border-radius: 8px !important;           /* ← igual que Reuniones */
+    box-shadow: 0 0 8px rgba(34, 211, 238, 0.3) !important;
+    transition: all 0.2s ease !important;
+    overflow: hidden !important;
 }
 
-/* Input en sí */
-body.fi-body .fi-topbar input.fi-input {
-    border: none !important;
+/* “Vidriado” interno sutil (apagado por defecto) */
+body.fi-body .fi-topbar .fi-input-wrp::before {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    border-radius: 8px;                      /* ← coincide con el wrapper */
+    background: radial-gradient(circle at top left,
+        rgba(34, 211, 238, 0.18),
+        transparent 55%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+/* Focus / hover del wrapper */
+body.fi-body .fi-topbar .fi-input-wrp:focus-within,
+body.fi-body .fi-topbar .fi-input-wrp:hover {
+    border-color: #a5f3fc !important;
+    box-shadow: 0 0 12px rgba(34, 211, 238, 0.6) !important;
+}
+
+body.fi-body .fi-topbar .fi-input-wrp:focus-within::before,
+body.fi-body .fi-topbar .fi-input-wrp:hover::before {
+    opacity: 1;
+}
+
+/* Contenedor interno que usa Filament */
+body.fi-body .fi-topbar .fi-input-wrp-input {
     background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Input del topbar */
+body.fi-body .fi-topbar input.fi-input {
+    background: transparent !important;
+    border: none !important;
     color: #e0faff !important;
-    /* texto claro */
+    outline: none !important;
+    box-shadow: none !important;
+    transition: all 0.2s ease !important;
 }
 
-/* Placeholder en cyan suave */
+/* Placeholder */
 body.fi-body .fi-topbar input.fi-input::placeholder {
-    color: rgba(34, 211, 238, 0.7) !important;
+    color: rgba(34, 211, 238, 0.6) !important;
 }
 
-/* Lupa (icono) en cyan */
-body.fi-body .fi-topbar .fi-input-wrp svg {
+/* Evitar bordes propios de focus */
+body.fi-body .fi-topbar input.fi-input:focus,
+body.fi-body .fi-topbar input.fi-input:focus-visible {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Icono de búsqueda (lupa) en cyan */
+body.fi-body .fi-topbar .fi-input-wrp svg,
+body.fi-body .fi-topbar .fi-input-wrp-prefix svg {
     color: #22d3ee !important;
     stroke: #22d3ee !important;
-}
-
-/* Focus: más glow cyan */
-body.fi-body .fi-topbar .fi-input-wrp:focus-within,
-body.fi-body .fi-topbar input.fi-input:focus {
-    border-color: #a5f3fc !important;
-    box-shadow:
-        0 0 10px rgba(34, 211, 238, 0.7);
+    fill: none !important;
 }
 
 /* =========================================
@@ -383,7 +604,9 @@ body.fi-body .fi-main .fi-ta-empty-state-description {
 ========================================= */
 
 /* Header del widget (título "Próximas Reservas") */
-body.fi-body .fi-main .fi-wi-header {
+/* Header del widget (título "Próximas Reservas") - ALTA ESPECIFICIDAD */
+html body.fi-body .fi-main .fi-wi-header.fi-wi-header,
+html body.fi-body .fi-main .fi-section-header.fi-section-header {
     padding: 1.25rem 1.5rem !important;
     border-bottom: 1px solid rgba(34, 211, 238, 0.2) !important;
     background: linear-gradient(135deg, 
@@ -571,38 +794,20 @@ body.fi-body .fi-main .fi-wi .fi-ta-empty-state-description {
     color: #94a3b8 !important;
 }
 
-/* Buscador interno del widget - estilo cyan como topbar */
-body.fi-body .fi-main .fi-wi .fi-ta-search {
-    display: flex !important;
-    align-items: center !important;
-}
-
-/* Wrapper del input de búsqueda en el widget */
-body.fi-body .fi-main .fi-wi .fi-input-wrp,
-body.fi-body .fi-main .fi-wi .fi-ta-search .fi-input-wrp {
-    background: rgba(15, 23, 42, 0.35) !important;
-    border: 1px solid #22d3ee !important;
-    border-radius: 8px !important;
-    box-shadow: 0 0 8px rgba(34, 211, 238, 0.45) !important;
-}
-
 /* Input en sí dentro del widget */
-body.fi-body .fi-main .fi-wi input.fi-input,
-body.fi-body .fi-main .fi-wi .fi-ta-search input.fi-input {
+body.fi-body .fi-main .fi-wi input.fi-input {
     border: none !important;
     background: transparent !important;
     color: #e0faff !important;
 }
 
 /* Placeholder cyan suave */
-body.fi-body .fi-main .fi-wi input.fi-input::placeholder,
-body.fi-body .fi-main .fi-wi .fi-ta-search input.fi-input::placeholder {
+body.fi-body .fi-main .fi-wi input.fi-input::placeholder {
     color: rgba(34, 211, 238, 0.7) !important;
 }
 
 /* Lupa (icono) en cyan */
-body.fi-body .fi-main .fi-wi .fi-input-wrp svg,
-body.fi-body .fi-main .fi-wi .fi-ta-search svg {
+body.fi-body .fi-main .fi-wi .fi-input-wrp svg {
     color: #22d3ee !important;
     stroke: #22d3ee !important;
 }
@@ -737,7 +942,7 @@ body.fi-body .fi-main .fi-section .fi-section-content-ctn svg {
 }
 
 /* Botones de rango (Este mes, Últimos 30 días, etc.) */
-body.fi-body .fi-main .fi-section .fi-section-content-ctn button.fi-btn {
+body.fi-body .fi-main .fi-section .fi-section-content-ctn button.fi-btn:not(.fi-ac-btn-action) {
     border-radius: 9999px !important;
     background: rgba(15, 23, 42, 0.9) !important;
     border: 1px solid rgba(56, 189, 248, 0.4) !important;
@@ -840,28 +1045,24 @@ body.fi-body .fi-main .fi-wi-stats-overview-stat {
    (Este Mes / Últimos 30 Días)
 ========================================= */
 
-body.fi-body .fi-main .fi-section .fi-section-content-ctn button.fi-btn {
-    border-radius: 9999px !important;
-    background: rgba(15, 23, 42, 0.9) !important;
+body.fi-body .fi-main .fi-section .fi-section-content-ctn button.fi-btn:not(.fi-btn-info):not(.fi-btn-primary):not(.fi-btn-danger):not(.fi-btn-warning):not(.fi-btn-success) {
     border: 1px solid rgba(56, 189, 248, 0.6) !important;
     color: #e0faff !important;
-    /* texto claro */
 }
 
-/* Texto interno del botón (por si viene con clases dark:text-*) */
-body.fi-body .fi-main .fi-section .fi-section-content-ctn button.fi-btn span {
+/* Texto interno del botón (solo para los genéricos) */
+body.fi-body .fi-main .fi-section .fi-section-content-ctn button.fi-btn:not(.fi-btn-info):not(.fi-btn-primary):not(.fi-btn-danger):not(.fi-btn-warning):not(.fi-btn-success) span {
     color: #e0faff !important;
 }
 
-/* Icono calendario dentro del botón */
-body.fi-body .fi-main .fi-section .fi-section-content-ctn button.fi-btn svg {
+/* Icono calendario dentro del botón (solo para los genéricos) */
+body.fi-body .fi-main .fi-section .fi-section-content-ctn button.fi-btn:not(.fi-btn-info):not(.fi-btn-primary):not(.fi-btn-danger):not(.fi-btn-warning):not(.fi-btn-success) svg {
     color: #22d3ee !important;
     stroke: #22d3ee !important;
 }
 
-/* Hover: un poco más cyan */
-body.fi-body .fi-main .fi-section .fi-section-content-ctn button.fi-btn:hover {
-    background: rgba(34, 211, 238, 0.20) !important;
+/* Hover genéricos */
+body.fi-body .fi-main .fi-section .fi-section-content-ctn button.fi-btn:not(.fi-btn-info):not(.fi-btn-primary):not(.fi-btn-danger):not(.fi-btn-warning):not(.fi-btn-success):hover {
     box-shadow: 0 0 12px rgba(34, 211, 238, 0.7);
 }
 
@@ -887,7 +1088,6 @@ body.fi-body .fi-main .fi-section .fi-section-content-ctn .flex.gap-2>button.inl
 
 /* Hover: un poco más cyan y glow suave */
 body.fi-body .fi-main .fi-section .fi-section-content-ctn .flex.gap-2>button.inline-flex:hover {
-    background: rgba(34, 211, 238, 0.20) !important;
     box-shadow: 0 0 10px rgba(34, 211, 238, 0.65);
 }
 
@@ -1070,4 +1270,596 @@ body.fi-body .fi-main .fi-section-content-ctn input[type="tel"]:focus {
 /* Icono del ojo (mostrar contraseña) en cyan */
 body.fi-body .fi-main .fi-section-content-ctn button[type="button"] svg {
     color: #22d3ee !important;
+}
+
+/* =========================================
+   REUNIONES (INTERVIEWS) – Tabla
+========================================= */
+
+/* Headers de tabla más destacados */
+body.fi-body .fi-main [class*="interviews"] .fi-ta-header-cell,
+body.fi-body .fi-main table thead th {
+    color: #67e8f9 !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    font-size: 0.75rem !important;
+    letter-spacing: 0.05em !important;
+}
+
+/* Filas de la tabla con hover sutil */
+body.fi-body .fi-main [class*="interviews"] .fi-ta-row,
+body.fi-body .fi-main table tbody tr {
+    transition: all 0.2s ease !important;
+    border-bottom: 1px solid rgba(56, 189, 248, 0.08) !important;
+}
+
+body.fi-body .fi-main [class*="interviews"] .fi-ta-row:hover,
+body.fi-body .fi-main table tbody tr:hover {
+    background: rgba(34, 211, 238, 0.04) !important;
+    border-left: 2px solid #22d3ee !important;
+    box-shadow: 
+        inset 0 0 15px rgba(34, 211, 238, 0.06),
+        0 0 8px rgba(34, 211, 238, 0.1) !important;
+}
+
+/* Badge de Canal - WhatsApp (verde) */
+body.fi-body .fi-badge[class*="success"] {
+    background: linear-gradient(135deg, 
+        rgba(34, 197, 94, 0.25), 
+        rgba(22, 163, 74, 0.15)) !important;
+    color: #86efac !important;
+    border: 1px solid rgba(34, 197, 94, 0.5) !important;
+    box-shadow: 
+        0 0 8px rgba(34, 197, 94, 0.3),
+        0 0 15px rgba(34, 197, 94, 0.15) !important;
+    text-shadow: 0 0 4px rgba(34, 197, 94, 0.4) !important;
+}
+
+/* Badge de Canal - Reunión Física (púrpura/primary) */
+body.fi-body .fi-badge[class*="primary"] {
+    background: linear-gradient(135deg, 
+        rgba(168, 85, 247, 0.25), 
+        rgba(147, 51, 234, 0.15)) !important;
+    color: #c4b5fd !important;
+    border: 1px solid rgba(168, 85, 247, 0.5) !important;
+    box-shadow: 
+        0 0 8px rgba(168, 85, 247, 0.3),
+        0 0 15px rgba(168, 85, 247, 0.15) !important;
+    text-shadow: 0 0 4px rgba(168, 85, 247, 0.4) !important;
+}
+
+/* Badge de Canal - Reunión Virtual (azul/info) */
+body.fi-body .fi-badge[class*="info"] {
+    background: linear-gradient(135deg, 
+        rgba(59, 130, 246, 0.25), 
+        rgba(37, 99, 235, 0.15)) !important;
+    color: #93c5fd !important;
+    border: 1px solid rgba(59, 130, 246, 0.5) !important;
+    box-shadow: 
+        0 0 8px rgba(59, 130, 246, 0.3),
+        0 0 15px rgba(59, 130, 246, 0.15) !important;
+    text-shadow: 0 0 4px rgba(59, 130, 246, 0.4) !important;
+}
+
+/* Select de Estado en Reuniones */
+body.fi-body .fi-main [class*="interviews"] select,
+body.fi-body .fi-main table select {
+    background: rgba(15, 23, 42, 0.6) !important;
+    border: 1px solid rgba(148, 163, 184, 0.35) !important;
+    color: #e5e7eb !important;
+    border-radius: 6px !important;
+    transition: all 0.2s ease !important;
+}
+
+body.fi-body .fi-main [class*="interviews"] select:focus,
+body.fi-body .fi-main table select:focus {
+    border-color: #22d3ee !important;
+    box-shadow: 0 0 10px rgba(34, 211, 238, 0.4) !important;
+}
+
+/* Botón de WhatsApp con estilo verde */
+body.fi-body .fi-main [class*="interviews"] a[href*="wa.me"],
+body.fi-body .fi-main a[href*="wa.me"] {
+    color: #86efac !important;
+    transition: all 0.2s ease !important;
+}
+
+body.fi-body .fi-main [class*="interviews"] a[href*="wa.me"]:hover,
+body.fi-body .fi-main a[href*="wa.me"]:hover {
+    color: #22c55e !important;
+    filter: drop-shadow(0 0 6px rgba(34, 197, 94, 0.6)) !important;
+}
+
+/* Iconos de acción con cyan */
+body.fi-body .fi-main [class*="interviews"] .fi-ta-actions button,
+body.fi-body .fi-main table tbody button {
+    transition: all 0.2s ease !important;
+}
+
+body.fi-body .fi-main [class*="interviews"] .fi-ta-actions button:hover,
+body.fi-body .fi-main table tbody button:hover {
+    background: rgba(34, 211, 238, 0.15) !important;
+    box-shadow: 0 0 8px rgba(34, 211, 238, 0.3) !important;
+}
+
+/* =========================================
+   BLOQUEOS (CALENDAR BLOCKS) – Tabla
+========================================= */
+
+/* Headers igual que Reuniones */
+body.fi-body .fi-main [class*="bloqueos"] .fi-ta-header-cell {
+    color: #67e8f9 !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    font-size: 0.75rem !important;
+    letter-spacing: 0.05em !important;
+}
+
+/* Filas con hover igual que Reuniones */
+body.fi-body .fi-main [class*="bloqueos"] .fi-ta-row {
+    transition: all 0.2s ease !important;
+    border-bottom: 1px solid rgba(56, 189, 248, 0.08) !important;
+}
+
+body.fi-body .fi-main [class*="bloqueos"] .fi-ta-row:hover {
+    background: rgba(34, 211, 238, 0.04) !important;
+    border-left: 2px solid #22d3ee !important;
+    box-shadow: 
+        inset 0 0 15px rgba(34, 211, 238, 0.06),
+        0 0 8px rgba(34, 211, 238, 0.1) !important;
+}
+
+/* Badge de Tipo - Manual (primary/púrpura) - ya cubierto arriba */
+
+/* Badge de Tipo - Mantenimiento (warning/amarillo) */
+body.fi-body .fi-badge[class*="warning"] {
+    background: linear-gradient(135deg, 
+        rgba(251, 191, 36, 0.25), 
+        rgba(234, 179, 8, 0.15)) !important;
+    color: #fde047 !important;
+    border: 1px solid rgba(251, 191, 36, 0.5) !important;
+    box-shadow: 
+        0 0 8px rgba(251, 191, 36, 0.3),
+        0 0 15px rgba(251, 191, 36, 0.15) !important;
+    text-shadow: 0 0 4px rgba(251, 191, 36, 0.4) !important;
+}
+
+/* Badge de Tipo - Feriado (success/verde) - ya cubierto arriba */
+
+/* Badge de Tipo - Otro (secondary/gray) */
+body.fi-body .fi-badge[class*="secondary"],
+body.fi-body .fi-badge[class*="gray"] {
+    background: linear-gradient(135deg, 
+        rgba(148, 163, 184, 0.2), 
+        rgba(100, 116, 139, 0.1)) !important;
+    color: #cbd5e1 !important;
+    border: 1px solid rgba(148, 163, 184, 0.4) !important;
+    box-shadow: 
+        0 0 8px rgba(148, 163, 184, 0.2),
+        0 0 15px rgba(148, 163, 184, 0.1) !important;
+}
+
+/* Badge de Sync Status - Pendiente (gray con pulse) */
+body.fi-body .fi-main [class*="bloqueos"] .fi-badge[class*="gray"] {
+    animation: subtle-pulse 2s ease-in-out infinite;
+}
+
+@keyframes subtle-pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* Badge de Sync Status - Sincronizado (success/verde) - ya cubierto */
+
+/* Badge de Sync Status - Falló (danger/rojo) */
+body.fi-body .fi-badge[class*="danger"] {
+    background: linear-gradient(135deg, 
+        rgba(239, 68, 68, 0.25), 
+        rgba(220, 38, 38, 0.15)) !important;
+    color: #fca5a5 !important;
+    border: 1px solid rgba(239, 68, 68, 0.5) !important;
+    box-shadow: 
+        0 0 8px rgba(239, 68, 68, 0.3),
+        0 0 15px rgba(239, 68, 68, 0.15) !important;
+    text-shadow: 0 0 4px rgba(239, 68, 68, 0.4) !important;
+}
+
+/* Icono boolean (is_all_day) */
+body.fi-body .fi-main [class*="bloqueos"] .fi-icon-column svg,
+body.fi-body .fi-main .fi-ta-icon svg {
+    transition: all 0.2s ease !important;
+}
+
+/* Icono true (checkmark) en cyan */
+body.fi-body .fi-main [class*="bloqueos"] .fi-icon-column svg[class*="check"],
+body.fi-body .fi-main .fi-ta-icon svg[class*="check"] {
+    color: #22d3ee !important;
+    filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.5)) !important;
+}
+
+/* Icono false (x-mark) en gray sutil */
+body.fi-body .fi-main [class*="bloqueos"] .fi-icon-column svg[class*="x-mark"],
+body.fi-body .fi-main .fi-ta-icon svg[class*="x-mark"] {
+    color: rgba(148, 163, 184, 0.5) !important;
+}
+
+/* Botones de acción en Bloqueos */
+body.fi-body .fi-main [class*="bloqueos"] .fi-ta-actions button {
+    transition: all 0.2s ease !important;
+}
+
+body.fi-body .fi-main [class*="bloqueos"] .fi-ta-actions button:hover {
+    background: rgba(34, 211, 238, 0.15) !important;
+    box-shadow: 0 0 8px rgba(34, 211, 238, 0.3) !important;
+}
+
+/* =========================================
+   BADGES GENERALES - Mejoras globales
+========================================= */
+
+/* Hover en todos los badges */
+body.fi-body .fi-badge:hover {
+    transform: scale(1.05) !important;
+    filter: brightness(1.15) !important;
+    transition: all 0.2s ease !important;
+}
+
+/* Asegurar forma pill en badges */
+body.fi-body .fi-badge {
+    border-radius: 9999px !important;
+    padding: 0.35rem 0.75rem !important;
+    font-weight: 600 !important;
+    font-size: 0.75rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    transition: all 0.2s ease !important;
+}
+
+/* =========================================
+   BUSCADOR Y TOOLBAR ICONS - Cyan
+========================================= */
+
+/* Wrapper/contenedor del buscador */
+body.fi-body .fi-main .fi-input-wrp,
+body.fi-body .fi-main .fi-ta-search .fi-input-wrp,
+body.fi-body .fi-main [class*="search"] .fi-input-wrp {
+    background: rgba(15, 23, 42, 0.5) !important;
+    border: 1px solid #22d3ee !important;
+    border-radius: 8px !important;
+    box-shadow: 0 0 8px rgba(34, 211, 238, 0.3) !important;
+    transition: all 0.2s ease !important;
+}
+
+/* Focus del wrapper */
+body.fi-body .fi-main .fi-input-wrp:focus-within,
+body.fi-body .fi-main .fi-ta-search .fi-input-wrp:focus-within {
+    border-color: #a5f3fc !important;
+    box-shadow: 0 0 12px rgba(34, 211, 238, 0.6) !important;
+}
+
+/* Buscador en Reuniones, Bloqueos y Reportes */
+body.fi-body .fi-main .fi-ta-search input,
+body.fi-body .fi-main .fi-global-search input,
+body.fi-body .fi-main input[type="search"] {
+    background: transparent !important;
+    border: none !important;
+    color: #e0faff !important;
+    transition: all 0.2s ease !important;
+}
+
+/* Placeholder del buscador en cyan suave */
+body.fi-body .fi-main .fi-ta-search input::placeholder,
+body.fi-body .fi-main input[type="search"]::placeholder {
+    color: rgba(34, 211, 238, 0.6) !important;
+}
+
+/* Focus del buscador */
+body.fi-body .fi-main .fi-ta-search input:focus,
+body.fi-body .fi-main input[type="search"]:focus {
+    border-color: #a5f3fc !important;
+    box-shadow: 0 0 12px rgba(34, 211, 238, 0.6) !important;
+}
+
+/* Icono de búsqueda (lupa) en cyan */
+body.fi-body .fi-main .fi-ta-search svg,
+body.fi-body .fi-main .fi-global-search svg,
+body.fi-body .fi-main input[type="search"] + svg,
+body.fi-body .fi-main .fi-input-wrp svg,
+body.fi-body .fi-main .fi-input-wrp-prefix svg,
+body.fi-body .fi-main [class*="search"] svg {
+    color: #22d3ee !important;
+    stroke: #22d3ee !important;
+    fill: none !important;
+}
+
+/* Iconos del toolbar (filtros, columnas, etc.) en cyan */
+body.fi-body .fi-main .fi-ta-header-toolbar button svg,
+body.fi-body .fi-main .fi-ta-actions svg,
+body.fi-body .fi-main button[type="button"] svg {
+    color: #22d3ee !important;
+    transition: all 0.2s ease !important;
+}
+
+/* Hover en iconos del toolbar */
+body.fi-body .fi-main .fi-ta-header-toolbar button:hover svg,
+body.fi-body .fi-main button[type="button"]:hover svg {
+    color: #a5f3fc !important;
+    filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.6)) !important;
+}
+
+/* Badge de notificación (el "0" morado) */
+body.fi-body .fi-main .fi-badge-notification {
+    background: linear-gradient(135deg, 
+        rgba(168, 85, 247, 0.3), 
+        rgba(147, 51, 234, 0.2)) !important;
+    color: #c4b5fd !important;
+    border: 1px solid rgba(168, 85, 247, 0.5) !important;
+}
+
+/* =========================================
+   PERFIL – Botón "Guardar Cambios"
+========================================= */
+
+/* Centrar el contenedor de acciones del formulario */
+body.fi-body .fi-profile-page .fi-form-actions,
+body.fi-body .rr-profile-save-btn-wrapper {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+    margin-top: 2rem !important;
+}
+
+/* Forzar centrado del contenedor directo si podemos identificarlo */
+body.fi-body .fi-profile-page .fi-fo-actions-ctn {
+     justify-content: center !important;
+}
+
+/* Estilo específico para NUESTRO botón de guardar (clase custom) */
+body.fi-body .fi-profile-page .rr-profile-save-btn {
+    position: relative !important;
+    overflow: hidden !important;
+    transform: translateZ(0);
+}
+
+/* El botón interno que genera Filament (usualmente button.fi-btn) */
+
+/* Selector con MÁXIMA especificidad para ganarle a Filament */
+/* El botón interno que genera Filament (usualmente button.fi-btn) */
+/* Selector por ID (Ultrapoderoso) */
+#rr-profile-save-btn-id,
+button#rr-profile-save-btn-id {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0.7rem 2.5rem !important;
+    border-radius: 9999px !important;
+    
+    /* Restaurando gradiente Neon Correcto */
+    background: linear-gradient(90deg, #06b6d4 0%, #9333ea 50%, #db2777 100%) !important;
+    background-size: 200% auto !important;
+    border: none !important;
+    
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    
+    box-shadow:
+        0 0 20px rgba(6, 182, 212, 0.5),
+        0 10px 30px rgba(15, 23, 42, 0.6) !important;
+        
+    transition: all 0.3s ease !important;
+}
+
+/* Estado Hover del botón de perfil */
+body.fi-body .fi-profile-page .rr-profile-save-btn button:hover,
+body.fi-body .fi-profile-page button.rr-profile-save-btn:hover {
+    transform: translateY(-2px) !important;
+}
+
+/* Estado Focus */
+body.fi-body .fi-profile-page .rr-profile-save-btn button:focus-visible,
+body.fi-body .fi-profile-page button.rr-profile-save-btn:focus-visible {
+    outline: 2px solid #22d3ee !important;
+    outline-offset: 4px !important;
+}
+
+/* Estado Loading / Disabled */
+body.fi-body .fi-profile-page .rr-profile-save-btn button[disabled],
+body.fi-body .fi-profile-page button.rr-profile-save-btn[disabled] {
+    opacity: 0.7 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    filter: grayscale(0.4) !important;
+}
+
+/* =========================================
+   BOTONES GENERALES - Efecto de Brillo
+========================================= */
+
+/* Efecto de brillo para todos los botones principales */
+body.fi-body button.fi-btn,
+body.fi-body .fi-btn {
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+/* Pseudo-elemento para el efecto de brillo */
+body.fi-body button.fi-btn::before,
+body.fi-body .fi-btn::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        120deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    transition: 0.6s;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Animación del brillo al hacer hover */
+body.fi-body button.fi-btn:hover::before,
+body.fi-body .fi-btn:hover::before {
+    left: 100%;
+}
+
+/* Asegurar que el texto esté por encima del brillo */
+body.fi-body button.fi-btn > *,
+body.fi-body .fi-btn > * {
+    position: relative;
+    z-index: 2;
+}
+
+/* =========================================
+   BOTONES - Estilos Profesionales Mejorados
+========================================= */
+
+/* Botones base - mejora de bordes y transiciones */
+body.fi-body button.fi-btn,
+body.fi-body .fi-btn {
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.025em !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Desactivar el efecto de brillo en disabled */
+body.fi-body button.fi-btn:disabled::before,
+body.fi-body button.fi-btn[disabled]::before,
+body.fi-body .fi-btn:disabled::before,
+body.fi-body .fi-btn[disabled]::before {
+    display: none !important;
+}
+
+body.fi-body button.fi-btn-primary:active,
+body.fi-body .fi-btn-primary:active {
+    transform: translateY(0) !important;
+    box-shadow: 
+        0 2px 8px 0 rgba(34, 211, 238, 0.3),
+        0 1px 3px 0 rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Botones Primary/Action - Gradiente Cyan a Púrpura - ALTA ESPECIFICIDAD */
+html body.fi-body button.fi-btn-primary.fi-btn-primary,
+html body.fi-body .fi-btn-primary.fi-btn-primary {
+    /* Darker Gradient: Cyan 500 -> Purple 600 */
+    background: linear-gradient(135deg, #06b6d4 0%, #9333ea 100%) !important;
+    border: none !important;
+    color: #ffffff !important;
+    box-shadow: 
+        0 4px 14px 0 rgba(6, 182, 212, 0.39),
+        0 2px 4px 0 rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Botones Danger - Gradiente Rojo elegante */
+body.fi-body button.fi-btn-danger,
+body.fi-body .fi-btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+    border: none !important;
+    color: #ffffff !important;
+    box-shadow: 
+        0 4px 14px 0 rgba(239, 68, 68, 0.39),
+        0 2px 4px 0 rgba(0, 0, 0, 0.12) !important;
+}
+
+body.fi-body button.fi-btn-danger:hover,
+body.fi-body .fi-btn-danger:hover {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+    box-shadow: 
+        0 8px 20px 0 rgba(239, 68, 68, 0.5),
+        0 4px 8px 0 rgba(220, 38, 38, 0.3) !important;
+    transform: translateY(-2px) !important;
+}
+
+body.fi-body button.fi-btn-danger:active,
+body.fi-body .fi-btn-danger:active {
+    transform: translateY(0) !important;
+    box-shadow: 
+        0 2px 8px 0 rgba(239, 68, 68, 0.3),
+        0 1px 3px 0 rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Botones Secondary/Outline - Estilo moderno con borde */
+body.fi-body button.fi-btn-secondary,
+body.fi-body .fi-btn-secondary,
+body.fi-body button.fi-btn-outline {
+    background: rgba(15, 23, 42, 0.6) !important;
+    border: 1.5px solid rgba(34, 211, 238, 0.5) !important;
+    color: #22d3ee !important;
+    backdrop-filter: blur(8px) !important;
+    box-shadow: 
+        0 2px 8px 0 rgba(34, 211, 238, 0.15),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.05) !important;
+}
+
+body.fi-body button.fi-btn-secondary:hover,
+body.fi-body .fi-btn-secondary:hover,
+body.fi-body button.fi-btn-outline:hover {
+    background: rgba(34, 211, 238, 0.15) !important;
+    border-color: #22d3ee !important;
+    color: #a5f3fc !important;
+    box-shadow: 
+        0 4px 14px 0 rgba(34, 211, 238, 0.35),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.1) !important;
+    transform: translateY(-1px) !important;
+}
+
+body.fi-body button.fi-btn-secondary:active,
+body.fi-body .fi-btn-secondary:active {
+    transform: translateY(0) !important;
+    background: rgba(34, 211, 238, 0.1) !important;
+}
+
+/* Botones pequeños - ajuste de padding */
+body.fi-body button.fi-btn-sm,
+body.fi-body .fi-btn-sm {
+    padding: 0.5rem 1rem !important;
+    font-size: 0.875rem !important;
+}
+
+/* Botones grandes - ajuste de padding */
+body.fi-body button.fi-btn-lg,
+body.fi-body .fi-btn-lg {
+    padding: 0.875rem 2rem !important;
+    font-size: 1.0625rem !important;
+}
+
+/* Botones con iconos - mejor alineación */
+body.fi-body button.fi-btn svg,
+body.fi-body .fi-btn svg {
+    transition: transform 0.2s ease !important;
+}
+
+body.fi-body button.fi-btn:hover svg,
+body.fi-body .fi-btn:hover svg {
+    transform: scale(1.05) !important;
+}
+
+/* Grupos de botones - mejor espaciado */
+body.fi-body .fi-btn-group button.fi-btn + button.fi-btn,
+body.fi-body .fi-btn-group .fi-btn + .fi-btn {
+    margin-left: 0.75rem !important;
+}
+
+/* Focus state - accesibilidad mejorada */
+body.fi-body button.fi-btn:focus-visible,
+body.fi-body .fi-btn:focus-visible {
+    outline: 2px solid #22d3ee !important;
+    outline-offset: 2px !important;
+    box-shadow: 
+        0 0 0 4px rgba(34, 211, 238, 0.2),
+        0 4px 14px 0 rgba(34, 211, 238, 0.4) !important;
 }

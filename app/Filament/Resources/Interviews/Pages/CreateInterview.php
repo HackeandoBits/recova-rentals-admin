@@ -13,4 +13,18 @@ class CreateInterview extends CreateRecord
     {
         return $this->getResource()::getUrl('index');
     }
+
+    protected function getCancelFormAction(): \Filament\Actions\Action
+    {
+        return parent::getCancelFormAction()
+            ->label('Cancelar')
+            ->color('danger');
+    }
+
+    protected function getCreateAnotherFormAction(): \Filament\Actions\Action
+    {
+        return parent::getCreateAnotherFormAction()
+            ->label('Crear y crear otro')
+            ->color('info');
+    }
 }

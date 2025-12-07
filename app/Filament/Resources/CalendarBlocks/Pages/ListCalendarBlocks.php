@@ -64,8 +64,14 @@ class ListCalendarBlocks extends ListRecords
             Action::make('generarBloqueos')
                 ->label('Generar bloqueos')
                 ->icon('heroicon-o-no-symbol')
-                ->color('warning')
+                ->color('primary')
                 ->modalWidth('3xl')
+                ->modalSubmitAction(fn(\Filament\Actions\StaticAction $action) => $action->label('Enviar')->extraAttributes([
+                    'wire:target' => 'callMountedAction',
+                ]))
+                ->modalCancelAction(fn(\Filament\Actions\StaticAction $action) => $action->label('Cancelar')->color('danger')->extraAttributes([
+                    'wire:target' => 'callMountedAction',
+                ]))
                 ->form([
                     // Selector de modo (mutuamente excluyente)
                     Radio::make('mode')
