@@ -35,35 +35,38 @@ class UpcomingInterviews extends BaseWidget
                 Tables\Columns\TextColumn::make('start_at')
                     ->label('Fecha')
                     ->dateTime('d/m/Y H:i')
-                    ->sortable(),
+                    ->sortable()
+                    ->extraHeaderAttributes(['style' => 'padding-left: 1.8rem !important;']),
 
                 Tables\Columns\TextColumn::make('customer_name')
                     ->label('Cliente')
                     ->searchable()
-                    ->limit(25),
+                    ->limit(25)
+                    ->extraHeaderAttributes(['style' => 'padding-left: 1.8rem !important;']),
 
                 Tables\Columns\TextColumn::make('customer_phone')
                     ->label('Teléfono')
                     ->formatStateUsing(function ($state) {
-                        if (! $state) {
+                        if (!$state) {
                             return '—';
                         }
 
                         // Formatear teléfono argentino
                         if (strlen($state) >= 10) {
-                            return '+54 '.substr($state, 0, 3).' '.substr($state, 3);
+                            return '+54 ' . substr($state, 0, 3) . ' ' . substr($state, 3);
                         }
 
                         return $state;
                     })
                     ->copyable()
                     ->copyMessage('Teléfono copiado')
-                    ->icon('heroicon-m-phone'),
+                    ->icon('heroicon-m-phone')
+                    ->extraHeaderAttributes(['style' => 'padding-left: 1.8rem !important;']),
 
                 Tables\Columns\TextColumn::make('status')
                     ->label('Estado')
                     ->badge()
-                    ->formatStateUsing(fn (string $state) => match ($state) {
+                    ->formatStateUsing(fn(string $state) => match ($state) {
                         'pending' => 'Pendiente',
                         'confirmed' => 'Confirmada',
                         'cancelled' => 'Cancelada',
@@ -75,7 +78,8 @@ class UpcomingInterviews extends BaseWidget
                         'success' => 'confirmed',
                         'danger' => 'cancelled',
                         'info' => 'completed',
-                    ]),
+                    ])
+                    ->extraHeaderAttributes(['style' => 'padding-left: 1.8rem !important;']),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
@@ -104,14 +108,14 @@ class UpcomingInterviews extends BaseWidget
                                     \Filament\Infolists\Components\TextEntry::make('status')
                                         ->label('Estado')
                                         ->badge()
-                                        ->formatStateUsing(fn (string $state) => match ($state) {
+                                        ->formatStateUsing(fn(string $state) => match ($state) {
                                             'pending' => 'Pendiente',
                                             'confirmed' => 'Confirmada',
                                             'cancelled' => 'Cancelada',
                                             'completed' => 'Completada',
                                             default => ucfirst($state),
                                         })
-                                        ->color(fn (string $state): string => match ($state) {
+                                        ->color(fn(string $state): string => match ($state) {
                                             'pending' => 'warning',
                                             'confirmed' => 'success',
                                             'cancelled' => 'danger',
@@ -121,13 +125,13 @@ class UpcomingInterviews extends BaseWidget
                                     \Filament\Infolists\Components\TextEntry::make('channel')
                                         ->label('Canal')
                                         ->badge()
-                                        ->formatStateUsing(fn (string $state): string => match ($state) {
+                                        ->formatStateUsing(fn(string $state): string => match ($state) {
                                             'whatsapp' => 'WhatsApp',
                                             'physical_meeting' => 'Reunión Física',
                                             'virtual_meeting' => 'Reunión Virtual',
                                             default => ucfirst($state),
                                         })
-                                        ->color(fn (string $state): string => match ($state) {
+                                        ->color(fn(string $state): string => match ($state) {
                                             'whatsapp' => 'success',
                                             'physical_meeting' => 'primary',
                                             'virtual_meeting' => 'info',
@@ -135,7 +139,7 @@ class UpcomingInterviews extends BaseWidget
                                         }),
                                     \Filament\Infolists\Components\TextEntry::make('customer_phone')
                                         ->label('Teléfono')
-                                        ->url(fn ($record) => $record->customer_phone ? 'https://wa.me/'.preg_replace('/[^0-9]/', '', $record->customer_phone) : null, true)
+                                        ->url(fn($record) => $record->customer_phone ? 'https://wa.me/' . preg_replace('/[^0-9]/', '', $record->customer_phone) : null, true)
                                         ->color('success')
                                         ->icon('heroicon-m-phone'),
                                     \Filament\Infolists\Components\TextEntry::make('order_notes')
@@ -143,9 +147,9 @@ class UpcomingInterviews extends BaseWidget
                                         ->placeholder('Sin notas'),
                                     \Filament\Infolists\Components\TextEntry::make('items_summary')
                                         ->label('Productos Solicitados')
-                                        ->state(fn ($record) => $record->items->map(fn ($item) => "• {$item->quantity}x {$item->name}")->join('<br>'))
+                                        ->state(fn($record) => $record->items->map(fn($item) => "• {$item->quantity}x {$item->name}")->join('<br>'))
                                         ->html()
-                                        ->visible(fn ($record) => $record->items()->exists())
+                                        ->visible(fn($record) => $record->items()->exists())
                                         ->color('gray'),
                                 ]),
                             ]),
