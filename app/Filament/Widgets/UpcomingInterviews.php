@@ -104,6 +104,13 @@ class UpcomingInterviews extends BaseWidget
                                     \Filament\Infolists\Components\TextEntry::make('status')
                                         ->label('Estado')
                                         ->badge()
+                                        ->formatStateUsing(fn (string $state) => match ($state) {
+                                            'pending' => 'Pendiente',
+                                            'confirmed' => 'Confirmada',
+                                            'cancelled' => 'Cancelada',
+                                            'completed' => 'Completada',
+                                            default => ucfirst($state),
+                                        })
                                         ->color(fn (string $state): string => match ($state) {
                                             'pending' => 'warning',
                                             'confirmed' => 'success',

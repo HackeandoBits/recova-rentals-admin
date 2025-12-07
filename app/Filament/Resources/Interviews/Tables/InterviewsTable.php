@@ -70,17 +70,15 @@ class InterviewsTable
                     ->infolist([
                         \Filament\Infolists\Components\Grid::make(2)
                             ->schema([
-                                \Filament\Infolists\Components\TextEntry::make('title')
-                                    ->label('Título'),
                                 \Filament\Infolists\Components\Group::make([
                                     \Filament\Infolists\Components\TextEntry::make('title')
                                         ->label('Título'),
                                     \Filament\Infolists\Components\TextEntry::make('start_at')
                                         ->label('Inicio')
-                                        ->dateTime(),
+                                        ->dateTime('d/m/Y H:i'),
                                     \Filament\Infolists\Components\TextEntry::make('end_at')
                                         ->label('Fin')
-                                        ->dateTime(),
+                                        ->dateTime('d/m/Y H:i'),
                                     \Filament\Infolists\Components\TextEntry::make('customer_name')
                                         ->label('Cliente'),
                                     \Filament\Infolists\Components\TextEntry::make('customer_email')
@@ -122,7 +120,8 @@ class InterviewsTable
                                     \Filament\Infolists\Components\TextEntry::make('customer_phone')
                                         ->label('Teléfono')
                                         ->url(fn ($record) => $record->customer_phone ? 'https://wa.me/'.preg_replace('/[^0-9]/', '', $record->customer_phone) : null, true)
-                                        ->color('success'),
+                                        ->color('success')
+                                        ->icon('heroicon-m-phone'),
                                     \Filament\Infolists\Components\TextEntry::make('order_notes')
                                         ->label('Notas')
                                         ->placeholder('Sin notas'),
@@ -188,10 +187,6 @@ class InterviewsTable
                 \Filament\Tables\Actions\ForceDeleteBulkAction::make()
                     ->label('Borrar definitivamente'),
             ])
-            ->persistFiltersInSession()
-            ->persistSortInSession()
-            ->persistSearchInSession()
-            ->persistColumnSearchesInSession()
             ->defaultSort('created_at', 'desc');
     }
 }
