@@ -60,27 +60,141 @@ class ReportsPage extends Page
                 })
                 ->modalSubmitActionLabel('Generar y Enviar')
                 ->action(function () {
-                    // Crear registro en report_logs
-                    $reportLog = ReportLog::create([
-                        'user_id' => auth()->id(),
-                        'report_type' => 'whatsapp',
-                        'period_from' => $this->dateRange['from'],
-                        'period_to' => $this->dateRange['to'],
-                        'status' => 'sent',
-                        'metadata' => [
-                            'sent_at' => now()->toDateTimeString(),
-                            'message' => 'Reporte automático generado desde el panel',
-                        ],
-                    ]);
+                    // 1. Obtener datos del periodo seleccionado
+                    $from = $this->dateRange['from'] ? Carbon::parse($this->dateRange['from']) : Carbon::now()->startOfMonth();
+                    $to = $this->dateRange['to'] ? Carbon::parse($this->dateRange['to']) : Carbon::now()->endOfMonth();
 
-                    // Simulación de envío de WhatsApp
-                    // TODO: Integrar con API de WhatsApp Business
+                    // Query base para el periodo actual
+                    $query = \App\Models\Interview::whereBetween('created_at', [$from, $to]);
 
-                    Notification::make()
-                        ->title('Reporte Enviado Exitosamente')
-                        ->success()
-                        ->body('El reporte se generó y envió por WhatsApp correctamente.')
-                        ->send();
+                    // Estadísticas completas
+                    $stats = [
+                        'total' => (clone $query)->count(),
+                        'pending' => (clone $query)->where('status', 'pending')->count(),
+                        'confirmed' => (clone $query)->where('status', 'confirmed')->count(),
+                        'completed' => (clone $query)->where('status', 'completed')->count(),
+                        'cancelled' => (clone $query)->where('status', 'cancelled')->count(),
+                        'new_clients' => (clone $query)->distinct('customer_email')->count('customer_email'),
+                    ];
+
+                    // Comparativa con periodo anterior (mismo rango de días hacia atrás)
+                    $daysDiff = $from->diffInDays($to) + 1;
+                    $prevFrom = $from->copy()->subDays($daysDiff);
+                    $prevTo = $to->copy()->subDays($daysDiff);
+
+                    $prevTotal = \App\Models\Interview::whereBetween('created_at', [$prevFrom, $prevTo])->count();
+
+                    // Calcular porcentaje de crecimiento
+                    $growth = 0;
+                    if ($prevTotal > 0) {
+                        $growth = (($stats['total'] - $prevTotal) / $prevTotal) * 100;
+                    } elseif ($stats['total'] > 0) {
+                        $growth = 100; // Crecimiento infinito si antes era 0
+                    }
+                    $growthSign = $growth > 0 ? '+' : '';
+                    $growthIcon = $growth > 0 ? '📈' : ($growth < 0 ? '📉' : '➖');
+
+                    // 2. Formatear mensaje COMPLETO para WhatsApp
+                    $periodo = $from->format('d/m/Y').' - '.$to->format('d/m/Y');
+
+                    $message = "📊 *REPORTE DETALLADO RECOVA RENTALS*\n\n";
+                    $message .= "🗓 *Período:* {$periodo}\n";
+                    $message .= "{$growthIcon} *Tendencia:* {$growthSign}".number_format($growth, 1)."% vs periodo anterior\n\n";
+
+                    $message .= "🔢 *Resumen General:*\n";
+                    $message .= "➤ *Total Solicitudes:* {$stats['total']}\n";
+                    $message .= "➤ *Nuevos Clientes:* {$stats['new_clients']}\n\n";
+
+                    $message .= "📌 *Desglose por Estado:*\n";
+                    $message .= "🟡 *Pendientes:* {$stats['pending']}\n";
+                    $message .= "🟢 *Confirmadas:* {$stats['confirmed']}\n";
+                    $message .= "🔵 *Completadas:* {$stats['completed']}\n";
+                    $message .= "🔴 *Canceladas:* {$stats['cancelled']}\n\n";
+
+                    $message .= '_Reporte generado automáticamente desde el panel de administración._';
+
+                    // 3. Enviar (Dual: Template o Texto Texto)
+                    try {
+                        $recipient = env('TWILIO_WHATSAPP_TO');
+                        $templateSid = env('TWILIO_REPORT_TEMPLATE_SID'); // SID de la plantilla (HX...)
+
+                        if (! $recipient) {
+                            throw new \Exception('No hay número de destinatario configurado (TWILIO_WHATSAPP_TO).');
+                        }
+
+                        /** @var \App\Services\TwilioService $twilio */
+                        $twilio = app(\App\Services\TwilioService::class);
+                        $sent = false;
+
+                        if ($templateSid) {
+                            // --- MODO PLANTILLA (Bypass 24h window) ---
+                            // Variables: 1=Periodo, 2=Tendencia, 3=Total, 4=Nuevos, 5=Pend, 6=Conf, 7=Comp, 8=Canc
+                            $variables = [
+                                '1' => $periodo,
+                                '2' => $growthSign.number_format($growth, 1).'%',
+                                '3' => (string) $stats['total'],
+                                '4' => (string) $stats['new_clients'],
+                                '5' => (string) $stats['pending'],
+                                '6' => (string) $stats['confirmed'],
+                                '7' => (string) $stats['completed'],
+                                '8' => (string) $stats['cancelled'],
+                            ];
+
+                            $sent = $twilio->sendWhatsAppTemplate($recipient, $templateSid, $variables);
+                            $reportType = 'whatsapp_template';
+                            $contentRef = "Plantilla: {$templateSid}";
+
+                        } else {
+                            // --- MODO TEXTO LIBRE (Solo funciona con sesión activa) ---
+                            $sent = $twilio->sendWhatsAppNotification($recipient, $message);
+                            $reportType = 'whatsapp_text';
+                            $contentRef = substr($message, 0, 100).'...';
+                        }
+
+                        if (! $sent) {
+                            throw new \Exception('El servicio de Twilio falló al enviar el mensaje.');
+                        }
+
+                        // 4. Registrar log exitoso
+                        ReportLog::create([
+                            'user_id' => auth()->id(),
+                            'report_type' => $reportType ?? 'whatsapp',
+                            'period_from' => $from->toDateString(),
+                            'period_to' => $to->toDateString(),
+                            'status' => 'sent',
+                            'metadata' => [
+                                'sent_at' => now()->toDateTimeString(),
+                                'recipient' => $recipient,
+                                'content_ref' => $contentRef,
+                            ],
+                        ]);
+
+                        Notification::make()
+                            ->title('Reporte enviado por WhatsApp')
+                            ->success()
+                            ->body("Se envió el resumen al número {$recipient}")
+                            ->send();
+
+                    } catch (\Exception $e) {
+                        // Registrar log fallido
+                        ReportLog::create([
+                            'user_id' => auth()->id(),
+                            'report_type' => 'whatsapp',
+                            'period_from' => $from->toDateString(),
+                            'period_to' => $to->toDateString(),
+                            'status' => 'failed',
+                            'metadata' => [
+                                'error' => $e->getMessage(),
+                                'attempted_at' => now()->toDateTimeString(),
+                            ],
+                        ]);
+
+                        Notification::make()
+                            ->title('Error al enviar reporte')
+                            ->danger()
+                            ->body($e->getMessage())
+                            ->send();
+                    }
 
                     // Refrescar la tabla de historial
                     $this->dispatch('$refresh');

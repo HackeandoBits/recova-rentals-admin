@@ -124,10 +124,6 @@ class CalendarBlocksTable
                 \Filament\Tables\Actions\ForceDeleteBulkAction::make()
                     ->label('Borrar definitivamente'),
             ])
-            ->persistFiltersInSession()
-            ->persistSortInSession()
-            ->persistSearchInSession()
-            ->persistColumnSearchesInSession()
             ->defaultSort('created_at', 'desc');
     }
 }

@@ -57,4 +57,41 @@ class TwilioService
             return false;
         }
     }
+
+    /**
+     * Envía una Plantilla de WhatsApp (Content API)
+     *
+     * @param  string  $to  Número de destino
+     * @param  string  $contentSid  ID de la plantilla (starts with HX)
+     * @param  array  $variables  Variables de la plantilla ['1' => 'val', '2' => 'val']
+     */
+    public function sendWhatsAppTemplate(string $to, string $contentSid, array $variables): bool
+    {
+        if (! $this->client) {
+            Log::warning('TwilioService: Credenciales no configuradas.');
+
+            return false;
+        }
+
+        try {
+            if (! str_starts_with($to, 'whatsapp:')) {
+                $to = 'whatsapp:'.$to;
+            }
+
+            $this->client->messages->create($to, [
+                'from' => str_starts_with($this->from, 'whatsapp:') ? $this->from : 'whatsapp:'.$this->from,
+                'contentSid' => $contentSid,
+                'contentVariables' => json_encode($variables),
+            ]);
+
+            Log::info('TwilioService: Plantilla enviada a '.$to);
+
+            return true;
+
+        } catch (\Exception $e) {
+            Log::error('TwilioService Template Error: '.$e->getMessage());
+
+            return false;
+        }
+    }
 }
