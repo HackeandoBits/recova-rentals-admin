@@ -5,6 +5,7 @@ namespace App\Filament\Widgets;
 use App\Models\Interview;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Carbon;
+use Livewire\Attributes\Reactive;
 
 class BookingStatusChartWidget extends ChartWidget
 {
@@ -20,6 +21,7 @@ class BookingStatusChartWidget extends ChartWidget
 
     protected $listeners = ['updateChartData' => '$refresh'];
 
+    #[Reactive]
     public ?array $dateRange = null;
 
     public function updateChartData(): void
