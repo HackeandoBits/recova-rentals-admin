@@ -76,6 +76,74 @@ class UpcomingInterviews extends BaseWidget
                         'danger' => 'cancelled',
                         'info' => 'completed',
                     ]),
-            ]);
+            ])
+            ->actions([
+                Tables\Actions\ViewAction::make()
+                    ->iconButton()
+                    ->size('lg')
+                    ->modalWidth('md')
+                    ->modalHeading('Detalles de la Reunión')
+                    ->infolist([
+                        \Filament\Infolists\Components\Grid::make(2)
+                            ->schema([
+                                \Filament\Infolists\Components\Group::make([
+                                    \Filament\Infolists\Components\TextEntry::make('title')
+                                        ->label('Título'),
+                                    \Filament\Infolists\Components\TextEntry::make('start_at')
+                                        ->label('Inicio')
+                                        ->dateTime('d/m/Y H:i'),
+                                    \Filament\Infolists\Components\TextEntry::make('end_at')
+                                        ->label('Fin')
+                                        ->dateTime('d/m/Y H:i'),
+                                    \Filament\Infolists\Components\TextEntry::make('customer_name')
+                                        ->label('Cliente'),
+                                    \Filament\Infolists\Components\TextEntry::make('customer_email')
+                                        ->label('Email'),
+                                ]),
+                                \Filament\Infolists\Components\Group::make([
+                                    \Filament\Infolists\Components\TextEntry::make('status')
+                                        ->label('Estado')
+                                        ->badge()
+                                        ->color(fn (string $state): string => match ($state) {
+                                            'pending' => 'warning',
+                                            'confirmed' => 'success',
+                                            'cancelled' => 'danger',
+                                            'completed' => 'info',
+                                            default => 'gray',
+                                        }),
+                                    \Filament\Infolists\Components\TextEntry::make('channel')
+                                        ->label('Canal')
+                                        ->badge()
+                                        ->formatStateUsing(fn (string $state): string => match ($state) {
+                                            'whatsapp' => 'WhatsApp',
+                                            'physical_meeting' => 'Reunión Física',
+                                            'virtual_meeting' => 'Reunión Virtual',
+                                            default => ucfirst($state),
+                                        })
+                                        ->color(fn (string $state): string => match ($state) {
+                                            'whatsapp' => 'success',
+                                            'physical_meeting' => 'primary',
+                                            'virtual_meeting' => 'info',
+                                            default => 'gray',
+                                        }),
+                                    \Filament\Infolists\Components\TextEntry::make('customer_phone')
+                                        ->label('Teléfono')
+                                        ->url(fn ($record) => $record->customer_phone ? 'https://wa.me/'.preg_replace('/[^0-9]/', '', $record->customer_phone) : null, true)
+                                        ->color('success')
+                                        ->icon('heroicon-m-phone'),
+                                    \Filament\Infolists\Components\TextEntry::make('order_notes')
+                                        ->label('Notas')
+                                        ->placeholder('Sin notas'),
+                                    \Filament\Infolists\Components\TextEntry::make('items_summary')
+                                        ->label('Productos Solicitados')
+                                        ->state(fn ($record) => $record->items->map(fn ($item) => "• {$item->quantity}x {$item->name}")->join('<br>'))
+                                        ->html()
+                                        ->visible(fn ($record) => $record->items()->exists())
+                                        ->color('gray'),
+                                ]),
+                            ]),
+                    ]),
+            ])
+            ->recordAction('view');
     }
 }
