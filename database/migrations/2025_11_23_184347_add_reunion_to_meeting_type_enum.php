@@ -17,28 +17,41 @@ return new class extends Migration
 
         if ($driver === 'sqlsrv') {
             // 1. Encontrar y eliminar el constraint CHECK existente
-            $constraintName = DB::select("
+            $checkConstraint = DB::select("
                 SELECT name 
                 FROM sys.check_constraints 
                 WHERE parent_object_id = OBJECT_ID('bookings') 
                 AND COL_NAME(parent_object_id, parent_column_id) = 'meeting_type'
             ");
 
-            if (! empty($constraintName)) {
-                DB::statement("ALTER TABLE bookings DROP CONSTRAINT [{$constraintName[0]->name}]");
+            if (! empty($checkConstraint)) {
+                DB::statement("ALTER TABLE bookings DROP CONSTRAINT [{$checkConstraint[0]->name}]");
             }
 
-            // 2. Modificar la columna (sin constraint)
+            // 2. Encontrar y eliminar el constraint DEFAULT existente
+            $defaultConstraint = DB::select("
+                SELECT dc.name
+                FROM sys.default_constraints dc
+                JOIN sys.columns c ON dc.parent_object_id = c.object_id AND dc.parent_column_id = c.column_id
+                WHERE dc.parent_object_id = OBJECT_ID('bookings')
+                AND c.name = 'meeting_type'
+            ");
+
+            if (! empty($defaultConstraint)) {
+                DB::statement("ALTER TABLE bookings DROP CONSTRAINT [{$defaultConstraint[0]->name}]");
+            }
+
+            // 3. Modificar la columna (sin constraint)
             DB::statement('ALTER TABLE bookings ALTER COLUMN meeting_type NVARCHAR(255) NOT NULL');
 
-            // 3. Agregar el nuevo constraint CHECK
+            // 4. Agregar el nuevo constraint CHECK
             DB::statement("
                 ALTER TABLE bookings 
                 ADD CONSTRAINT CK_bookings_meeting_type 
                 CHECK (meeting_type IN ('none', 'virtual', 'whatsapp', 'in_person', 'reunion'))
             ");
 
-            // 4. Establecer el default
+            // 5. Establecer el nuevo default
             DB::statement("
                 ALTER TABLE bookings 
                 ADD CONSTRAINT DF_bookings_meeting_type 
