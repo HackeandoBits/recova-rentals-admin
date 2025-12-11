@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e  # Exit on error
 
 # 1. Copiar configuración de Nginx (Sobreescribimos la default)
 cp /home/site/wwwroot/nginx.conf /etc/nginx/sites-available/default
