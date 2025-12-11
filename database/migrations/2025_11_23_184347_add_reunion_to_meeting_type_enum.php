@@ -1,8 +1,7 @@
 <?php
-
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\DB;
-
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
@@ -11,15 +10,23 @@ return new class extends Migration
     public function up(): void
     {
         // Modificar el ENUM para agregar 'reunion'
-        DB::statement("ALTER TABLE `bookings` MODIFY `meeting_type` ENUM('none', 'virtual', 'whatsapp', 'in_person', 'reunion') NOT NULL DEFAULT 'none'");
+        // Laravel maneja automáticamente la diferencia entre MySQL (ENUM) y SQL Server (VARCHAR + CHECK constraint)
+        Schema::table('bookings', function (Blueprint $table) {
+            $table->enum('meeting_type', ['none', 'virtual', 'whatsapp', 'in_person', 'reunion'])
+                  ->default('none')
+                  ->change();
+        });
     }
-
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
         // Volver al ENUM original
-        DB::statement("ALTER TABLE `bookings` MODIFY `meeting_type` ENUM('none', 'virtual', 'whatsapp', 'in_person') NOT NULL DEFAULT 'none'");
+        Schema::table('bookings', function (Blueprint $table) {
+            $table->enum('meeting_type', ['none', 'virtual', 'whatsapp', 'in_person'])
+                  ->default('none')
+                  ->change();
+        });
     }
 };
