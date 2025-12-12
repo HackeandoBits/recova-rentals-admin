@@ -32,10 +32,25 @@ class QuickStats extends Widget
             ])->count();
 
         // 3. Día más popular (de la semana)
-        // NOTA: DATEPART(dw, ...) devuelve 1=Domingo, 7=Sábado en SQL Server (dependiendo de SET DATEFIRST, por defecto us_english es Domingo=1)
-        $popularDay = \App\Models\Interview::selectRaw('DATEPART(dw, start_at) as day_of_week, COUNT(*) as count')
+        $driver = \DB::connection()->getDriverName();
+
+        $dayOfWeekSql = match ($driver) {
+            'sqlsrv' => 'DATEPART(dw, start_at)',
+            'sqlite' => 'strftime("%w", start_at) + 1', // SQLite 0=Domingo, Laravel espera 1=Domingo si se mapea igual
+            'mysql' => 'DAYOFWEEK(start_at)',
+            'pgsql' => 'EXTRACT(DOW FROM start_at) + 1',
+            default => 'DAYOFWEEK(start_at)',
+        };
+
+        // SQL Server requiere agrupar por la expresión exacta, MySQL permite el alias
+        $groupBySql = match ($driver) {
+            'sqlsrv' => \DB::raw($dayOfWeekSql),
+            default => 'day_of_week',
+        };
+
+        $popularDay = \App\Models\Interview::selectRaw("{$dayOfWeekSql} as day_of_week, COUNT(*) as count")
             ->whereNotNull('start_at')
-            ->groupBy(\DB::raw('DATEPART(dw, start_at)')) // SQL Server requiere agrupar por la expresión exacta
+            ->groupBy($groupBySql)
             ->orderByDesc('count')
             ->first();
 
