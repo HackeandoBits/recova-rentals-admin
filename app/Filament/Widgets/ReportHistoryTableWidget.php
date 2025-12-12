@@ -25,7 +25,6 @@ class ReportHistoryTableWidget extends BaseWidget
             ->query(
                 ReportLog::query()
                     ->with('user')
-                    ->latest()
             )
             ->columns([
                 Tables\Columns\TextColumn::make('created_at')
@@ -84,7 +83,7 @@ class ReportHistoryTableWidget extends BaseWidget
                     ->iconButton()
                     ->action(function (ReportLog $record) {
                         // Verificar si el PDF existe
-                        if (!$record->pdf_path || !\Illuminate\Support\Facades\Storage::disk('public')->exists($record->pdf_path)) {
+                        if (! $record->pdf_path || ! \Illuminate\Support\Facades\Storage::disk('public')->exists($record->pdf_path)) {
                             // Regenerar el PDF
                             $reportService = app(\App\Services\ReportService::class);
                             $pdfPath = $reportService->generatePDF(
@@ -92,18 +91,18 @@ class ReportHistoryTableWidget extends BaseWidget
                                 $record->period_to->toDateString(),
                                 $record->report_format ?? 'full'
                             );
-                            
+
                             // Actualizar el registro
                             $record->update(['pdf_path' => $pdfPath]);
-                            
+
                             // Refrescar el record para obtener el valor actualizado
                             $record->refresh();
                         }
-                        
+
                         // Descargar el PDF
                         return response()->download(
-                            storage_path('app/public/' . $record->pdf_path),
-                            'reporte_' . $record->period_from->format('Ymd') . '_' . $record->period_to->format('Ymd') . '.pdf'
+                            storage_path('app/public/'.$record->pdf_path),
+                            'reporte_'.$record->period_from->format('Ymd').'_'.$record->period_to->format('Ymd').'.pdf'
                         );
                     }),
 

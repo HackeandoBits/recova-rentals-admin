@@ -32,9 +32,10 @@ class QuickStats extends Widget
             ])->count();
 
         // 3. Día más popular (de la semana)
-        $popularDay = \App\Models\Interview::selectRaw('DAYOFWEEK(start_at) as day_of_week, COUNT(*) as count')
+        // NOTA: DATEPART(dw, ...) devuelve 1=Domingo, 7=Sábado en SQL Server (dependiendo de SET DATEFIRST, por defecto us_english es Domingo=1)
+        $popularDay = \App\Models\Interview::selectRaw('DATEPART(dw, start_at) as day_of_week, COUNT(*) as count')
             ->whereNotNull('start_at')
-            ->groupBy('day_of_week')
+            ->groupBy(\DB::raw('DATEPART(dw, start_at)')) // SQL Server requiere agrupar por la expresión exacta
             ->orderByDesc('count')
             ->first();
 
