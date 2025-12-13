@@ -9,30 +9,32 @@ class InterviewPolicy
 {
     public function viewAny(User $user): bool
     {
+        // Todos pueden ver el calendario
         return true;
     }
 
-    public function view(User $user, Interview $i): bool
+    public function view(User $user, Interview $interview): bool
     {
         return true;
     }
 
     public function create(User $user): bool
     {
-        return (bool) $user->is_admin; // ajustá si querés permitir a otros
+        return $user->isAdmin();
     }
 
-    public function update(User $user, Interview $i): bool
+    public function update(User $user, Interview $interview): bool
     {
-        if ($i->status === 'confirmed') {
-            return (bool) $user->is_admin; // ← clave: confirmadas solo admin
-        }
-
-        return (bool) $user->is_admin; // o true si querés que otros editen no-confirmadas
+        return $user->isAdmin();
     }
 
-    public function delete(User $user, Interview $i): bool
+    public function delete(User $user, Interview $interview): bool
     {
-        return (bool) $user->is_admin;
+        return $user->isAdmin();
+    }
+
+    public function deleteAny(User $user): bool
+    {
+        return $user->isAdmin();
     }
 }

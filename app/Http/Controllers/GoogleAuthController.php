@@ -145,16 +145,9 @@ class GoogleAuthController extends Controller
                 // Usuario existe con ese email, vincular google_id
                 $user->update(['google_id' => $googleUser->getId()]);
             } else {
-                // Auto-registro: Crear usuario nuevo
-                $user = User::create([
-                    'name' => $googleUser->getName(),
-                    'email' => $googleUser->getEmail(),
-                    'google_id' => $googleUser->getId(),
-                    'email_verified_at' => now(),
-                    'password' => null,
-                ]);
-
-                \Illuminate\Support\Facades\Log::info('New user registered via Google', ['user_id' => $user->id]);
+                // NO PERMITIR REGISTRO AUTOMÁTICO
+                return redirect()->to($this->filamentLoginUrl())
+                    ->with('error', 'El email ' . $googleUser->getEmail() . ' no está registrado en el sistema. Contactá al administrador.');
             }
         }
 

@@ -20,10 +20,15 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
+    const ROLE_ADMIN = 'admin';
+
+    const ROLE_USER = 'user';
+
     protected $fillable = [
         'name',
         'email',
         'password',
+        'role',
         'google_id',
         'dni',
         'whatsapp',
@@ -57,7 +62,19 @@ class User extends Authenticatable
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return (bool) $this->is_admin; // solo admins entran al panel
+        // Todos los usuarios registrados pueden entrar al panel,
+        // pero sus permisos estarán limitados por Policies.
+        return true;
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === self::ROLE_ADMIN;
+    }
+
+    public function isUser(): bool
+    {
+        return $this->role === self::ROLE_USER;
     }
 
     public function googleToken(): HasOne

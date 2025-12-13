@@ -25,7 +25,7 @@ class CalendarBlockResource extends Resource
 
     protected static ?string $navigationGroup = 'Agenda';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 3;
 
     protected static ?string $recordTitleAttribute = 'title';
 

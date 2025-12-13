@@ -2,7 +2,6 @@
 
 namespace App\Filament\Pages;
 
-use App\Filament\Widgets\CalendarWidget;
 use Filament\Pages\Page;
 
 class Calendar extends Page
@@ -15,7 +14,7 @@ class Calendar extends Page
 
     protected static ?string $title = 'Calendario de Eventos';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 2;
 
     protected static string $view = 'filament.pages.calendar';
 
@@ -43,14 +42,16 @@ class Calendar extends Page
     protected function getHeaderActions(): array
     {
         return [
-            \Filament\Actions\Action::make('create')
+            \Filament\Actions\CreateAction::make('create')
                 ->label('Crear Reunión')
+                ->model(\App\Models\Interview::class)
+                ->form(\App\Filament\Resources\Interviews\Schemas\InterviewForm::schema())
                 ->icon('heroicon-o-plus-circle')
                 ->color('primary')
-                ->action(function () {
-                    // Usar getUrl() es más seguro que hardcodear la ruta
-                    return redirect()->to(\App\Filament\Resources\Interviews\InterviewResource::getUrl('create'));
-                }),
+                ->modalHeading('Crear Reunión')
+                ->modalSubmitActionLabel('Crear')
+                ->modalWidth('4xl')
+                ->visible(fn () => auth()->user()->can('create', \App\Models\Interview::class)),
         ];
     }
 
