@@ -47,10 +47,10 @@ class StatsOverview extends BaseWidget
                 ->description('Agenda del día')
                 ->icon('heroicon-o-calendar')
                 ->color('primary')
-                ->url(route('filament.admin.resources.interviews.interviews.index')) // Enlazar a la lista o calendario
+                ->url(route('filament.admin.pages.calendar'))
                 ->extraAttributes(['class' => 'rr-stat-card cursor-pointer']),
 
-            Stat::make('Tasa de Éxito', $successRate.'%')
+            Stat::make('Tasa de Éxito', $successRate . '%')
                 ->description('Reservas confirmadas')
                 ->icon('heroicon-o-chart-pie')
                 ->color('success')
