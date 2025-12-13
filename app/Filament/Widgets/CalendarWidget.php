@@ -48,9 +48,14 @@ class CalendarWidget extends FullCalendarWidget
 
     public function fetchEvents(array $fetchInfo): array
     {
+        // Fix for Cross-DB Compatibility (SQL Server & MySQL):
+        // Parse ISO 8601 dates and format them to standard SQL 'Y-m-d H:i:s'
+        $start = \Carbon\Carbon::parse($fetchInfo['start'])->format('Y-m-d H:i:s');
+        $end = \Carbon\Carbon::parse($fetchInfo['end'])->format('Y-m-d H:i:s');
+
         $interviews = Interview::query()
-            ->where('start_at', '>=', $fetchInfo['start'])
-            ->where('end_at', '<=', $fetchInfo['end'])
+            ->where('start_at', '>=', $start)
+            ->where('end_at', '<=', $end)
             ->where('status', '!=', 'pending') // Solo mostrar confirmadas en calendario
             ->get()
             ->map(
@@ -75,8 +80,8 @@ class CalendarWidget extends FullCalendarWidget
             );
 
         $blocks = \App\Models\CalendarBlock::query()
-            ->where('starts_at', '>=', $fetchInfo['start'])
-            ->where('ends_at', '<=', $fetchInfo['end'])
+            ->where('starts_at', '>=', $start)
+            ->where('ends_at', '<=', $end)
             ->get()
             ->map(
                 fn (\App\Models\CalendarBlock $block) => [
