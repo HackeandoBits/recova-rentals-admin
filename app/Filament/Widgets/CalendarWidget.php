@@ -165,8 +165,8 @@ class CalendarWidget extends FullCalendarWidget
         $end = \Carbon\Carbon::parse($fetchInfo['end'])->format('Y-m-d H:i:s');
 
         $interviews = Interview::query()
-            ->where('start_at', '>=', $fetchInfo['start'])
-            ->where('end_at', '<=', $fetchInfo['end'])
+            ->where('start_at', '>=', $start)
+            ->where('end_at', '<=', $end)
             ->where('status', '!=', 'pending') // Solo mostrar confirmadas en calendario
             ->get()
             ->map(
