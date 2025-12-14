@@ -2036,3 +2036,34 @@ body.fi-body .fi-btn:focus-visible {
         0 0 0 4px rgba(34, 211, 238, 0.2),
         0 4px 14px 0 rgba(34, 211, 238, 0.4) !important;
 }
+
+
+
+/* Navbar-like Style for Calendar Buttons */
+.fc .fc-button-primary {
+    background-color: transparent !important;
+    border: 1px solid transparent !important;
+    color: #9ca3af !important; /* Gray-400 */
+    font-weight: 600;
+    box-shadow: none !important;
+}
+.fc .fc-button-primary:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    color: #ffffff !important;
+}
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+    background-color: rgba(139, 92, 246, 0.1) !important; /* Violet-500 low opacity */
+    color: #a855f7 !important; /* Violet-500 */
+    font-weight: 700;
+}
+
+
+/* Ghost Event Style (Strict) */
+.fc-event-ghost {
+    background-color: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+.fc-event-ghost .fc-event-main {
+    color: #9ca3af !important;
+}
