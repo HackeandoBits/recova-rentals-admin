@@ -23,6 +23,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if (\Illuminate\Support\Facades\App::environment('production') || \Illuminate\Support\Facades\App::environment('staging')) {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
+
         Interview::observe(InterviewObserver::class);
         CalendarBlock::observe(CalendarBlockObserver::class);
     }
