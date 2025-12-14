@@ -9,36 +9,26 @@ class CalendarBlockPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->is_admin;
+        return true;
     }
 
-    public function view(User $user, CalendarBlock $block): bool
+    public function view(User $user, CalendarBlock $calendarBlock): bool
     {
-        return $user->is_admin;
+        return true;
     }
 
     public function create(User $user): bool
     {
-        return $user->is_admin;
+        return $user->isAdmin();
     }
 
-    public function update(User $user, CalendarBlock $block): bool
+    public function update(User $user, CalendarBlock $calendarBlock): bool
     {
-        return $user->is_admin;
+        return $user->isAdmin();
     }
 
-    public function delete(User $user, CalendarBlock $block): bool
+    public function delete(User $user, CalendarBlock $calendarBlock): bool
     {
-        return $user->is_admin;
-    }
-
-    public function restore(User $user, CalendarBlock $block): bool
-    {
-        return $user->is_admin;
-    }
-
-    public function forceDelete(User $user, CalendarBlock $block): bool
-    {
-        return $user->is_admin;
+        return $user->isAdmin();
     }
 }

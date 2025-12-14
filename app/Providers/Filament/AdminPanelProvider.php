@@ -122,22 +122,31 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->navigation(function (NavigationBuilder $builder): NavigationBuilder {
+                $groups = [
+                    \Filament\Navigation\NavigationGroup::make('Agenda')
+                        ->items([
+                            ...\App\Filament\Resources\Interviews\InterviewResource::getNavigationItems(),
+                            ...\App\Filament\Pages\Calendar::getNavigationItems(),
+                            ...\App\Filament\Resources\CalendarBlocks\CalendarBlockResource::getNavigationItems(),
+                        ]),
+                    \Filament\Navigation\NavigationGroup::make('') // Grupo vacío para forzar orden
+                        ->items([
+                            ...\App\Filament\Pages\ReportsPage::getNavigationItems(),
+                        ]),
+                ];
+
+                if (auth()->user()?->isAdmin()) {
+                    $groups[] = \Filament\Navigation\NavigationGroup::make('Administración')
+                        ->items([
+                            ...\App\Filament\Resources\UserResource::getNavigationItems(),
+                        ]);
+                }
+
                 return $builder
                     ->items([
                         ...\App\Filament\Pages\Dashboard::getNavigationItems(),
                     ])
-                    ->groups([
-                        \Filament\Navigation\NavigationGroup::make('Agenda')
-                            ->items([
-                                ...\App\Filament\Pages\Calendar::getNavigationItems(),
-                                ...\App\Filament\Resources\CalendarBlocks\CalendarBlockResource::getNavigationItems(),
-                                ...\App\Filament\Resources\Interviews\InterviewResource::getNavigationItems(),
-                            ]),
-                        \Filament\Navigation\NavigationGroup::make('') // Grupo vacío para forzar orden después de Agenda
-                            ->items([
-                                ...\App\Filament\Pages\ReportsPage::getNavigationItems(),
-                            ]),
-                    ]);
+                    ->groups($groups);
             });
     }
 }

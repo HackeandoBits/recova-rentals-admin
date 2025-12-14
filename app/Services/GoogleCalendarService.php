@@ -30,6 +30,7 @@ class GoogleCalendarService
     public function forUser(int $userId): GoogleCalendar
     {
         $client = $this->clientWithFreshToken($userId);
+
         return new GoogleCalendar($client);
     }
 
@@ -39,6 +40,7 @@ class GoogleCalendarService
     public function forOwner(): GoogleCalendar
     {
         $ownerId = (int) config('owner.calendar_user_id', 1);
+
         return $this->forUser($ownerId);
     }
 
@@ -65,9 +67,9 @@ class GoogleCalendarService
 
         // Cargar token actual al cliente
         $client->setAccessToken([
-            'access_token'  => $token->access_token,
+            'access_token' => $token->access_token,
             'refresh_token' => $token->refresh_token,
-            'expires_in'    => $token->expires_at
+            'expires_in' => $token->expires_at
                 ? max(0, now('UTC')->diffInSeconds($token->expires_at, false))
                 : 3600,
         ]);
@@ -80,17 +82,17 @@ class GoogleCalendarService
                 // Persistir nuevos datos si llegaron
                 $token->update([
                     'access_token' => $new['access_token'] ?? $token->access_token,
-                    'expires_at'   => isset($new['expires_in'])
+                    'expires_at' => isset($new['expires_in'])
                         ? now('UTC')->addSeconds((int) $new['expires_in'])
                         : $token->expires_at,
-                    'revoked'      => false,
+                    'revoked' => false,
                 ]);
 
                 // Reinyectar al cliente con los datos actualizados
                 $client->setAccessToken([
-                    'access_token'  => $token->access_token,
+                    'access_token' => $token->access_token,
                     'refresh_token' => $token->refresh_token,
-                    'expires_in'    => $token->expires_at
+                    'expires_in' => $token->expires_at
                         ? max(0, now('UTC')->diffInSeconds($token->expires_at, false))
                         : 3600,
                 ]);
@@ -98,8 +100,8 @@ class GoogleCalendarService
                 $msg = $e->getMessage();
                 $isInvalidGrant = str_contains($msg, 'invalid_grant');
                 Log::warning('Google token refresh failed', [
-                    'user_id'       => $userId,
-                    'error'         => $msg,
+                    'user_id' => $userId,
+                    'error' => $msg,
                     'invalid_grant' => $isInvalidGrant,
                 ]);
                 if ($isInvalidGrant) {
@@ -126,7 +128,7 @@ class GoogleCalendarService
 
         // Asegurar tipos datetime (por si vienen como string)
         $startAt = $i->start_at instanceof Carbon ? $i->start_at : Carbon::parse($i->start_at);
-        $endAt   = $i->end_at   instanceof Carbon ? $i->end_at   : Carbon::parse($i->end_at);
+        $endAt = $i->end_at   instanceof Carbon ? $i->end_at : Carbon::parse($i->end_at);
 
         $tz = $this->calendarTz();
         $isAllDay = (bool) data_get($i, 'all_day', false);
@@ -134,12 +136,12 @@ class GoogleCalendarService
         if ($isAllDay) {
             // All-day: usar 'date' y end exclusivo (sin timeZone)
             $startDate = $startAt->timezone($tz)->toDateString();
-            $endDate   = $endAt->timezone($tz)->toDateString();
+            $endDate = $endAt->timezone($tz)->toDateString();
             if ($endDate === $startDate) {
                 $endDate = $startAt->timezone($tz)->addDay()->toDateString();
             }
             $start = ['date' => $startDate];
-            $end   = ['date' => $endDate];
+            $end = ['date' => $endDate];
         } else {
             // Con hora: dateTime SIN 'Z' + timeZone con nombre IANA
             $start = [
@@ -153,20 +155,22 @@ class GoogleCalendarService
         }
 
         $payload = new GoogleEvent([
-            'summary'     => $i->title ?? 'Entrevista',
+            'summary' => $i->title ?? 'Entrevista',
             'description' => trim(($i->description ?? '')."\nID: {$i->id}"),
-            'start'       => $start,
-            'end'         => $end,
+            'start' => $start,
+            'end' => $end,
         ]);
 
         if ($i->google_event_id) {
             // update
             $updated = $cal->events->update($calendarId, $i->google_event_id, $payload);
+
             return $updated->getId();
         }
 
         // create
         $created = $cal->events->insert($calendarId, $payload);
+
         return $created->getId();
     }
 
@@ -194,6 +198,7 @@ class GoogleCalendarService
         string $calendarId = 'primary'
     ): string {
         $ownerId = (int) config('owner.calendar_user_id', 1);
+
         return $this->upsertInterviewEvent($ownerId, $i, $calendarId);
     }
 
@@ -217,12 +222,12 @@ class GoogleCalendarService
 
         if ($block->is_all_day) {
             $startDate = $block->starts_at->timezone($tz)->toDateString();
-            $endDate   = $block->ends_at->timezone($tz)->toDateString();
+            $endDate = $block->ends_at->timezone($tz)->toDateString();
             if ($endDate === $startDate) {
                 $endDate = $block->starts_at->timezone($tz)->addDay()->toDateString();
             }
             $start = ['date' => $startDate]; // sin timeZone
-            $end   = ['date' => $endDate];   // sin timeZone
+            $end = ['date' => $endDate];   // sin timeZone
         } else {
             $start = [
                 'dateTime' => $block->starts_at->timezone($tz)->format('Y-m-d\TH:i:s'),
@@ -235,11 +240,11 @@ class GoogleCalendarService
         }
 
         $event = new GoogleEvent([
-            'summary'     => '[BLOCK] '.($block->title ?: 'Bloqueo'),
+            'summary' => '[BLOCK] '.($block->title ?: 'Bloqueo'),
             'description' => trim(($block->reason ?: '')."\nKind: {$block->kind}"),
-            'start'       => $start,
-            'end'         => $end,
-            'colorId'     => '11', // rojo
+            'start' => $start,
+            'end' => $end,
+            'colorId' => '11', // rojo
         ]);
 
         try {
@@ -250,16 +255,16 @@ class GoogleCalendarService
             }
             $block->update([
                 'google_event_id' => $event->id,
-                'sync_status'     => 'synced',
-                'synced_at'       => now(),
-                'last_error'      => null,
+                'sync_status' => 'synced',
+                'synced_at' => now(),
+                'last_error' => null,
             ]);
 
             return $event;
         } catch (\Throwable $e) {
             $block->update([
                 'sync_status' => 'failed',
-                'last_error'  => $e->getMessage(),
+                'last_error' => $e->getMessage(),
             ]);
             report($e);
 
@@ -279,8 +284,49 @@ class GoogleCalendarService
         }
         $block->update([
             'google_event_id' => null,
-            'sync_status'     => 'pending',
-            'synced_at'       => null,
+            'sync_status' => 'pending',
+            'synced_at' => null,
         ]);
+    }
+
+    /**
+     * List events from the owner's calendar within a given date range.
+     *
+     * @return \Google\Service\Calendar\Event[]
+     */
+    public function listEvents(Carbon $start, Carbon $end): array
+    {
+        try {
+            $service = $this->forOwner();
+            $calendarId = 'primary';
+            $events = [];
+            $pageToken = null;
+
+            do {
+                $optParams = [
+                    'orderBy' => 'startTime',
+                    'singleEvents' => true,
+                    'timeMin' => $start->toRfc3339String(),
+                    'timeMax' => $end->toRfc3339String(),
+                    'pageToken' => $pageToken,
+                    'maxResults' => 250, // Reasonable batch size
+                ];
+
+                $results = $service->events->listEvents($calendarId, $optParams);
+                $items = $results->getItems();
+
+                if (is_array($items)) {
+                    $events = array_merge($events, $items);
+                }
+
+                $pageToken = $results->getNextPageToken();
+            } while ($pageToken);
+
+            return $events;
+        } catch (\Throwable $e) {
+            Log::error('Failed to list Google Calendar events: '.$e->getMessage());
+
+            return [];
+        }
     }
 }

@@ -21,12 +21,13 @@ class CalendarWidget extends FullCalendarWidget
 
     public function canCreate(): bool
     {
-        return true;
+        // Solo admins pueden crear (según Policy)
+        return auth()->user()->can('create', Interview::class);
     }
 
     public function canEdit(): bool
     {
-        return false;
+        return false; // Deshabilitar D&D para todos por ahora (o checkear policy)
     }
 
     public function canDelete(): bool
@@ -39,6 +40,7 @@ class CalendarWidget extends FullCalendarWidget
         return [
             'dayMaxEvents' => true, // Limitar eventos por día para mantener altura de celdas
             'fixedWeekCount' => false, // No forzar 6 semanas si no son necesarias
+            'showNonCurrentDates' => true, // Mostrar días del mes siguiente/anterior para completar semana
             'titleFormat' => [
                 'year' => 'numeric',
                 'month' => 'long', // Nombre completo del mes
@@ -64,7 +66,6 @@ class CalendarWidget extends FullCalendarWidget
                     'title' => '🕒 '.($interview->title ?? 'Reunión'),
                     'start' => $interview->start_at,
                     'end' => $interview->end_at,
-                    'end' => $interview->end_at,
                     'display' => 'list-item', // Mostrar como texto sin fondo
                     'backgroundColor' => 'transparent',
                     'borderColor' => 'transparent',
@@ -75,6 +76,7 @@ class CalendarWidget extends FullCalendarWidget
                         'customer_name' => $interview->customer_name ?? 'N/A',
                         'customer_phone' => $interview->customer_phone ?? '',
                         'status' => $interview->status,
+                        'google_event_id' => $interview->google_event_id, // For duplicate checking
                     ],
                 ]
             );
@@ -92,7 +94,6 @@ class CalendarWidget extends FullCalendarWidget
                     'start' => $block->starts_at,
                     'end' => $block->ends_at,
                     'allDay' => $block->is_all_day,
-                    // Todos los bloqueos como eventos normales para que se vea el texto
                     'color' => $block->is_all_day ? '#e5e7eb' : '#dc2626',
                     'backgroundColor' => $block->is_all_day ? '#e5e7eb' : '#dc2626',
                     'borderColor' => $block->is_all_day ? '#9ca3af' : '#991b1b',
@@ -100,12 +101,78 @@ class CalendarWidget extends FullCalendarWidget
                     'extendedProps' => [
                         'description' => 'Bloqueo de agenda',
                         'isBlock' => true,
+                        'google_event_id' => $block->google_event_id, // For duplicate checking
                     ],
                     'url' => '', // Empty string to bypass plugin's url check
                 ]
             );
 
-        return array_merge($interviews->values()->all(), $blocks->values()->all());
+        // --- GOOGLE CALENDAR FETCH ---
+        $googleEvents = [];
+        try {
+            \Illuminate\Support\Facades\Log::info('CalendarWidget: Fetching Google Events', [
+                'start' => $fetchInfo['start'],
+                'end' => $fetchInfo['end'],
+            ]);
+
+            /** @var \App\Services\GoogleCalendarService $service */
+            $service = app(\App\Services\GoogleCalendarService::class);
+
+            // Collect IDs of local events that are already synced to avoid visual duplicates
+            // We use 'google_event_id' which matches the ID from Google
+            $syncedIds = $interviews->pluck('extendedProps.google_event_id')
+                ->merge($blocks->pluck('extendedProps.google_event_id'))
+                ->filter()
+                ->flip(); // Flip for faster lookup (id => key)
+
+            $rawGoogleEvents = $service->listEvents(
+                \Carbon\Carbon::parse($fetchInfo['start']),
+                \Carbon\Carbon::parse($fetchInfo['end'])
+            );
+
+            \Illuminate\Support\Facades\Log::info('CalendarWidget: Raw Google Events Count: '.count($rawGoogleEvents));
+
+            foreach ($rawGoogleEvents as $gEvent) {
+                // If this event is already represented by a local interview or block, skip it
+                if ($syncedIds->has($gEvent->getId())) {
+                    continue;
+                }
+
+                $isAllDay = empty($gEvent->start->dateTime);
+                $gStart = $isAllDay ? $gEvent->start->date : \Carbon\Carbon::parse($gEvent->start->dateTime);
+                $gEnd = $isAllDay ? $gEvent->end->date : \Carbon\Carbon::parse($gEvent->end->dateTime);
+
+                $googleEvents[] = [
+                    'id' => 'gcal-'.$gEvent->getId(),
+                    'title' => '📅 '.($gEvent->getSummary() ?? '(Sin título)'),
+                    'start' => $gStart,
+                    'end' => $gEnd,
+                    'allDay' => $isAllDay,
+                    'backgroundColor' => '#6b7280', // Gray for external events
+                    'borderColor' => '#4b5563',
+                    'textColor' => '#ffffff',
+                    'extendedProps' => [
+                        'description' => $gEvent->getDescription(),
+                        'isGoogleEvent' => true,
+                        'google_html_link' => $gEvent->getHtmlLink(),
+                    ],
+                    // Optional: link to open in Google Calendar
+                    'url' => $gEvent->getHtmlLink(),
+                ];
+            }
+
+            \Illuminate\Support\Facades\Log::info('CalendarWidget: Processed Google Events Count: '.count($googleEvents));
+
+        } catch (\Exception $e) {
+            // Log silently or notify? Better to log silently so the whole calendar doesn't break
+            \Illuminate\Support\Facades\Log::error('CalendarWidget Google Fetch Error: '.$e->getMessage());
+        }
+
+        return array_merge(
+            $interviews->values()->all(),
+            $blocks->values()->all(),
+            $googleEvents
+        );
     }
 
     public function resolveRecord(string|int $key): \Illuminate\Database\Eloquent\Model
@@ -123,21 +190,14 @@ class CalendarWidget extends FullCalendarWidget
 
     protected function headerActions(): array
     {
-        // Botón movido al header de la página Calendar.php
         return [];
-    }
-
-    public function onEventClick(array $info): void
-    {
-        \Illuminate\Support\Facades\Log::info('onEventClick reached', $info);
-        parent::onEventClick($info);
     }
 
     protected function modalActions(): array
     {
         return [
             \Saade\FilamentFullCalendar\Actions\EditAction::make()
-                ->visible(fn ($record) => $record instanceof Interview)
+                ->visible(fn ($record) => $record instanceof Interview && auth()->user()->can('update', $record))
                 ->form(fn ($form) => \App\Filament\Resources\Interviews\Schemas\InterviewForm::configure($form)->getSchema())
                 ->modalHeading('Editar Reunión')
                 ->modalSubmitActionLabel('Guardar')
@@ -146,7 +206,7 @@ class CalendarWidget extends FullCalendarWidget
                 ->icon('heroicon-o-pencil'),
 
             \Saade\FilamentFullCalendar\Actions\DeleteAction::make()
-                ->visible(fn ($record) => $record instanceof Interview)
+                ->visible(fn ($record) => $record instanceof Interview && auth()->user()->can('delete', $record))
                 ->modalHeading('Eliminar Reunión')
                 ->modalDescription('¿Estás seguro que deseas eliminar esta reunión?')
                 ->modalSubmitActionLabel('Eliminar')
@@ -160,6 +220,7 @@ class CalendarWidget extends FullCalendarWidget
                     : ($record->title ?? 'Reunión'))
                 ->modalWidth('xs')
                 ->infolist(function ($record) {
+                    // ... (INFO LIST CONTENT SAME AS BEFORE) ...
                     if ($record instanceof \App\Models\CalendarBlock) {
                         return [
                             \Filament\Infolists\Components\TextEntry::make('title')
@@ -230,6 +291,7 @@ class CalendarWidget extends FullCalendarWidget
                                 ->icon('heroicon-o-trash')
                                 ->color('danger')
                                 ->requiresConfirmation()
+                                ->visible(fn () => auth()->user()->can('delete', $record))
                                 ->modalHeading('Eliminar Bloqueo')
                                 ->modalDescription('¿Estás seguro que deseas eliminar este bloqueo?')
                                 ->action(function ($record, $livewire) {
@@ -245,6 +307,7 @@ class CalendarWidget extends FullCalendarWidget
                             ->label('Editar')
                             ->icon('heroicon-o-pencil')
                             ->color('primary')
+                            ->visible(fn () => auth()->user()->can('update', $record))
                             ->fillForm(fn ($record) => $record->attributesToArray())
                             ->form(fn ($form) => $form->schema(\App\Filament\Resources\Interviews\Schemas\InterviewForm::schema()))
                             ->action(function (array $data, $record, $livewire) {
@@ -262,6 +325,7 @@ class CalendarWidget extends FullCalendarWidget
                             ->icon('heroicon-o-trash')
                             ->color('danger')
                             ->requiresConfirmation()
+                            ->visible(fn () => auth()->user()->can('delete', $record))
                             ->modalHeading('Eliminar Reunión')
                             ->modalDescription('¿Estás seguro que deseas eliminar esta reunión?')
                             ->action(function ($record, $livewire) {
