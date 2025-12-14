@@ -11,8 +11,6 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 
 class InterviewForm
 {
@@ -33,6 +31,7 @@ class InterviewForm
                 $slots[sprintf('%02d:30', $hour)] = sprintf('%02d:30', $hour);
             }
         }
+
         return $slots;
     }
 
@@ -101,24 +100,27 @@ class InterviewForm
                                 \Filament\Forms\Components\Actions\Action::make('delete')
                                     ->icon('heroicon-m-trash')
                                     ->color('danger')
-                                    ->iconButton() // Solo icono, sin fondo
+                                    ->iconButton()
                                     ->label(null)
                                     ->tooltip('Eliminar')
-                                    ->action(function ($component) {
-                                        // Navigate to the Actions component (parent of the Action)
-                                        $actionsComponent = $component->getParentComponent();
-                                        // The container for the repeater row (parent of Actions)
-                                        $itemContainer = $actionsComponent->getParentComponent();
-                                        // The Repeater component itself (parent of the item container)
-                                        $repeater = $itemContainer->getParentComponent();
-
-                                        // State path of the item, e.g., 'items.0' or 'items.uuid-1234'
-                                        $itemStatePath = $itemContainer->getStatePath();
-                                        $segments = explode('.', $itemStatePath);
-                                        $key = end($segments);
-
-                                        // Delete the specific item from the repeater
-                                        $repeater->deleteItem($key);
+                                    ->action(function ($component, $livewire) {
+                                        // Strategy: Manipulate Livewire state directly using the absolute path.
+                                        // This bypasses component tree issues (ActionContainer) and scope issues.
+                                        
+                                        $path = $component->getStatePath();
+                                        // Path format: mountedActionsData.0.items.UUID...
+                                        // We want to remove the item with that UUID from the items array.
+                                        
+                                        $uuid = \Illuminate\Support\Str::afterLast($path, '.');
+                                        $itemsPath = \Illuminate\Support\Str::beforeLast($path, '.');
+                                        
+                                        // fetch the current items array from the Livewire component
+                                        $currentItems = data_get($livewire, $itemsPath);
+                                        
+                                        if (is_array($currentItems) && isset($currentItems[$uuid])) {
+                                            unset($currentItems[$uuid]);
+                                            data_set($livewire, $itemsPath, $currentItems);
+                                        }
                                     }),
                             ])
                                 ->columnSpan(1)
@@ -126,7 +128,7 @@ class InterviewForm
                         ])
                         ->columns(12)
                         ->defaultItems(0)
-                        ->addAction(fn(\Filament\Forms\Components\Actions\Action $action) => $action->label('Agregar Producto')->color('info')),
+                        ->addAction(fn (\Filament\Forms\Components\Actions\Action $action) => $action->label('Agregar Producto')->color('info')),
                 ])
                 ->collapsible()
                 ->compact(),
@@ -221,20 +223,20 @@ class InterviewForm
             // Campos ocultos
             \Filament\Forms\Components\Hidden::make('start_at')
                 ->dehydrated()
-                ->default(fn($record) => $record?->start_at),
+                ->default(fn ($record) => $record?->start_at),
 
             \Filament\Forms\Components\Hidden::make('end_at')
                 ->dehydrated()
-                ->default(fn($record) => $record?->end_at)
+                ->default(fn ($record) => $record?->end_at)
                 ->rules([
-                    fn($get) => function (string $attribute, $value, \Closure $fail) use ($get) {
+                    fn ($get) => function (string $attribute, $value, \Closure $fail) use ($get) {
                         $start = $get('start_at');
                         if ($start && $value && Carbon::parse($value)->lte(Carbon::parse($start))) {
                             $fail('La hora de fin debe ser posterior al inicio.');
                         }
                     },
-                    fn($get, $record) => new NoOverlapRule($get('start_at'), $record?->id, 60),
-                    fn($get) => new NoOverlapWithBlocks($get('start_at'), (int) env('OWNER_CAL_USER_ID', 1)),
+                    fn ($get, $record) => new NoOverlapRule($get('start_at'), $record?->id, 60),
+                    fn ($get) => new NoOverlapWithBlocks($get('start_at'), (int) env('OWNER_CAL_USER_ID', 1)),
                 ]),
 
             Select::make('status')

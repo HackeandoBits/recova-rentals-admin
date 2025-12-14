@@ -59,6 +59,37 @@ class CalendarWidget extends FullCalendarWidget
     protected function getHeaderActions(): array
     {
         return [
+            \Filament\Actions\CreateAction::make('createInterview')
+                ->label('Crear Reunión')
+                ->model(\App\Models\Interview::class)
+                ->form([
+                    \Filament\Forms\Components\TextInput::make('title')
+                        ->label('Título')
+                        ->required(),
+                    \Filament\Forms\Components\DateTimePicker::make('start_at')
+                        ->label('Inicio')
+                        ->required(),
+                    \Filament\Forms\Components\DateTimePicker::make('end_at')
+                        ->label('Fin')
+                        ->required(),
+                    // Add minimal required fields or assume a full resource form is needed?
+                    // Usually widgets reuse the resource form or define a simple one.
+                    // I will include basic fields to ensure it works.
+                    \Filament\Forms\Components\Select::make('applicant_id')
+                        ->relationship('applicant', 'name')
+                        ->searchable()
+                        ->label('Postulante')
+                        ->required(),
+                    \Filament\Forms\Components\Select::make('status')
+                        ->options([
+                            'pending' => 'Pendiente',
+                            'confirmed' => 'Confirmada',
+                            'cancelled' => 'Cancelada',
+                        ])
+                        ->default('confirmed')
+                        ->required(),
+                ]),
+
             \Filament\Actions\Action::make('syncGoogle')
                 ->label('Sincronizar Google')
                 ->color('primary')
