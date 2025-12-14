@@ -49,6 +49,12 @@ class GoogleCalendarService
      */
     public function isConnected(?int $userId = null): bool
     {
+        // Si no se pasa ID, intentamos usar el del usuario logueado
+        if ($userId === null && auth()->check()) {
+            $userId = auth()->id();
+        }
+
+        // Si sigue nulo (no logueado y no pasado), fallback al owner config
         $userId ??= (int) config('owner.calendar_user_id', 1);
 
         return GoogleToken::where('user_id', $userId)->exists();
