@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informe Técnico - Sincronización Google Calendar</title>
+    <!-- Estilos Github-like -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown-light.min.css">
+    <!-- Mermaid para diagramas -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <!-- Marked para renderizar Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        body { margin: 0; background: #fff; }
+        .markdown-body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 45px;
+        }
+        @media (max-width: 767px) {
+            .markdown-body { padding: 15px; }
+        }
+    </style>
+</head>
+<body class="markdown-body">
+    <div id="content"></div>
+
+    <!-- Contenido RAW del Markdown -->
+    <script type="text/template" id="markdown-source">
+# Informe Técnico: Sincronización Bidireccional Google Calendar
+
+Este documento detalla la implementación de la sincronización de doble vía entre el Panel de Administración (Recova Rentals) y Google Calendar, explicando las decisiones técnicas y la arquitectura utilizada.
+
+## 1. Arquitectura General
+
+La solución conecta la base de datos local (MySQL/SQL Server) con la API de Google Calendar mediante un Servicio centralizado y Observadores de eventos.
+
+### Componentes Clave
+
+1.  **`GoogleCalendarService`**: El corazón de la lógica.
+    *   Gestiona la autenticación OAuth con Google.
+    *   Expone métodos CRUD (`upsert`, `delete`) para Entrevistas y Bloqueos.
+    *   **Nueva función**: `syncFromGoogle($start, $end)` para importar eventos externos.
+
+2.  **Observadores (`Observers`)**: Sincronización en Tiempo Real (Panel -> Google).
+    *   **`InterviewObserver`**: Detecta cuando se crea/edita una entrevista "confirmada" y la envía a Google inmediatamente.
+    *   **`CalendarBlockObserver`**: Detecta bloqueos manuales y dispara un trabajo en segundo plano (`SyncSingleBlockJob`) para replicarlo en Google.
+    *   *Por qué:* Los observadores garantizan que **cualquier cambio** en la base de datos (sea por panel, API o consola) se refleje en Google sin intervención manual.
+
+3.  **Widget de Calendario (`CalendarWidget`)**: Sincronización Manual (Google -> Panel).
+    *   Se agregó un botón **"Sincronizar Google"** en la cabecera.
+    *   Al pulsarlo, descarga los eventos de Google de los próximos 3 meses.
+
+## 2. Estrategia de Sincronización
+
+### A. Desde el Panel hacia Google (Exportación)
+*   **Trigger**: Evento `saved` o `deleted` en los modelos Eloquent (`Interview`, `CalendarBlock`).
+*   **Acción**: Se usa el ID del evento de Google (`google_event_id`) almacenado en la tabla local.
+    *   Si existe: Se hace `UPDATE` en Google.
+    *   Si no existe: Se hace `INSERT` en Google y se guarda el nuevo ID recibido.
+
+### B. Desde Google hacia el Panel (Importación)
+*   **Trigger**: Botón manual "Sincronizar Google".
+*   **Lógica de Importación**:
+    *   Se listan todos los eventos del calendario principal.
+    *   Se filtran los que ya existen localmente (usando `google_event_id`).
+    *   **Decisión Crítica**: Los eventos nuevos (creados externamente en Google) se guardan localmente como **`CalendarBlock`** (Bloqueo de Agenda), no como Entrevistas.
+    *   *Por qué:* Una "Entrevista" requiere datos estrictos (Cliente, Tipo, etc.) que Google no tiene. Un "Bloqueo" es genérico y cumple la función de ocupar el espacio en la agenda para evitar conflictos.
+
+## 3. Compatibilidad de Base de Datos
+No se requirieron migraciones nuevas. La tabla `calendar_blocks` ya estaba preparada con las columnas necesarias (`google_event_id`, `sync_status`), lo que asegura total compatibilidad con la infraestructura actual (MySQL o SQL Server) sin riesgos de despliegue.
+
+## 4. Flujo de Datos
+
+```mermaid
+graph TD
+    UserPanel[Usuario Panel] -->|Crea Entrevista| DB[(Base de Datos)]
+    DB -->|Observer| Service[GoogleCalendarService]
+    Service -->|API Push| Google[Google Cloud]
+    
+    UserGoogle[Usuario Google] -->|Crea Evento| Google
+    Admin[Admin] -->|Click Sincronizar| Widget[CalendarWidget]
+    Widget -->|API Pull| Service
+    Service -->|Importa como Block| DB
+```
+
+---
+**Recova Rentals Admin** - Implementación completada el 14/12/2025.
+    </script>
+
+    <script>
+        // Inicializar Mermaid
+        mermaid.initialize({ startOnLoad: false });
+
+        // Renderizar Markdown
+        const rawMarkdown = document.getElementById('markdown-source').innerHTML;
+        const contentDiv = document.getElementById('content');
+        contentDiv.innerHTML = marked.parse(rawMarkdown);
+
+        // Renderizar diagramas Mermaid después del Markdown
+        // Buscamos los bloques de código que marked haya creado con class="language-mermaid"
+        const mermaidBlocks = document.querySelectorAll('.language-mermaid');
+        mermaidBlocks.forEach((block, index) => {
+            const graphDefinition = block.textContent;
+            const newDiv = document.createElement('div');
+            newDiv.className = 'mermaid';
+            newDiv.textContent = graphDefinition;
+            block.parentNode.replaceWith(newDiv); // Reemplazar el <pre><code> por el div
+        });
+
+        mermaid.run();
+    </script>
+</body>
+</html>

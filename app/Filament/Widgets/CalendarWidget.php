@@ -38,6 +38,14 @@ class CalendarWidget extends FullCalendarWidget
     public function config(): array
     {
         return [
+            'locale' => 'es',
+            'buttonText' => [
+                'today' => 'Hoy',
+                'month' => 'Mes',
+                'week' => 'Semana',
+                'day' => 'Día',
+                'list' => 'Lista',
+            ],
             'dayMaxEvents' => true, // Limitar eventos por día para mantener altura de celdas
             'fixedWeekCount' => false, // No forzar 6 semanas si no son necesarias
             'showNonCurrentDates' => true, // Mostrar días del mes siguiente/anterior para completar semana
@@ -46,6 +54,71 @@ class CalendarWidget extends FullCalendarWidget
                 'month' => 'long', // Nombre completo del mes
             ],
         ];
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            \Filament\Actions\Action::make('syncGoogle')
+                ->label('Sincronizar Google')
+                ->color('primary')
+                ->icon('heroicon-o-arrow-path')
+                ->action(function () {
+                    $svc = app(\App\Services\GoogleCalendarService::class);
+                    // Sincronizar desde 1 mes atrás hasta 3 meses adelante
+                    $count = $svc->syncFromGoogle(now()->subMonth(), now()->addMonths(3));
+
+                    \Filament\Notifications\Notification::make()
+                        ->title('Sincronización completada')
+                        ->body("Se importaron {$count} eventos nuevos como bloqueos.")
+                        ->success()
+                        ->send();
+
+                    // Recargar página para ver los nuevos bloqueos
+                    redirect(request()->header('Referer'));
+                }),
+        ];
+    }
+
+    public function eventContent(): string
+    {
+        return <<<'JS'
+            function(arg) {
+                let title = arg.event.title;
+                let description = arg.event.extendedProps.description || '';
+                
+                // Icons (Heroicons solid)
+                // Removed 'mr-1 inline-block' to rely on flex gap and alignment
+                const icons = {
+                    meeting: '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>', // Clock
+                    block: '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>', // Ban
+                    google: '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>', // Calendar
+                    holiday: '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 3.214L18 21l-6-3-6 3 2.286-5.786L3 12l6.857-1.143L12 1z" /></svg>' // Star
+                };
+
+                let iconHtml = icons.meeting; // Default to meeting
+
+                if (arg.event.extendedProps.isBlock) {
+                    iconHtml = icons.block;
+                } else if (arg.event.extendedProps.isHoliday) {
+                    iconHtml = icons.holiday;
+                } else if (arg.event.extendedProps.isGoogleEvent) {
+                    iconHtml = icons.google;
+                }
+
+                // Custom HTML structure
+                // Use gap-1 for spacing, items-center for vertical alignment
+                // Reduced icon size slightly (w-3.5) to match text better
+                return {
+                    html: `
+                        <div class="fc-event-main-frame flex items-center gap-1 px-1 w-full overflow-hidden">
+                            <div class="fc-event-icon flex-shrink-0 flex items-center justify-center">${iconHtml}</div>
+                            <div class="fc-event-title font-medium truncate min-w-0 flex-1 leading-tight">${title}</div>
+                        </div>
+                    `
+                };
+            }
+        JS;
     }
 
     public function fetchEvents(array $fetchInfo): array
@@ -63,7 +136,7 @@ class CalendarWidget extends FullCalendarWidget
             ->map(
                 fn (Interview $interview) => [
                     'id' => $interview->id,
-                    'title' => '🕒 '.($interview->title ?? 'Reunión'),
+                    'title' => $interview->title ?? 'Reunión',
                     'start' => $interview->start_at,
                     'end' => $interview->end_at,
                     'display' => 'list-item', // Mostrar como texto sin fondo
@@ -89,15 +162,16 @@ class CalendarWidget extends FullCalendarWidget
                 fn (\App\Models\CalendarBlock $block) => [
                     'id' => 'block-'.$block->id,
                     'title' => $block->is_all_day
-                        ? '🚫 '.($block->title ?? 'Bloqueado')
-                        : '🚫 Bloqueado: '.($block->title ?? 'Sin título'),
+                        ? ($block->title ?? 'Bloqueado')
+                        : 'Bloqueado: '.($block->title ?? 'Sin título'),
                     'start' => $block->starts_at,
                     'end' => $block->ends_at,
                     'allDay' => $block->is_all_day,
-                    'color' => $block->is_all_day ? '#e5e7eb' : '#dc2626',
-                    'backgroundColor' => $block->is_all_day ? '#e5e7eb' : '#dc2626',
-                    'borderColor' => $block->is_all_day ? '#9ca3af' : '#991b1b',
-                    'textColor' => $block->is_all_day ? '#374151' : '#ffffff',
+                    // Ghost Button Style (Navbar-like) via CSS class
+                    'className' => 'fc-event-ghost',
+                    'backgroundColor' => 'rgba(255, 255, 255, 0.05)', // Fallback
+                    'borderColor' => 'rgba(255, 255, 255, 0.1)', // Fallback
+                    'textColor' => '#9ca3af', // Gray-400
                     'extendedProps' => [
                         'description' => 'Bloqueo de agenda',
                         'isBlock' => true,
@@ -144,7 +218,7 @@ class CalendarWidget extends FullCalendarWidget
 
                 $googleEvents[] = [
                     'id' => 'gcal-'.$gEvent->getId(),
-                    'title' => '📅 '.($gEvent->getSummary() ?? '(Sin título)'),
+                    'title' => $gEvent->getSummary() ?? '(Sin título)',
                     'start' => $gStart,
                     'end' => $gEnd,
                     'allDay' => $isAllDay,
@@ -162,6 +236,39 @@ class CalendarWidget extends FullCalendarWidget
             }
 
             \Illuminate\Support\Facades\Log::info('CalendarWidget: Processed Google Events Count: '.count($googleEvents));
+
+            // --- GOOGLE HOLIDAYS FETCH ---
+            $holidayEvents = $service->listEvents(
+                \Carbon\Carbon::parse($fetchInfo['start']),
+                \Carbon\Carbon::parse($fetchInfo['end']),
+                'es.ar#holiday@group.v.calendar.google.com' // ID for Argentina Holidays
+            );
+
+            foreach ($holidayEvents as $hEvent) {
+                // Holidays are typically all-day
+                $isAllDay = empty($hEvent->start->dateTime);
+                $hStart = $isAllDay ? $hEvent->start->date : \Carbon\Carbon::parse($hEvent->start->dateTime);
+                $hEnd = $isAllDay ? $hEvent->end->date : \Carbon\Carbon::parse($hEvent->end->dateTime);
+
+                $googleEvents[] = [
+                    'id' => 'gholiday-'.$hEvent->getId(),
+                    'title' => $hEvent->getSummary() ?? 'Feriado',
+                    'start' => $hStart,
+                    'end' => $hEnd,
+                    'allDay' => true,
+                    'backgroundColor' => '#690650ff', // Green/Teal for holidays
+                    'borderColor' => '#a71783ff',
+                    'textColor' => '#ffffff',
+                    'extendedProps' => [
+                        'description' => $hEvent->getDescription(),
+                        'isHoliday' => true,
+                    ],
+                    'editable' => false,
+                    'url' => null,
+                ];
+            }
+
+            \Illuminate\Support\Facades\Log::info('CalendarWidget: Processed Holiday Events Count: '.count($holidayEvents));
 
         } catch (\Exception $e) {
             // Log silently or notify? Better to log silently so the whole calendar doesn't break

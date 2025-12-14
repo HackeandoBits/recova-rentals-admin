@@ -35,19 +35,7 @@ class AdminPanelProvider extends PanelProvider
             ->authGuard('web') // Usa el guard web de Laravel
             ->topNavigation()
             ->colors([
-                'primary' => [
-                    50 => '#fdf2fb',
-                    100 => '#fbe4f7',
-                    200 => '#f8c9ee',
-                    300 => '#f39ee0',
-                    400 => '#ec66ce',
-                    500 => '#e64ccc', // Client Accent
-                    600 => '#c92aab',
-                    700 => '#a9208b',
-                    800 => '#8b1d71',
-                    900 => '#741d5d',
-                    950 => '#361636', // Client Primary (Dark Background)
-                ],
+                'primary' => Color::Violet,
                 'gray' => Color::Zinc,
             ])
             ->darkMode(true)

@@ -294,11 +294,10 @@ class GoogleCalendarService
      *
      * @return \Google\Service\Calendar\Event[]
      */
-    public function listEvents(Carbon $start, Carbon $end): array
+    public function listEvents(Carbon $start, Carbon $end, string $calendarId = 'primary'): array
     {
         try {
             $service = $this->forOwner();
-            $calendarId = 'primary';
             $events = [];
             $pageToken = null;
 
@@ -323,10 +322,74 @@ class GoogleCalendarService
             } while ($pageToken);
 
             return $events;
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Log::warning('Google Calendar fetch skipped: Owner (User ID '.config('owner.calendar_user_id').') has not connected Google Calendar.');
+
+            return [];
         } catch (\Throwable $e) {
             Log::error('Failed to list Google Calendar events: '.$e->getMessage());
 
             return [];
         }
+    }
+
+    /**
+     * Sincroniza eventos desde Google hacia la BD (Importar).
+     * Los eventos externos (no encontrados localmente) se crearán como CalendarBlock.
+     */
+    public function syncFromGoogle(Carbon $start, Carbon $end): int
+    {
+        $importedCount = 0;
+        $nativeEvents = $this->listEvents($start, $end, 'primary'); // Solo calendario principal
+
+        // IDs nativos ya conocidos para evitar duplicados
+        $knownGoogleIds = Interview::whereNotNull('google_event_id')
+            ->pluck('google_event_id')
+            ->concat(CalendarBlock::whereNotNull('google_event_id')->pluck('google_event_id'))
+            ->flip(); // HashMap para búsqueda rápida
+
+        foreach ($nativeEvents as $gEvent) {
+            $gId = $gEvent->getId();
+
+            // Si ya lo tenemos vinculado, ignorar
+            if ($knownGoogleIds->has($gId)) {
+                continue;
+            }
+
+            // Si es un evento "externo" (creado en Google), importarlo como Bloqueo
+            $isAllDay = empty($gEvent->start->dateTime);
+
+            // Parsear fechas
+            if ($isAllDay) {
+                // Fechas puras "Y-m-d"
+                $s = Carbon::parse($gEvent->start->date);
+                // Google "end" es exclusivo para allDay, pero nosotros guardamos bloqueos inclusivos o exclusivos?
+                // Revisando CalendarBlock, parece usar starts_at/ends_at puros.
+                // Ajuste: si es allDay, Google devuelve ej: start=2023-01-01, end=2023-01-02 para 1 día.
+                // CalendarBlock suele requerir definir "is_all_day"
+                $e = Carbon::parse($gEvent->end->date);
+            } else {
+                $s = Carbon::parse($gEvent->start->dateTime);
+                $e = Carbon::parse($gEvent->end->dateTime);
+            }
+
+            // Crear Bloqueo
+            CalendarBlock::create([
+                'title' => $gEvent->getSummary() ?: 'Evento Google sin título',
+                'starts_at' => $s,
+                'ends_at' => $e,
+                'is_all_day' => $isAllDay,
+                'kind' => 'otro', // Marcar como externo/otro
+                'reason' => $gEvent->getDescription(),
+                'owner_user_id' => config('owner.calendar_user_id', 1),
+                'google_event_id' => $gId,
+                'sync_status' => 'synced',
+                'synced_at' => now(),
+            ]);
+
+            $importedCount++;
+        }
+
+        return $importedCount;
     }
 }
