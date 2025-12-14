@@ -18,6 +18,22 @@ class Calendar extends Page
 
     protected static string $view = 'filament.pages.calendar';
 
+    public function mount(): void
+    {
+        /** @var \App\Services\GoogleCalendarService $service */
+        $service = app(\App\Services\GoogleCalendarService::class);
+
+        if (! $service->isConnected()) {
+            \Filament\Notifications\Notification::make()
+                ->title('Conexión requerida')
+                ->body('Redirigiendo a Google para conectar el calendario...')
+                ->warning()
+                ->send();
+
+            $this->redirect(route('google.redirect'));
+        }
+    }
+
     public function getSubheading(): ?string
     {
         return 'Gestiona tus eventos y recordatorios.';

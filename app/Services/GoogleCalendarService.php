@@ -45,6 +45,16 @@ class GoogleCalendarService
     }
 
     /**
+     * Verifica si el usuario (o el owner por defecto) tiene un token de Google.
+     */
+    public function isConnected(?int $userId = null): bool
+    {
+        $userId ??= (int) config('owner.calendar_user_id', 1);
+
+        return GoogleToken::where('user_id', $userId)->exists();
+    }
+
+    /**
      * Crea un GoogleClient con token actual/refrescado y lo retorna.
      */
     protected function clientWithFreshToken(int $userId): GoogleClient
