@@ -144,6 +144,8 @@ class InterviewsTable
                     ->visible(fn ($record) => ! empty($record->customer_phone) && ! $record->trashed()),
                 EditAction::make()
                     ->iconButton()
+                    ->modalHeading('Editar Reunión')
+                    ->modalWidth('4xl')
                     ->visible(fn ($record) => ! $record->trashed()),
                 \Filament\Tables\Actions\DeleteAction::make()
                     ->iconButton()

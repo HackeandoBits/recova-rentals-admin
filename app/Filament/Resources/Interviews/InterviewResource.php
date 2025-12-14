@@ -2,8 +2,6 @@
 
 namespace App\Filament\Resources\Interviews;
 
-use App\Filament\Resources\Interviews\Pages\CreateInterview;
-use App\Filament\Resources\Interviews\Pages\EditInterview;
 use App\Filament\Resources\Interviews\Pages\ListInterviews;
 use App\Filament\Resources\Interviews\Schemas\InterviewForm;
 use App\Filament\Resources\Interviews\Tables\InterviewsTable;
@@ -23,7 +21,7 @@ class InterviewResource extends Resource
 
     protected static ?string $navigationLabel = 'Reuniones';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 1;
 
     protected static ?string $recordTitleAttribute = 'title';
 
@@ -56,8 +54,8 @@ class InterviewResource extends Resource
     {
         return [
             'index' => ListInterviews::route('/'),
-            'create' => CreateInterview::route('/create'),
-            'edit' => EditInterview::route('/{record}/edit'),
+            // 'create' => CreateInterview::route('/create'), // Removed to force modal
+            // 'edit' => EditInterview::route('/{record}/edit'), // Removed to force modal
         ];
     }
 }

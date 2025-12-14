@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\DB;
 
 class ListCalendarBlocks extends ListRecords
 {
+    use \App\Filament\Traits\PersistsTableConfig;
+
     protected static string $resource = CalendarBlockResource::class;
 
     protected static ?string $title = 'Listado de Bloqueos';
@@ -29,11 +31,12 @@ class ListCalendarBlocks extends ListRecords
                 ->label('Generar bloqueos')
                 ->icon('heroicon-o-no-symbol')
                 ->color('primary')
+                ->visible(fn () => auth()->user()->can('create', CalendarBlock::class))
                 ->modalWidth('3xl')
-                ->modalSubmitAction(fn(\Filament\Actions\StaticAction $action) => $action->label('Enviar')->extraAttributes([
+                ->modalSubmitAction(fn (\Filament\Actions\StaticAction $action) => $action->label('Enviar')->extraAttributes([
                     'wire:target' => 'callMountedAction',
                 ]))
-                ->modalCancelAction(fn(\Filament\Actions\StaticAction $action) => $action->label('Cancelar')->color('danger')->extraAttributes([
+                ->modalCancelAction(fn (\Filament\Actions\StaticAction $action) => $action->label('Cancelar')->color('danger')->extraAttributes([
                     'wire:target' => 'callMountedAction',
                 ]))
                 ->form([

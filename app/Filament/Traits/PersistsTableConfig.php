@@ -2,11 +2,30 @@
 
 namespace App\Filament\Traits;
 
-use Filament\Tables\Table;
-
 trait PersistsTableConfig
 {
     // --- Load State ---
+
+    // Force load on mount
+    public function mountPersistsTableConfig(): void
+    {
+        $settings = $this->getUserTableSettings('column_visibility');
+        if ($settings) {
+            // Attempt to force the state into the Livewire property
+            // We try multiple known property names for V3/V2 compatibility
+            if (property_exists($this, 'tableColumnToggledHiddenState')) {
+                $this->tableColumnToggledHiddenState = $settings;
+            }
+            if (property_exists($this, 'toggledHiddenColumns')) {
+                $this->toggledHiddenColumns = $settings;
+            }
+            if (property_exists($this, 'toggledTableColumns')) {
+                $this->toggledTableColumns = $settings;
+            }
+
+            \Illuminate\Support\Facades\Log::info('TRAIT: Forced column visibility settings on mount', ['settings' => $settings]);
+        }
+    }
 
     public function getTableFiltersFormState(): array
     {
@@ -38,6 +57,12 @@ trait PersistsTableConfig
         return $this->getUserTableSettings('column_visibility') ?? parent::getTableColumnToggledHiddenState();
     }
 
+    // V3 Candidate for column visibility
+    public function getTableColumnVisibilityState(): array
+    {
+        return $this->getUserTableSettings('column_visibility') ?? parent::getTableColumnVisibilityState();
+    }
+
     // Fallback for other Filament versions
     public function getToggledHiddenColumns(): array
     {
@@ -45,6 +70,7 @@ trait PersistsTableConfig
         if (method_exists(parent::class, 'getToggledHiddenColumns')) {
             return $this->getUserTableSettings('column_visibility') ?? parent::getToggledHiddenColumns();
         }
+
         return $this->getUserTableSettings('column_visibility') ?? [];
     }
 
@@ -82,45 +108,40 @@ trait PersistsTableConfig
 
     public function updatedTableColumnToggledHiddenState(): void
     {
-        \Illuminate\Support\Facades\Log::info('updatedTableColumnToggledHiddenState fired', ['state' => $this->tableColumnToggledHiddenState]);
         $this->saveUserTableSettings('column_visibility', $this->tableColumnToggledHiddenState);
     }
 
     public function updatedToggledHiddenColumns(): void
     {
-        \Illuminate\Support\Facades\Log::info('updatedToggledHiddenColumns fired', ['state' => $this->toggledHiddenColumns]);
         $this->saveUserTableSettings('column_visibility', $this->toggledHiddenColumns ?? []);
     }
 
     public function updatedToggledTableColumns(): void
     {
-        \Illuminate\Support\Facades\Log::info('updatedToggledTableColumns fired', ['state' => $this->toggledTableColumns]);
         $this->saveUserTableSettings('column_visibility', $this->toggledTableColumns ?? []);
     }
 
-    // Catch-all for debugging or fallback
+    // Catch-all for debugging or fallback - Optimized to avoid double logging
     public function updated($name, $value): void
     {
-        \Illuminate\Support\Facades\Log::info("Updated property: {$name}", ['value' => $value]);
+        // Remove specific column visibility checks here because they are handled by
+        // updatedTableColumnToggledHiddenState, updatedToggledHiddenColumns, etc.
+        // We only keep the start_with check for nested properties if needed.
 
-        if ($name === 'tableColumnToggledHiddenState' || 
-            $name === 'toggledHiddenColumns' || 
-            $name === 'toggledTableColumns' ||
-            str_starts_with($name, 'toggledTableColumns.')) {
-            
-            // Determine which property holds the state
-            $state = $this->toggledTableColumns 
-                  ?? $this->toggledHiddenColumns 
-                  ?? $this->tableColumnToggledHiddenState 
+        if (str_starts_with($name, 'toggledTableColumns.')) {
+            $state = $this->toggledTableColumns
+                  ?? $this->toggledHiddenColumns
+                  ?? $this->tableColumnToggledHiddenState
                   ?? [];
-
             $this->saveUserTableSettings('column_visibility', $state);
         }
-        
+
         if ($name === 'tableFilters') {
             $this->saveUserTableSettings('filters', $value);
         }
     }
+
+    protected ?array $cachedUserTableSettings = null;
 
     protected function getUserTableSettings(string $key): mixed
     {
@@ -130,12 +151,15 @@ trait PersistsTableConfig
         }
 
         $tableId = $this->getTableIdentifier();
-        $settings = $user->settings ?? [];
-        
-        $value = data_get($settings, "tables.{$tableId}.{$key}");
-        \Illuminate\Support\Facades\Log::info("Loading setting: {$key} for table {$tableId}", ['value' => $value]);
-        
-        return $value;
+
+        // Use cached settings if available to avoid DB/JSON spam
+        if ($this->cachedUserTableSettings === null) {
+            // Reload fresh to be sure, but only once per request
+            $freshUser = $user->fresh();
+            $this->cachedUserTableSettings = $freshUser->settings ?? [];
+        }
+
+        return data_get($this->cachedUserTableSettings, "tables.{$tableId}.{$key}");
     }
 
     protected function saveUserTableSettings(string $key, mixed $value): void
@@ -146,14 +170,24 @@ trait PersistsTableConfig
         }
 
         $tableId = $this->getTableIdentifier();
-        $settings = $user->settings ?? [];
 
-        data_set($settings, "tables.{$tableId}.{$key}", $value);
+        // Ensure we work with latest data
+        if ($this->cachedUserTableSettings === null) {
+            $this->cachedUserTableSettings = $user->settings ?? [];
+        }
 
-        $user->settings = $settings;
-        $user->save();
+        // Update local cache
+        data_set($this->cachedUserTableSettings, "tables.{$tableId}.{$key}", $value);
 
-        \Illuminate\Support\Facades\Log::info("Saving setting: {$key} for table {$tableId}", ['value' => $value]);
+        // Save using Eloquent but quietly (no events, no updated_at timestamp update if unnecessary)
+        // saveQuietly() requires the model to exist.
+        // We use fresh instance to avoid race conditions with other livewire updates if possible,
+        // but for now updating the AUTH user instance is the standard way.
+
+        $user->settings = $this->cachedUserTableSettings;
+
+        // Use persistence without events for performance
+        $user->saveQuietly();
     }
 
     protected function getTableIdentifier(): string
