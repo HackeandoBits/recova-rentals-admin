@@ -37,7 +37,7 @@ class QuickStats extends Widget
         
         $popularDay = \App\Models\Interview::selectRaw("$dayOfWeekFunc as day_of_week, COUNT(*) as count")
             ->whereNotNull('start_at')
-            ->groupBy('day_of_week')
+            ->groupBy(\DB::raw($dayOfWeekFunc))
             ->orderByDesc('count')
             ->first();
 
