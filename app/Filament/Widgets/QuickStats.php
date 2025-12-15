@@ -32,7 +32,10 @@ class QuickStats extends Widget
             ])->count();
 
         // 3. Día más popular (de la semana)
-        $popularDay = \App\Models\Interview::selectRaw('DAYOFWEEK(start_at) as day_of_week, COUNT(*) as count')
+        $isSqlSrv = \DB::connection()->getDriverName() === 'sqlsrv';
+        $dayOfWeekFunc = $isSqlSrv ? 'DATEPART(dw, start_at)' : 'DAYOFWEEK(start_at)';
+        
+        $popularDay = \App\Models\Interview::selectRaw("$dayOfWeekFunc as day_of_week, COUNT(*) as count")
             ->whereNotNull('start_at')
             ->groupBy('day_of_week')
             ->orderByDesc('count')
