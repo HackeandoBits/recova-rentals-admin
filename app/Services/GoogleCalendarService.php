@@ -350,6 +350,19 @@ class GoogleCalendarService
     }
 
     /**
+     * Obtiene un evento específico del calendario del owner.
+     */
+    public function getEvent(string $eventId, string $calendarId = 'primary'): ?GoogleEvent
+    {
+        try {
+            return $this->forOwner()->events->get($calendarId, $eventId);
+        } catch (\Throwable $e) {
+            // Si es 404 o error, retornamos null
+            return null;
+        }
+    }
+
+    /**
      * Sincroniza eventos desde Google hacia la BD (Importar).
      * Los eventos externos (no encontrados localmente) se crearán como CalendarBlock.
      */

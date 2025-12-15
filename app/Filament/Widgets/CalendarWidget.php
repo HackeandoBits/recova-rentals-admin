@@ -267,7 +267,8 @@ class CalendarWidget extends FullCalendarWidget
                         'google_html_link' => $gEvent->getHtmlLink(),
                     ],
                     // Optional: link to open in Google Calendar
-                    'url' => $gEvent->getHtmlLink(),
+                    // 'url' => $gEvent->getHtmlLink(), // REMOVED to prevent redirect
+                    'url' => null, // Explicitly null to prevent click-redirect
                 ];
             }
 
@@ -320,14 +321,57 @@ class CalendarWidget extends FullCalendarWidget
 
     public function resolveRecord(string|int $key): \Illuminate\Database\Eloquent\Model
     {
-        // Si el ID comienza con 'block-', es un bloqueo de calendario
+        // 1. Bloqueo Local
         if (is_string($key) && str_starts_with($key, 'block-')) {
             $blockId = str_replace('block-', '', $key);
-
             return \App\Models\CalendarBlock::findOrFail($blockId);
         }
 
-        // De lo contrario, es una Interview
+        // 2. Evento de Google (En vivo)
+        if (is_string($key) && str_starts_with($key, 'gcal-')) {
+            $googleId = str_replace('gcal-', '', $key);
+            
+            // Buscar evento real en Google
+            /** @var \App\Services\GoogleCalendarService $service */
+            $service = app(\App\Services\GoogleCalendarService::class);
+            $gEvent = $service->getEvent($googleId);
+
+            if (! $gEvent) {
+                // Si falla, retornamos un modelo vacío o lanzamos 404
+                abort(404, 'Evento de Google no encontrado');
+            }
+
+            // Crear modelo transitorio (no guardado en DB) para que el ViewAction lo muestre
+             $isAllDay = empty($gEvent->start->dateTime);
+             $start = $isAllDay ? \Carbon\Carbon::parse($gEvent->start->date) : \Carbon\Carbon::parse($gEvent->start->dateTime);
+             $end = $isAllDay ? \Carbon\Carbon::parse($gEvent->end->date) : \Carbon\Carbon::parse($gEvent->end->dateTime);
+
+            $block = new \App\Models\CalendarBlock([
+                'title' => $gEvent->getSummary() ?? '(Sin título)',
+                'starts_at' => $start,
+                'ends_at' => $end,
+                'is_all_day' => $isAllDay,
+                'kind' => 'otro',
+                'reason' => $gEvent->getDescription(),
+            ]);
+            
+            // Marcar como externo para la UI
+            $block->is_google_event = true; 
+            $block->google_html_link = $gEvent->getHtmlLink();
+
+            return $block;
+        }
+
+        // 3. Feriado (En vivo)
+        if (is_string($key) && str_starts_with($key, 'gholiday-')) {
+             // Lógica simplificada para feriados (generalmente no se clickean, pero por si acaso)
+             return new \App\Models\CalendarBlock([
+                'title' => 'Feriado',
+                'kind' => 'feriado',
+             ]);
+        }
+
+        // 4. Interview (ID numérico)
         return Interview::findOrFail($key);
     }
 
@@ -359,7 +403,7 @@ class CalendarWidget extends FullCalendarWidget
 
             ViewAction::make('view')
                 ->modalHeading(fn ($record) => $record instanceof \App\Models\CalendarBlock
-                    ? '🚫 Bloqueo de Agenda'
+                    ? ($record->is_google_event ? '📅 Evento de Google' : '🚫 Bloqueo de Agenda')
                     : ($record->title ?? 'Reunión'))
                 ->modalWidth('xs')
                 ->infolist(function ($record) {
@@ -434,7 +478,8 @@ class CalendarWidget extends FullCalendarWidget
                                 ->icon('heroicon-o-trash')
                                 ->color('danger')
                                 ->requiresConfirmation()
-                                ->visible(fn () => auth()->user()->can('delete', $record))
+                                // No permitir borrar eventos de Google live desde aquí (requiere sync)
+                                ->visible(fn () => auth()->user()->can('delete', $record) && ! $record->is_google_event)
                                 ->modalHeading('Eliminar Bloqueo')
                                 ->modalDescription('¿Estás seguro que deseas eliminar este bloqueo?')
                                 ->action(function ($record, $livewire) {

@@ -25,7 +25,7 @@ class ReportHistoryTableWidget extends BaseWidget
             ->query(
                 ReportLog::query()
                     ->with('user')
-                    ->latest()
+                    ->with('user')
             )
             ->columns([
                 Tables\Columns\TextColumn::make('created_at')
