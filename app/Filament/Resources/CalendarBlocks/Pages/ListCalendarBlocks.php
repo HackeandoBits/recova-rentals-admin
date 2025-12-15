@@ -27,24 +27,7 @@ class ListCalendarBlocks extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('syncGoogle')
-                ->label('Sincronizar Google')
-                ->color('info')
-                ->icon('heroicon-o-arrow-path')
-                ->action(function () {
-                    $svc = app(\App\Services\GoogleCalendarService::class);
-                    // Sincronizar desde 1 mes atrás hasta 3 meses adelante
-                    $count = $svc->syncFromGoogle(now()->subMonth(), now()->addMonths(3));
 
-                    \Filament\Notifications\Notification::make()
-                        ->title('Sincronización completada')
-                        ->body("Se importaron {$count} eventos nuevos como bloqueos.")
-                        ->success()
-                        ->send();
-                    
-                    // Recargar tabla
-                    $this->dispatch('refresh-table'); 
-                }),
             Action::make('generarBloqueos')
                 ->label('Generar bloqueos')
                 ->icon('heroicon-o-no-symbol')

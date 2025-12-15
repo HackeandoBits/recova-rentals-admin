@@ -73,13 +73,52 @@ class CalendarWidget extends FullCalendarWidget
                         ->required(),
                     \Filament\Forms\Components\DateTimePicker::make('start_at')
                         ->label('Inicio')
-                        ->required(),
+                        ->seconds(false)
+                        ->required()
+                        ->live() // Hacerlo reactivo
+                        ->afterStateUpdated(function ($state, \Filament\Forms\Set $set) {
+                            if ($state) {
+                                $start = \Carbon\Carbon::parse($state);
+                                // Set End time to +1 hour by default
+                                $set('end_at', $start->addHour()->format('Y-m-d H:i:s'));
+                            }
+                        })
+                        ->rules([
+                            fn () => function (string $attribute, $value, \Closure $fail) {
+                                if (! $value) return;
+                                
+                                $start = \Carbon\Carbon::parse($value);
+                                // Default end is +1 hour if not checking end_at yet, but let's check the immediate slot
+                                $end = $start->copy()->addHour(); 
+                                
+                                // 1. Check All Day Blocks (Feriados, Google All Day)
+                                $blockedDay = \App\Models\CalendarBlock::query()
+                                    ->where('is_all_day', true)
+                                    ->whereRaw('DATE(starts_at) = ?', [$start->toDateString()])
+                                    ->exists();
+
+                                if ($blockedDay) {
+                                    $fail('Esta fecha está bloqueada por un evento de día completo.');
+                                    return;
+                                }
+
+                                // 2. Check Time Overlaps (Partial Blocks)
+                                $overlapBlock = \App\Models\CalendarBlock::query()
+                                    ->where('is_all_day', false)
+                                    ->where('starts_at', '<', $end)
+                                    ->where('ends_at', '>', $start)
+                                    ->exists();
+                                
+                                if ($overlapBlock) {
+                                    $fail('Horario Bloqueado: coincide con un bloqueo existente.');
+                                }
+                            },
+                        ]),
                     \Filament\Forms\Components\DateTimePicker::make('end_at')
                         ->label('Fin')
-                        ->required(),
-                    // Add minimal required fields or assume a full resource form is needed?
-                    // Usually widgets reuse the resource form or define a simple one.
-                    // I will include basic fields to ensure it works.
+                        ->seconds(false)
+                        ->required()
+                        ->after('start_at'),
                     \Filament\Forms\Components\Select::make('applicant_id')
                         ->relationship('applicant', 'name')
                         ->searchable()
@@ -93,7 +132,73 @@ class CalendarWidget extends FullCalendarWidget
                         ])
                         ->default('confirmed')
                         ->required(),
-                ]),
+                ])
+                ->before(function (\Filament\Actions\CreateAction $action, array $data) {
+                    $start = \Carbon\Carbon::parse($data['start_at']);
+                    $end = \Carbon\Carbon::parse($data['end_at']);
+
+                    // 1. Validar superposición con otras entrevistas (que no estén canceladas)
+                    $overlapInterview = \App\Models\Interview::query()
+                        ->where('status', '!=', 'cancelled')
+                        ->where(function ($query) use ($start, $end) {
+                            $query->whereBetween('start_at', [$start, $end])
+                                ->orWhereBetween('end_at', [$start, $end])
+                                ->orWhere(function ($q) use ($start, $end) {
+                                    $q->where('start_at', '<=', $start)
+                                        ->where('end_at', '>=', $end);
+                                });
+                        })
+                        ->exists();
+
+                    if ($overlapInterview) {
+                        \Filament\Notifications\Notification::make()
+                            ->title('Conflicto de horario')
+                            ->body('Ya existe una reunión programada en este rango.')
+                            ->danger()
+                            ->persistent()
+                            ->send();
+                        
+                        $action->halt();
+                    }
+
+                    // 2. Validar superposición con Bloqueos de Calendario
+                    // Lógica simplificada de intersección: (StartA < EndB) y (EndA > StartB)
+                    // Hacemos query manual para debug y mayor control
+                    $conflictingBlocks = \App\Models\CalendarBlock::query()
+                        ->where('starts_at', '<', $end)
+                        ->where('ends_at', '>', $start)
+                        ->get();
+
+                    if ($conflictingBlocks->isNotEmpty()) {
+                        // Doble chequeo en PHP para asegurar (especialmente temas de segundos :00 vs :59)
+                        // Filtrar falsos positivos si los hubiera (aunque la query es sólida)
+                        $realConflict = $conflictingBlocks->contains(function ($block) use ($start, $end) {
+                            $blockStart = \Carbon\Carbon::parse($block->starts_at);
+                            $blockEnd = \Carbon\Carbon::parse($block->ends_at);
+                            
+                            // Si es All Day, aseguramos que cubra todo el día hasta 23:59:59 si es necesario para comparar
+                            if ($block->is_all_day) {
+                                $blockEnd = $blockEnd->endOfDay(); 
+                            }
+
+                            return $blockStart->lt($end) && $blockEnd->gt($start);
+                        });
+
+                        if ($realConflict) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Horario Bloqueado')
+                                ->body('No se puede agendar en un día u horario bloqueado (Google/Manual).')
+                                ->danger()
+                                ->persistent() // Para que no desaparezca solo
+                                ->send();
+                            
+                            $action->halt();
+                        }
+                    }
+                })
+                ->after(function ($livewire) {
+                    $livewire->refreshRecords();
+                }),
 
             \Filament\Actions\Action::make('syncGoogle')
                 ->label('Sincronizar Google')
@@ -268,7 +373,7 @@ class CalendarWidget extends FullCalendarWidget
                     ],
                     // Optional: link to open in Google Calendar
                     // 'url' => $gEvent->getHtmlLink(), // REMOVED to prevent redirect
-                    'url' => null, // Explicitly null to prevent click-redirect
+                    // 'url' => null, // Removed completely to prevent 'null' link
                 ];
             }
 
@@ -301,7 +406,7 @@ class CalendarWidget extends FullCalendarWidget
                         'isHoliday' => true,
                     ],
                     'editable' => false,
-                    'url' => null,
+                    // 'url' => null,
                 ];
             }
 
@@ -324,6 +429,7 @@ class CalendarWidget extends FullCalendarWidget
         // 1. Bloqueo Local
         if (is_string($key) && str_starts_with($key, 'block-')) {
             $blockId = str_replace('block-', '', $key);
+
             return \App\Models\CalendarBlock::findOrFail($blockId);
         }
 
@@ -337,7 +443,8 @@ class CalendarWidget extends FullCalendarWidget
             $gEvent = $service->getEvent($googleId);
 
             if (! $gEvent) {
-                // Si falla, retornamos un modelo vacío o lanzamos 404
+                // Si falla, retornamos un modelo vacío o lanzamos 404.
+                // Filament espera un Model, si lanzamos 404 muestra error.
                 abort(404, 'Evento de Google no encontrado');
             }
 
@@ -346,13 +453,19 @@ class CalendarWidget extends FullCalendarWidget
              $start = $isAllDay ? \Carbon\Carbon::parse($gEvent->start->date) : \Carbon\Carbon::parse($gEvent->start->dateTime);
              $end = $isAllDay ? \Carbon\Carbon::parse($gEvent->end->date) : \Carbon\Carbon::parse($gEvent->end->dateTime);
 
+            $description = $gEvent->getDescription();
+            // Limpiar ID interno si existe (formato "Texto...\nID: 123")
+            if ($description) {
+                $description = preg_replace('/\nID: \d+$/', '', $description);
+            }
+
             $block = new \App\Models\CalendarBlock([
                 'title' => $gEvent->getSummary() ?? '(Sin título)',
                 'starts_at' => $start,
                 'ends_at' => $end,
                 'is_all_day' => $isAllDay,
                 'kind' => 'otro',
-                'reason' => $gEvent->getDescription(),
+                'reason' => $description,
             ]);
             
             // Marcar como externo para la UI
@@ -428,7 +541,7 @@ class CalendarWidget extends FullCalendarWidget
                                     default => ucfirst($state),
                                 }),
                             \Filament\Infolists\Components\TextEntry::make('reason')
-                                ->label('Razón del bloqueo')
+                                ->label(fn ($record) => ($record->is_google_event || $record->kind === 'otro') ? 'Descripción' : 'Razón del bloqueo')
                                 ->visible(fn ($state) => ! empty($state))
                                 ->columnSpanFull(),
                         ];
