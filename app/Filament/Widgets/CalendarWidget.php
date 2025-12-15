@@ -76,11 +76,13 @@ class CalendarWidget extends FullCalendarWidget
                         ->seconds(false)
                         ->required()
                         ->live() // Hacerlo reactivo
-                        ->afterStateUpdated(function ($state, \Filament\Forms\Set $set) {
+                        ->afterStateUpdated(function ($state, \Filament\Forms\Set $set, \Filament\Forms\Components\DateTimePicker $component) {
                             if ($state) {
                                 $start = \Carbon\Carbon::parse($state);
                                 // Set End time to +1 hour by default
                                 $set('end_at', $start->addHour()->format('Y-m-d H:i:s'));
+                                
+                                $component->validate();
                             }
                         })
                         ->rules([

@@ -163,7 +163,7 @@ class BookingController extends Controller
             $diffMinutes = abs($meetingEnd->diffInMinutes($meetingStart));
             $slotsCount = ceil($diffMinutes / 30);
 
-            for ($i = -1; $i < $slotsCount; $i++) {
+            for ($i = 0; $i < $slotsCount; $i++) {
                 $blockedTime = $meetingStart->copy()->addMinutes($i * 30);
                 // Solo si cae en el día solicitado (en horario local)
                 if ($blockedTime->isSameDay($date)) {
@@ -178,7 +178,7 @@ class BookingController extends Controller
             $blockEnd = Carbon::parse($block->ends_at)->setTimezone($tz);
 
             if ($block->is_all_day) {
-                // Si es todo el día, bloqueamos todo el rango operativo (ej 09:00 a 21:00)
+                // Si es todo el día, bloqueamos todo el rango operativo (ej 08:00 a 22:00)
                 // O simplemente devolvemos un flag, pero para mantener compatibilidad llenamos slots.
                 // Verificamos si este bloque "toca" el día solicitado.
                 // Como ya filtramos en SQL, asumimos que sí.
@@ -186,8 +186,8 @@ class BookingController extends Controller
 
                 // Si el bloque cubre todo el día solicitado:
                 if ($blockStart->lte($date->copy()->endOfDay()) && $blockEnd->gte($date->copy()->startOfDay())) {
-                    $startOfDay = $date->copy()->setTime(9, 0);
-                    $endOfDay = $date->copy()->setTime(21, 0); // Extendemos a 21:00 por si acaso
+                    $startOfDay = $date->copy()->setTime(8, 0);
+                    $endOfDay = $date->copy()->setTime(22, 0); // Extendemos a 22:00 por si acaso
 
                     while ($startOfDay->lte($endOfDay)) {
                         $blockedSlots[] = $startOfDay->format('H:i');
@@ -202,7 +202,7 @@ class BookingController extends Controller
             $diffMinutes = abs($blockEnd->diffInMinutes($blockStart));
             $slotsCount = ceil($diffMinutes / 30);
 
-            for ($i = -1; $i < $slotsCount; $i++) {
+            for ($i = 0; $i < $slotsCount; $i++) {
                 $blockedTime = $blockStart->copy()->addMinutes($i * 30);
                 if ($blockedTime->isSameDay($date)) {
                     $blockedSlots[] = $blockedTime->format('H:i');
@@ -234,7 +234,6 @@ class BookingController extends Controller
         // Deben terminar DESPUÉS de hoy (o ser hoy).
         // Y deben ser is_all_day.
         $blocks = \App\Models\CalendarBlock::whereNull('canceled_at')
-            ->where('is_all_day', true)
             ->where('ends_at', '>=', $today->copy()->setTimezone('UTC')) // Convertimos a UTC para comparar con DB
             ->get();
 
@@ -252,7 +251,24 @@ class BookingController extends Controller
             while ($curr->lte($endDay)) {
                 // Solo agregamos si es futuro o hoy
                 if ($curr->gte($today)) {
-                    $blockedDates[] = $curr->format('Y-m-d');
+                    $dayStr = $curr->format('Y-m-d');
+                    
+                    // Check if this specific day is fully blocked
+                    $isFullDay = $block->is_all_day;
+                    
+                    if (! $isFullDay) {
+                        // Check if the block covers 18:00 to 22:00 of this day (Meeting hours)
+                        $dayStartLimit = $curr->copy()->setTime(18, 0); // Meetings start at 18:00
+                        $dayEndLimit = $curr->copy()->setTime(22, 0);   // Last meeting ends at 22:00
+
+                        if ($start->lte($dayStartLimit) && $end->gte($dayEndLimit)) {
+                            $isFullDay = true;
+                        }
+                    }
+
+                    if ($isFullDay) {
+                        $blockedDates[] = $dayStr;
+                    }
                 }
                 $curr->addDay();
             }

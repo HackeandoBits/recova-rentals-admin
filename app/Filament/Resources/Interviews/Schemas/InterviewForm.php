@@ -141,7 +141,7 @@ class InterviewForm
                                 ->label('Fecha Inicio')
                                 ->required()
                                 ->live()
-                                ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                ->afterStateUpdated(function ($state, callable $set, callable $get, \Filament\Forms\Components\DatePicker $component) {
                                     if ($state) {
                                         // Auto-set End Date to same day
                                         $set('end_date', $state);
@@ -157,6 +157,8 @@ class InterviewForm
                                             $set('end_date', $end->toDateString());
                                             $set('end_at', $end->toDateTimeString());
                                         }
+                                        
+                                        $component->validate();
                                     }
                                 })
                                 ->afterStateHydrated(function ($component, $state, $record) {
@@ -213,7 +215,7 @@ class InterviewForm
                                 ->required()
                                 ->searchable()
                                 ->live()
-                                ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                ->afterStateUpdated(function ($state, callable $set, callable $get, \Filament\Forms\Components\Select $component) {
                                     if ($state) {
                                         // Auto-set End Time (+1 hour)
                                         try {
@@ -234,13 +236,48 @@ class InterviewForm
                                         } catch (\Exception $e) {
                                             // Ignore parsing errors
                                         }
+                                        
+                                        $component->validate();
                                     }
                                 })
                                 ->afterStateHydrated(function ($component, $state, $record) {
                                     if ($record && $record->start_at) {
                                         $component->state($record->start_at->format('H:i'));
                                     }
-                                }),
+                                })
+                                ->rules([
+                                    fn ($get) => function (string $attribute, $value, \Closure $fail) use ($get) {
+                                        if (! $value || ! $get('start_date')) return;
+                                        
+                                        try {
+                                            $date = \Carbon\Carbon::parse($get('start_date'));
+                                            $start = $date->copy()->setTimeFromTimeString($value);
+                                            
+                                            // Default 1h duration for validation if end_time not set yet?
+                                            // Or stick to checking strict Point-in-Time? 
+                                            // User requirement: "si esta bloqueado el horario que se esta por comenzar"
+                                            // Let's assume standard 1 hour overlap check or just "Is this Start Time inside a Block?"
+                                            // Better: Check standard overlap (Start to Start+1h)
+                                            $end = $start->copy()->addHour();
+
+                                            // 1. Check Blocks
+                                            $ownerId = (int) env('OWNER_CAL_USER_ID', 1);
+                                            $overlapBlock = \App\Models\CalendarBlock::query()
+                                                ->whereNull('canceled_at')
+                                                ->where('owner_user_id', $ownerId)
+                                                ->where('is_all_day', false)
+                                                ->where('starts_at', '<', $end)
+                                                ->where('ends_at', '>', $start)
+                                                ->exists();
+
+                                            if ($overlapBlock) {
+                                                $fail('Horario Bloqueado: coincide con un bloqueo existente.');
+                                            }
+                                        } catch (\Exception $e) {
+                                            // Fail silently or log
+                                        }
+                                    },
+                                ]),
 
                             Select::make('end_time')
                                 ->label('Hora Fin')
