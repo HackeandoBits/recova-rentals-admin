@@ -31,6 +31,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login(Login::class)
+            ->brandName('Recova Rentals Admin')
             ->brandLogo(fn () => view('filament.components.recova-logo'))
             ->authGuard('web') // Usa el guard web de Laravel
             ->topNavigation()
@@ -42,6 +43,16 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
                 fn () => view('filament.hooks.custom-assets'),
+            )
+            // Open Graph Meta Tags
+            ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn (): string => <<<'HTML'
+                <meta property="og:title" content="Recova Rentals Admin" />
+                <meta property="og:description" content="Recova Rentals Admin Panel" />
+                <meta property="og:image" content="/images/rentalsblanco-1.png" />
+                <meta property="og:type" content="website" />
+                HTML
             )
             ->renderHook(
                 PanelsRenderHook::HEAD_START,
