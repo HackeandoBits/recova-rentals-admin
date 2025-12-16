@@ -32,16 +32,33 @@ class ListInterviews extends ListRecords
                 ->action(function () {
                     $svc = app(\App\Services\GoogleCalendarService::class);
                     // Sincronizar año actual y el siguiente completo
-                    $count = $svc->syncFromGoogle(now()->startOfYear(), now()->addYear()->endOfYear());
+                    $result = $svc->syncFromGoogle(now()->startOfYear(), now()->addYear()->endOfYear());
+
+                    // Compatibilidad si devuelve int (por si acaso) o array
+                    $count = is_array($result) ? ($result['count'] ?? 0) : $result;
+                    $errors = is_array($result) ? ($result['errors'] ?? []) : [];
 
                     // Limpiar caché global de fechas bloqueadas
                     \Illuminate\Support\Facades\Cache::forget('blocked_dates_global');
 
-                    \Filament\Notifications\Notification::make()
-                        ->title('Sincronización completada')
-                        ->body("Se importaron {$count} eventos nuevos (feriados y reuniones). Verificá ambas listas.")
-                        ->success()
-                        ->send();
+                    if (! empty($errors)) {
+                        // Mostrar primer error para no spammear
+                        $firstError = $errors[0];
+                        $totalErrors = count($errors);
+
+                        \Filament\Notifications\Notification::make()
+                            ->title('Hubo errores en la sincronización')
+                            ->body("Se encontraron {$count} eventos, pero fallaron {$totalErrors}.<br>Primer error: {$firstError}")
+                            ->danger()
+                            ->persistent() // Para que el usuario tenga tiempo de leer
+                            ->send();
+                    } else {
+                        \Filament\Notifications\Notification::make()
+                            ->title('Sincronización completada')
+                            ->body("Se importaron {$count} eventos nuevos (feriados y reuniones). Verificá ambas listas.")
+                            ->success()
+                            ->send();
+                    }
                 }),
         ];
     }

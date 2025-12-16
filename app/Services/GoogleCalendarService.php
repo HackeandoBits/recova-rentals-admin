@@ -366,66 +366,80 @@ class GoogleCalendarService
      * Sincroniza eventos desde Google hacia la BD (Importar).
      * Los eventos externos (no encontrados localmente) se crearán como CalendarBlock.
      */
-    public function syncFromGoogle(Carbon $start, Carbon $end): int
+    public function syncFromGoogle(Carbon $start, Carbon $end): array
     {
         $importedCount = 0;
+        $errors = [];
         $ownerId = (int) config('owner.calendar_user_id', 1);
 
         // 1. Obtener eventos manuales del calendario principal
         $nativeEvents = $this->listEvents($start, $end, 'primary');
-        Log::info('SyncFromGoogle: Native Events Count: ' . count($nativeEvents));
-        
+        Log::info('SyncFromGoogle: Native Events Count: '.count($nativeEvents));
+
         // 2. Obtener feriados
         $holidayEvents = $this->listEvents($start, $end, 'es.ar#holiday@group.v.calendar.google.com');
-        Log::info('SyncFromGoogle: Holiday Events Count: ' . count($holidayEvents));
+        Log::info('SyncFromGoogle: Holiday Events Count: '.count($holidayEvents));
 
         // IDs nativos ya conocidos para evitar duplicados locales
         $knownGoogleIds = Interview::whereNotNull('google_event_id')
             ->pluck('google_event_id')
             ->concat(CalendarBlock::whereNotNull('google_event_id')->pluck('google_event_id'))
-            ->flip(); 
-        
-        Log::info('SyncFromGoogle: Known Google IDs Count: ' . $knownGoogleIds->count());
+            ->flip();
+
+        Log::info('SyncFromGoogle: Known Google IDs Count: '.$knownGoogleIds->count());
 
         // A) Procesar Feriados -> SIEMPRE CalendarBlock
         foreach ($holidayEvents as $gEvent) {
             $gId = $gEvent->getId();
-            if ($knownGoogleIds->has($gId)) continue;
+            if ($knownGoogleIds->has($gId)) {
+                continue;
+            }
 
-            $this->createBlockFromGoogle($gEvent, 'feriado', $ownerId);
+            if ($err = $this->createBlockFromGoogle($gEvent, 'feriado', $ownerId)) {
+                $errors[] = "Feriado ({$gEvent->getSummary()}): $err";
+            }
             $importedCount++;
         }
 
         // B) Procesar Eventos Nativos -> CalendarBlock (si es AllDay) o Interview (si tiene hora)
         foreach ($nativeEvents as $gEvent) {
             $gId = $gEvent->getId();
-            if ($knownGoogleIds->has($gId)) continue;
-            
+            if ($knownGoogleIds->has($gId)) {
+                continue;
+            }
+
             $isAllDay = empty($gEvent->start->dateTime);
 
             if ($isAllDay) {
                 // Eventos de todo el día -> CalendarBlock
-                $this->createBlockFromGoogle($gEvent, 'otro', $ownerId);
+                if ($err = $this->createBlockFromGoogle($gEvent, 'otro', $ownerId)) {
+                    $errors[] = "Bloqueo ({$gEvent->getSummary()}): $err";
+                }
             } else {
                 // Eventos con hora -> Interview (Reunión)
-                $this->createInterviewFromGoogle($gEvent);
+                if ($err = $this->createInterviewFromGoogle($gEvent)) {
+                    $errors[] = "Reunión ({$gEvent->getSummary()}): $err";
+                }
             }
             $importedCount++;
         }
-        
+
         Log::info("SyncFromGoogle: Total Imported: $importedCount");
 
-        return $importedCount;
+        return [
+            'count' => $importedCount,
+            'errors' => $errors,
+        ];
     }
 
-    private function createBlockFromGoogle(GoogleEvent $gEvent, string $kind, int $ownerId): void
+    private function createBlockFromGoogle(GoogleEvent $gEvent, string $kind, int $ownerId): ?string
     {
         $isAllDay = empty($gEvent->start->dateTime);
 
         if ($isAllDay) {
-            $s = Carbon::parse($gEvent->start->date)->startOfDay(); 
-            $e = Carbon::parse($gEvent->end->date)->startOfDay(); 
-            
+            $s = Carbon::parse($gEvent->start->date)->startOfDay();
+            $e = Carbon::parse($gEvent->end->date)->startOfDay();
+
             // Fix: Si Google devuelve start == end (duración 0), forzamos 1 día
             if ($e->lte($s)) {
                 $e = $s->copy()->addDay();
@@ -453,12 +467,16 @@ class GoogleCalendarService
                 'sync_status' => 'synced',
                 'synced_at' => now(),
             ]);
+
+            return null; // Success
         } catch (\Exception $e) {
-            Log::error("SyncFromGoogle: Failed to create block for event {$gEvent->getId()}. Error: " . $e->getMessage());
+            Log::error("SyncFromGoogle: Failed to create block for event {$gEvent->getId()}. Error: ".$e->getMessage());
+
+            return $e->getMessage();
         }
     }
 
-    private function createInterviewFromGoogle(GoogleEvent $gEvent): void
+    private function createInterviewFromGoogle(GoogleEvent $gEvent): ?string
     {
         try {
             $s = Carbon::parse($gEvent->start->dateTime);
@@ -473,16 +491,20 @@ class GoogleCalendarService
                 'title' => $gEvent->getSummary() ?: 'Reunión Google',
                 'start_at' => $s,
                 'end_at' => $e,
-                'status' => 'confirmed', 
-                'channel' => 'google_calendar', 
+                'status' => 'confirmed',
+                'channel' => 'google_calendar',
                 'google_event_id' => $gEvent->getId(),
-                'customer_name' => 'Google Calendar', 
+                'customer_name' => 'Google Calendar',
                 'customer_email' => null,
                 'customer_phone' => null,
                 'order_notes' => $gEvent->getDescription(),
             ]);
+
+            return null; // Success
         } catch (\Exception $e) {
-            Log::error("SyncFromGoogle: Failed to create interview for event {$gEvent->getId()}. Error: " . $e->getMessage());
+            Log::error("SyncFromGoogle: Failed to create interview for event {$gEvent->getId()}. Error: ".$e->getMessage());
+
+            return $e->getMessage();
         }
     }
 }
