@@ -13,6 +13,12 @@ class InterviewObserver
 
     public function created(Interview $i): void
     {
+        // Si ya tiene google_event_id al nacer, es porque vino de Google (Import).
+        // No necesitamos enviarlo de vuelta (evitar loop o llamada redundante).
+        if ($i->google_event_id) {
+            return;
+        }
+
         $this->syncUpsert($i);
     }
 

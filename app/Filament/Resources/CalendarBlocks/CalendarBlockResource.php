@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\CalendarBlocks;
 
 use App\Filament\Resources\CalendarBlocks\Pages\CreateCalendarBlock;
-use App\Filament\Resources\CalendarBlocks\Pages\EditCalendarBlock;
 use App\Filament\Resources\CalendarBlocks\Pages\ListCalendarBlocks;
 use App\Filament\Resources\CalendarBlocks\Schemas\CalendarBlockForm;
 use App\Filament\Resources\CalendarBlocks\Tables\CalendarBlocksTable;
@@ -59,7 +58,7 @@ class CalendarBlockResource extends Resource
         return [
             'index' => ListCalendarBlocks::route('/'),
             'create' => CreateCalendarBlock::route('/create'),
-            'edit' => EditCalendarBlock::route('/{record}/edit'),
+            // 'edit' page removed in favor of modal
         ];
     }
 }

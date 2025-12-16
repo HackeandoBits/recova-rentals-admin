@@ -4,14 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
-
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Interview extends Model
 {
     use SoftDeletes;
+
     /**
      * Los campos que vienen de AMBOS modelos
      */
@@ -47,9 +47,10 @@ class Interview extends Model
     {
         static::saving(function (Interview $i) {
             // 0) No permitir entrevistas en días anteriores al día actual
+            // EXCEPCIÓN: Si viene de Google (tiene google_event_id) permitimos histórico.
             $today = Carbon::now()->startOfDay();
 
-            if ($i->start_at && $i->start_at->lt($today)) {
+            if (! $i->google_event_id && $i->start_at && $i->start_at->lt($today)) {
                 throw ValidationException::withMessages([
                     'start_at' => 'La entrevista no puede agendarse antes del día actual.',
                 ]);

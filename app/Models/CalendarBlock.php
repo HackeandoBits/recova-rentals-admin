@@ -40,10 +40,11 @@ class CalendarBlock extends Model
     protected static function booted(): void
     {
         static::saving(function (CalendarBlock $block) {
-            // 0) No permitir bloques en días anteriores al día actual
+            // 0) No permitir bloques en días anteriores al día actual (SOLO PARA MANUALES)
+            // Si viene de Google (tiene google_event_id) permitimos histórico para consistencia o re-sync.
             $today = CarbonImmutable::now()->startOfDay();
 
-            if ($block->starts_at && $block->starts_at->lt($today)) {
+            if (! $block->google_event_id && $block->starts_at && $block->starts_at->lt($today)) {
                 throw ValidationException::withMessages([
                     'starts_at' => 'El bloqueo de agenda no puede crearse antes del día actual.',
                 ]);
