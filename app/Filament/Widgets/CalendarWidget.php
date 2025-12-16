@@ -121,10 +121,13 @@ class CalendarWidget extends FullCalendarWidget
                         ->seconds(false)
                         ->required()
                         ->after('start_at'),
-                    \Filament\Forms\Components\Select::make('applicant_id')
-                        ->relationship('applicant', 'name')
-                        ->searchable()
-                        ->label('Postulante')
+                    \Filament\Forms\Components\Select::make('channel')
+                        ->label('Canal')
+                        ->options([
+                            'whatsapp' => 'WhatsApp',
+                            'physical_meeting' => 'Reunión Física',
+                        ])
+                        ->default('physical_meeting')
                         ->required(),
                     \Filament\Forms\Components\Select::make('status')
                         ->options([

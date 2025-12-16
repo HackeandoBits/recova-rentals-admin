@@ -575,7 +575,7 @@ body.fi-body .fi-main .fi-ta-ctn {
         0 0 18px rgba(15, 23, 42, 0.95),
         0 0 24px rgba(56, 189, 248, 0.25) !important;
     backdrop-filter: blur(18px) !important;
-    overflow: hidden !important;
+    overflow: visible !important;
 }
 
 /* Header de la tabla (filtros, buscador interno, etc.) */

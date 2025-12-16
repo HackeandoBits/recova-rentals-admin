@@ -83,7 +83,7 @@ class InterviewForm
                                 ->hiddenLabel()
                                 ->placeholder('Producto')
                                 ->required()
-                                ->datalist(\App\Models\InterviewItem::query()->distinct()->pluck('name')->toArray())
+                                ->datalist(fn () => \App\Models\InterviewItem::query()->distinct()->pluck('name')->toArray())
                                 ->columnSpan(6),
                             TextInput::make('quantity')
                                 ->hiddenLabel()
@@ -377,6 +377,16 @@ class InterviewForm
             \Filament\Forms\Components\Hidden::make('end_at')
                 ->dehydrated()
                 ->default(fn ($record) => $record?->end_at),
+
+            Select::make('channel')
+                ->label('Canal')
+                ->options([
+                    'whatsapp' => 'WhatsApp',
+                    'physical_meeting' => 'Reunión Física',
+                ])
+                ->default('physical_meeting')
+                ->required()
+                ->columnSpanFull(),
 
             Select::make('status')
                 ->label('Estado')

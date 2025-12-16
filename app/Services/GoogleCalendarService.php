@@ -369,34 +369,48 @@ class GoogleCalendarService
     public function syncFromGoogle(Carbon $start, Carbon $end): int
     {
         $importedCount = 0;
-        $nativeEvents = $this->listEvents($start, $end, 'primary'); // Solo calendario principal
+        $ownerId = (int) config('owner.calendar_user_id', 1);
 
-        // IDs nativos ya conocidos para evitar duplicados
+        // 1. Obtener eventos manuales del calendario principal
+        $nativeEvents = $this->listEvents($start, $end, 'primary');
+        
+        // 2. Obtener feriados
+        $holidayEvents = $this->listEvents($start, $end, 'es.ar#holiday@group.v.calendar.google.com');
+
+        // Fusionar ambas listas
+        $allEvents = array_merge(
+            array_map(fn($e) => ['event' => $e, 'kind' => 'otro'], $nativeEvents),
+            array_map(fn($e) => ['event' => $e, 'kind' => 'feriado'], $holidayEvents)
+        );
+
+        // IDs nativos ya conocidos para evitar duplicados locales
         $knownGoogleIds = Interview::whereNotNull('google_event_id')
             ->pluck('google_event_id')
             ->concat(CalendarBlock::whereNotNull('google_event_id')->pluck('google_event_id'))
-            ->flip(); // HashMap para búsqueda rápida
+            ->flip(); 
 
-        foreach ($nativeEvents as $gEvent) {
+        foreach ($allEvents as $item) {
+            /** @var GoogleEvent $gEvent */
+            $gEvent = $item['event'];
+            $kind = $item['kind'];
             $gId = $gEvent->getId();
 
-            // Si ya lo tenemos vinculado, ignorar
             if ($knownGoogleIds->has($gId)) {
                 continue;
             }
 
-            // Si es un evento "externo" (creado en Google), importarlo como Bloqueo
             $isAllDay = empty($gEvent->start->dateTime);
 
-            // Parsear fechas
             if ($isAllDay) {
-                // Fechas puras "Y-m-d"
-                $s = Carbon::parse($gEvent->start->date);
-                // Google "end" es exclusivo para allDay, pero nosotros guardamos bloqueos inclusivos o exclusivos?
-                // Revisando CalendarBlock, parece usar starts_at/ends_at puros.
-                // Ajuste: si es allDay, Google devuelve ej: start=2023-01-01, end=2023-01-02 para 1 día.
-                // CalendarBlock suele requerir definir "is_all_day"
-                $e = Carbon::parse($gEvent->end->date);
+                // Fechas puras Y-m-d. Google devuelve end exclusivo para all-day.
+                $s = Carbon::parse($gEvent->start->date)->startOfDay(); 
+                $e = Carbon::parse($gEvent->end->date)->startOfDay(); 
+                
+                // Si es un solo día, Google manda 2023-01-01 -> 2023-01-02.
+                // CalendarBlock suele guardar starts_at y ends_at como DateTime.
+                // Para consistencia con SQL y lógica de bloqueo:
+                // starts_at = 2023-01-01 00:00:00
+                // ends_at = 2023-01-02 00:00:00 (o 2023-01-01 23:59:59 si preferís, pero mantener rango exclusivo es más estándar).
             } else {
                 $s = Carbon::parse($gEvent->start->dateTime);
                 $e = Carbon::parse($gEvent->end->dateTime);
@@ -404,13 +418,13 @@ class GoogleCalendarService
 
             // Crear Bloqueo
             CalendarBlock::create([
-                'title' => $gEvent->getSummary() ?: 'Evento Google sin título',
-                'starts_at' => $s,
+                'title' => $gEvent->getSummary() ?: ($kind === 'feriado' ? 'Feriado' : 'Evento Google'),
+                'starts_at' => $s, // Eloquent lo convertirá al formato correcto DB
                 'ends_at' => $e,
                 'is_all_day' => $isAllDay,
-                'kind' => 'otro', // Marcar como externo/otro
+                'kind' => $kind,
                 'reason' => $gEvent->getDescription(),
-                'owner_user_id' => config('owner.calendar_user_id', 1),
+                'owner_user_id' => $ownerId,
                 'google_event_id' => $gId,
                 'sync_status' => 'synced',
                 'synced_at' => now(),

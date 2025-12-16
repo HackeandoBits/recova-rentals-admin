@@ -30,6 +30,8 @@ class InterviewsTable
                         'whatsapp' => 'WhatsApp',
                         'physical_meeting' => 'Reunión Física',
                     ])
+                    ->disabled(fn () => ! auth()->user()?->isAdmin())
+                    ->selectablePlaceholder(false)
                     ->toggleable(),
 
                 TextColumn::make('start_at')
@@ -50,6 +52,7 @@ class InterviewsTable
                         'cancelled' => 'Cancelada',
                         'completed' => 'Completada',
                     ])
+                    ->disabled(fn () => ! auth()->user()?->isAdmin())
                     ->selectablePlaceholder(false)
                     ->width('150px')
                     ->toggleable(),

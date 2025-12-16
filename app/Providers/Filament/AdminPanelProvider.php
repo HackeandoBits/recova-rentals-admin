@@ -33,6 +33,7 @@ class AdminPanelProvider extends PanelProvider
             ->login(Login::class)
             ->brandName('Recova Rentals Admin')
             ->brandLogo(fn () => view('filament.components.recova-logo'))
+            ->favicon(asset('images/favicon.png'))
             ->authGuard('web') // Usa el guard web de Laravel
             ->topNavigation()
             ->colors([
@@ -50,7 +51,7 @@ class AdminPanelProvider extends PanelProvider
                 fn (): string => <<<'HTML'
                 <meta property="og:title" content="Recova Rentals Admin" />
                 <meta property="og:description" content="Recova Rentals Admin Panel" />
-                <meta property="og:image" content="/images/rentalsblanco-1.png" />
+                <meta property="og:image" content="/images/favicon.png" />
                 <meta property="og:type" content="website" />
                 HTML
             )
