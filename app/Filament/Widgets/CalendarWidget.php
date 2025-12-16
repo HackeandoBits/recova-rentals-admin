@@ -81,18 +81,18 @@ class CalendarWidget extends FullCalendarWidget
                                 $start = \Carbon\Carbon::parse($state);
                                 // Set End time to +1 hour by default
                                 $set('end_at', $start->addHour()->format('Y-m-d H:i:s'));
-                                
-                                $component->validate();
                             }
                         })
                         ->rules([
                             fn () => function (string $attribute, $value, \Closure $fail) {
-                                if (! $value) return;
-                                
+                                if (! $value) {
+                                    return;
+                                }
+
                                 $start = \Carbon\Carbon::parse($value);
                                 // Default end is +1 hour if not checking end_at yet, but let's check the immediate slot
-                                $end = $start->copy()->addHour(); 
-                                
+                                $end = $start->copy()->addHour();
+
                                 // 1. Check All Day Blocks (Feriados, Google All Day)
                                 $blockedDay = \App\Models\CalendarBlock::query()
                                     ->where('is_all_day', true)
@@ -101,6 +101,7 @@ class CalendarWidget extends FullCalendarWidget
 
                                 if ($blockedDay) {
                                     $fail('Esta fecha está bloqueada por un evento de día completo.');
+
                                     return;
                                 }
 
@@ -110,7 +111,7 @@ class CalendarWidget extends FullCalendarWidget
                                     ->where('starts_at', '<', $end)
                                     ->where('ends_at', '>', $start)
                                     ->exists();
-                                
+
                                 if ($overlapBlock) {
                                     $fail('Horario Bloqueado: coincide con un bloqueo existente.');
                                 }
@@ -162,7 +163,7 @@ class CalendarWidget extends FullCalendarWidget
                             ->danger()
                             ->persistent()
                             ->send();
-                        
+
                         $action->halt();
                     }
 
@@ -180,10 +181,10 @@ class CalendarWidget extends FullCalendarWidget
                         $realConflict = $conflictingBlocks->contains(function ($block) use ($start, $end) {
                             $blockStart = \Carbon\Carbon::parse($block->starts_at);
                             $blockEnd = \Carbon\Carbon::parse($block->ends_at);
-                            
+
                             // Si es All Day, aseguramos que cubra todo el día hasta 23:59:59 si es necesario para comparar
                             if ($block->is_all_day) {
-                                $blockEnd = $blockEnd->endOfDay(); 
+                                $blockEnd = $blockEnd->endOfDay();
                             }
 
                             return $blockStart->lt($end) && $blockEnd->gt($start);
@@ -196,7 +197,7 @@ class CalendarWidget extends FullCalendarWidget
                                 ->danger()
                                 ->persistent() // Para que no desaparezca solo
                                 ->send();
-                            
+
                             $action->halt();
                         }
                     }
@@ -204,7 +205,6 @@ class CalendarWidget extends FullCalendarWidget
                 ->after(function ($livewire) {
                     $livewire->refreshRecords();
                 }),
-
 
         ];
     }
@@ -424,7 +424,7 @@ class CalendarWidget extends FullCalendarWidget
         // 2. Evento de Google (En vivo)
         if (is_string($key) && str_starts_with($key, 'gcal-')) {
             $googleId = str_replace('gcal-', '', $key);
-            
+
             // Buscar evento real en Google
             /** @var \App\Services\GoogleCalendarService $service */
             $service = app(\App\Services\GoogleCalendarService::class);
@@ -437,9 +437,9 @@ class CalendarWidget extends FullCalendarWidget
             }
 
             // Crear modelo transitorio (no guardado en DB) para que el ViewAction lo muestre
-             $isAllDay = empty($gEvent->start->dateTime);
-             $start = $isAllDay ? \Carbon\Carbon::parse($gEvent->start->date) : \Carbon\Carbon::parse($gEvent->start->dateTime);
-             $end = $isAllDay ? \Carbon\Carbon::parse($gEvent->end->date) : \Carbon\Carbon::parse($gEvent->end->dateTime);
+            $isAllDay = empty($gEvent->start->dateTime);
+            $start = $isAllDay ? \Carbon\Carbon::parse($gEvent->start->date) : \Carbon\Carbon::parse($gEvent->start->dateTime);
+            $end = $isAllDay ? \Carbon\Carbon::parse($gEvent->end->date) : \Carbon\Carbon::parse($gEvent->end->dateTime);
 
             $description = $gEvent->getDescription();
             // Limpiar ID interno si existe (formato "Texto...\nID: 123")
@@ -455,9 +455,9 @@ class CalendarWidget extends FullCalendarWidget
                 'kind' => 'otro',
                 'reason' => $description,
             ]);
-            
+
             // Marcar como externo para la UI
-            $block->is_google_event = true; 
+            $block->is_google_event = true;
             $block->google_html_link = $gEvent->getHtmlLink();
 
             return $block;
@@ -465,11 +465,11 @@ class CalendarWidget extends FullCalendarWidget
 
         // 3. Feriado (En vivo)
         if (is_string($key) && str_starts_with($key, 'gholiday-')) {
-             // Lógica simplificada para feriados (generalmente no se clickean, pero por si acaso)
-             return new \App\Models\CalendarBlock([
+            // Lógica simplificada para feriados (generalmente no se clickean, pero por si acaso)
+            return new \App\Models\CalendarBlock([
                 'title' => 'Feriado',
                 'kind' => 'feriado',
-             ]);
+            ]);
         }
 
         // 4. Interview (ID numérico)
