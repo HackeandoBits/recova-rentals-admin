@@ -203,7 +203,8 @@ class CalendarWidget extends FullCalendarWidget
                     }
                 })
                 ->after(function ($livewire) {
-                    $livewire->refreshRecords();
+                    // Force refresh of the calendar widget
+                    $livewire->dispatch('filament-fullcalendar:refresh', ['id' => $livewire->getId()]);
                 }),
 
         ];
