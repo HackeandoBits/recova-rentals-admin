@@ -29,6 +29,8 @@ class InterviewsTable
                     ->options([
                         'whatsapp' => 'WhatsApp',
                         'physical_meeting' => 'Reunión Física',
+                        'virtual_meeting' => 'Reunión Virtual',
+                        'google_calendar' => 'Google Calendar',
                     ])
                     ->disabled(fn () => ! auth()->user()?->isAdmin())
                     ->selectablePlaceholder(false)
@@ -170,6 +172,8 @@ class InterviewsTable
                     ->options([
                         'whatsapp' => 'WhatsApp',
                         'physical_meeting' => 'Reunión Física',
+                        'virtual_meeting' => 'Reunión Virtual',
+                        'google_calendar' => 'Google Calendar',
                     ])
                     ->placeholder('Todos los canales'),
 

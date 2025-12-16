@@ -425,9 +425,19 @@ class GoogleCalendarService
         if ($isAllDay) {
             $s = Carbon::parse($gEvent->start->date)->startOfDay(); 
             $e = Carbon::parse($gEvent->end->date)->startOfDay(); 
+            
+            // Fix: Si Google devuelve start == end (duración 0), forzamos 1 día
+            if ($e->lte($s)) {
+                $e = $s->copy()->addDay();
+            }
         } else {
             $s = Carbon::parse($gEvent->start->dateTime);
             $e = Carbon::parse($gEvent->end->dateTime);
+
+            // Fix: Si duración es 0 o negativa, forzamos 1 hora (60 min)
+            if ($e->lte($s)) {
+                $e = $s->copy()->addHour();
+            }
         }
 
         try {
@@ -454,14 +464,19 @@ class GoogleCalendarService
             $s = Carbon::parse($gEvent->start->dateTime);
             $e = Carbon::parse($gEvent->end->dateTime);
 
+            // Fix: Asegurar duración mínima de 1 hora
+            if ($e->lte($s)) {
+                $e = $s->copy()->addHour();
+            }
+
             Interview::create([
                 'title' => $gEvent->getSummary() ?: 'Reunión Google',
                 'start_at' => $s,
                 'end_at' => $e,
                 'status' => 'confirmed', 
-                'channel' => 'google_calendar', // Identificador para saber que vino de Google
+                'channel' => 'google_calendar', 
                 'google_event_id' => $gEvent->getId(),
-                'customer_name' => 'Google Calendar', // Placeholder
+                'customer_name' => 'Google Calendar', 
                 'customer_email' => null,
                 'customer_phone' => null,
                 'order_notes' => $gEvent->getDescription(),

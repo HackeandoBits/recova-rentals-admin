@@ -24,6 +24,25 @@ class ListInterviews extends ListRecords
                 ->modalHeading('Crear Reunión')
                 ->modalWidth('4xl')
                 ->createAnother(false),
+
+            \Filament\Actions\Action::make('syncGoogle')
+                ->label('Sincronizar Google')
+                ->color('success')
+                ->icon('heroicon-o-arrow-path')
+                ->action(function () {
+                    $svc = app(\App\Services\GoogleCalendarService::class);
+                    // Sincronizar año actual y el siguiente completo
+                    $count = $svc->syncFromGoogle(now()->startOfYear(), now()->addYear()->endOfYear());
+
+                    // Limpiar caché global de fechas bloqueadas
+                    \Illuminate\Support\Facades\Cache::forget('blocked_dates_global');
+
+                    \Filament\Notifications\Notification::make()
+                        ->title('Sincronización completada')
+                        ->body("Se importaron {$count} eventos nuevos (feriados y reuniones). Verificá ambas listas.")
+                        ->success()
+                        ->send();
+                }),
         ];
     }
 }

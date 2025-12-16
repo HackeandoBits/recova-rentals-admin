@@ -38,12 +38,20 @@ class CalendarBlockObserver
         }
 
         if ($block->isDirty('canceled_at') && $block->canceled_at) {
+            // Protección: No intentar borrar de Google si es feriado o si ya falló
+            if ($block->kind === 'feriado' || $block->sync_status === 'failed') {
+                return;
+            }
             SyncSingleBlockJob::dispatchSync($block->id, delete: true);
         }
     }
 
     public function deleted(CalendarBlock $block): void
     {
+        // Protección: No intentar borrar de Google si es feriado o si ya falló
+        if ($block->kind === 'feriado' || $block->sync_status === 'failed') {
+            return;
+        }
         SyncSingleBlockJob::dispatchSync($block->id, delete: true);
     }
 }
