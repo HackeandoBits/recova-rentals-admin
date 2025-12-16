@@ -71,7 +71,12 @@ class User extends Authenticatable implements FilamentUser
 
     public function isAdmin(): bool
     {
-        return (bool) $this->is_admin;
+        return $this->isSuperAdmin() || $this->role === self::ROLE_ADMIN || (bool) $this->is_admin;
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->id === 1 || $this->email === 'recovarentals@gmail.com';
     }
 
     public function isUser(): bool

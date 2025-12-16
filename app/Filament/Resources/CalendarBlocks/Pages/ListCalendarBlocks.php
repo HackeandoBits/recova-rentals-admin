@@ -337,6 +337,28 @@ class ListCalendarBlocks extends ListRecords
                         ->duration(4000)
                         ->send();
                 }),
+
+            Action::make('syncGoogle')
+                ->label('Sincronizar Google')
+                ->color('success')
+                ->icon('heroicon-o-arrow-path')
+                ->action(function () {
+                    $svc = app(\App\Services\GoogleCalendarService::class);
+                    // Sincronizar año actual y el siguiente completo (para traer todos los feriados)
+                    $count = $svc->syncFromGoogle(now()->startOfYear(), now()->addYear()->endOfYear());
+
+                    // Limpiar caché de la API para que el cliente vea los cambios inmediatamente
+                    \Illuminate\Support\Facades\Cache::forget('blocked_dates_global');
+
+                    Notification::make()
+                        ->title('Sincronización completada')
+                        ->body("Se importaron {$count} eventos nuevos (feriados y eventos) desde Enero " . now()->format('Y') . " hasta Diciembre " . now()->addYear()->format('Y') . ".")
+                        ->success()
+                        ->send();
+                    
+                    // No hace falta redirect porque Filament recarga la tabla solo, 
+                    // pero porsi acaso forzamos refresh o dejamos que livewire actúe.
+                }),
         ];
     }
 }

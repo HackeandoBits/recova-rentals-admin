@@ -51,7 +51,7 @@ class AdminPanelProvider extends PanelProvider
                 fn (): string => <<<'HTML'
                 <meta property="og:title" content="Recova Rentals Admin" />
                 <meta property="og:description" content="Recova Rentals Admin Panel" />
-                <meta property="og:image" content="/images/favicon.png" />
+                <meta property="og:image" content="/images/recova-og-image.png" />
                 <meta property="og:type" content="website" />
                 HTML
             )

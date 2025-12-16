@@ -96,7 +96,7 @@ class CalendarWidget extends FullCalendarWidget
                                 // 1. Check All Day Blocks (Feriados, Google All Day)
                                 $blockedDay = \App\Models\CalendarBlock::query()
                                     ->where('is_all_day', true)
-                                    ->whereRaw('DATE(starts_at) = ?', [$start->toDateString()])
+                                    ->whereDate('starts_at', $start->toDateString())
                                     ->exists();
 
                                 if ($blockedDay) {
@@ -205,24 +205,7 @@ class CalendarWidget extends FullCalendarWidget
                     $livewire->refreshRecords();
                 }),
 
-            \Filament\Actions\Action::make('syncGoogle')
-                ->label('Sincronizar Google')
-                ->color('primary')
-                ->icon('heroicon-o-arrow-path')
-                ->action(function () {
-                    $svc = app(\App\Services\GoogleCalendarService::class);
-                    // Sincronizar desde 1 mes atrás hasta 3 meses adelante
-                    $count = $svc->syncFromGoogle(now()->subMonth(), now()->addMonths(3));
 
-                    \Filament\Notifications\Notification::make()
-                        ->title('Sincronización completada')
-                        ->body("Se importaron {$count} eventos nuevos como bloqueos.")
-                        ->success()
-                        ->send();
-
-                    // Recargar página para ver los nuevos bloqueos
-                    redirect(request()->header('Referer'));
-                }),
         ];
     }
 

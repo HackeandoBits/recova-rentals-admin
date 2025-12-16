@@ -227,54 +227,55 @@ class BookingController extends Controller
      */
     public function getBlockedDates(Request $request): JsonResponse
     {
-        $tz = config('app.timezone', 'America/Argentina/Buenos_Aires');
-        $today = Carbon::today($tz); // Hoy en local
-
-        // 1. CalendarBlocks que son "todo el día"
-        // Deben terminar DESPUÉS de hoy (o ser hoy).
-        // Y deben ser is_all_day.
-        $blocks = \App\Models\CalendarBlock::whereNull('canceled_at')
-            ->where('ends_at', '>=', $today->copy()->setTimezone('UTC')) // Convertimos a UTC para comparar con DB
-            ->get();
-
-        $blockedDates = [];
-
-        foreach ($blocks as $block) {
-            // Convertir a Timezone Local para iterar fechas correctas
-            $start = Carbon::parse($block->starts_at)->setTimezone($tz);
-            $end = Carbon::parse($block->ends_at)->setTimezone($tz);
-
-            // Iteramos día por día
-            $curr = $start->copy()->startOfDay();
-            $endDay = $end->copy()->endOfDay();
-
-            while ($curr->lte($endDay)) {
-                // Solo agregamos si es futuro o hoy
-                if ($curr->gte($today)) {
-                    $dayStr = $curr->format('Y-m-d');
-                    
-                    // Check if this specific day is fully blocked
-                    $isFullDay = $block->is_all_day;
-                    
-                    if (! $isFullDay) {
-                        // Check if the block covers 18:00 to 22:00 of this day (Meeting hours)
-                        $dayStartLimit = $curr->copy()->setTime(18, 0); // Meetings start at 18:00
-                        $dayEndLimit = $curr->copy()->setTime(22, 0);   // Last meeting ends at 22:00
-
-                        if ($start->lte($dayStartLimit) && $end->gte($dayEndLimit)) {
-                            $isFullDay = true;
+        // Cachear las fechas bloqueadas por 10 minutos para mejorar la velocidad en el cliente
+        $blockedDates = \Illuminate\Support\Facades\Cache::remember('blocked_dates_global', 600, function () {
+            $tz = config('app.timezone', 'America/Argentina/Buenos_Aires');
+            $today = Carbon::today($tz); 
+    
+            // 1. CalendarBlocks que son "todo el día"
+            // Deben terminar DESPUÉS de hoy (o ser hoy).
+            $blocks = \App\Models\CalendarBlock::whereNull('canceled_at')
+                ->where('ends_at', '>=', $today->copy()->setTimezone('UTC')) 
+                ->get();
+    
+            $blocked = [];
+    
+            foreach ($blocks as $block) {
+                // Convertir a Timezone Local para iterar fechas correctas
+                $start = Carbon::parse($block->starts_at)->setTimezone($tz);
+                $end = Carbon::parse($block->ends_at)->setTimezone($tz);
+    
+                // Iteramos día por día
+                $curr = $start->copy()->startOfDay();
+                $endDay = $end->copy()->endOfDay();
+    
+                while ($curr->lte($endDay)) {
+                    // Solo agregamos si es futuro o hoy
+                    if ($curr->gte($today)) {
+                        $dayStr = $curr->format('Y-m-d');
+                        
+                        $isFullDay = $block->is_all_day;
+                        
+                        if (! $isFullDay) {
+                            $dayStartLimit = $curr->copy()->setTime(18, 0); 
+                            $dayEndLimit = $curr->copy()->setTime(22, 0);   
+    
+                            if ($start->lte($dayStartLimit) && $end->gte($dayEndLimit)) {
+                                $isFullDay = true;
+                            }
+                        }
+    
+                        if ($isFullDay) {
+                            $blocked[] = $dayStr;
                         }
                     }
-
-                    if ($isFullDay) {
-                        $blockedDates[] = $dayStr;
-                    }
+                    $curr->addDay();
                 }
-                $curr->addDay();
             }
-        }
+    
+            return array_unique($blocked);
+        });
 
-        $blockedDates = array_unique($blockedDates);
         sort($blockedDates);
 
         return response()->json([

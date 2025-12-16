@@ -21,6 +21,19 @@ class UserResource extends Resource
 
     protected static ?string $modelLabel = 'Usuario';
 
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        if (auth()->check() && ! auth()->user()->isSuperAdmin()) {
+            // Admins solo ven usuarios normales (role = user)
+            // Y definitivamente no ven al super admin (id 1)
+            $query->where('role', 'user')->where('id', '!=', 1);
+        }
+
+        return $query;
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -36,12 +49,22 @@ class UserResource extends Resource
                     ->maxLength(255),
                 Forms\Components\Select::make('role')
                     ->label('Rol')
-                    ->options([
-                        'admin' => 'Administrador',
-                        'user' => 'Solo Lectura',
-                    ])
+                    ->options(fn () => auth()->user()->isSuperAdmin() 
+                        ? [
+                            'admin' => 'Administrador',
+                            'user' => 'Usuario',
+                        ]
+                        : [
+                            'user' => 'Usuario',
+                        ]
+                    )
                     ->required()
-                    ->default('user'),
+                    ->default('user')
+                    // Si no es super admin, deshabilitar o ocultar para forzar 'user'?
+                    // El requerimiento dice "CRUD sobre los usuarios nomas", asi que solo pueden crear usuarios.
+                    // Al dejar solo la opcion 'user', ya restringimos.
+                    ->disabled(fn () => ! auth()->user()->isSuperAdmin())
+                    ->dehydrated(), // Para que se guarde el valor aunque esté disabled
                 Forms\Components\TextInput::make('password')
                     ->label('Contraseña')
                     ->password()
@@ -70,7 +93,12 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('role')
                     ->label('Rol')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn (string $state, User $record): string => $record->isSuperAdmin() ? 'Super Admin' : match ($state) {
+                        'admin' => 'Administrador',
+                        'user' => 'Usuario',
+                        default => $state,
+                    })
+                    ->color(fn (string $state, User $record): string => $record->isSuperAdmin() ? 'info' : match ($state) {
                         'admin' => 'success',
                         'user' => 'gray',
                         default => 'warning',
@@ -86,6 +114,7 @@ class UserResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
