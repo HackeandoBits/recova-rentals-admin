@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Interviews\Schemas;
 
-use App\Rules\NoOverlapRule;
 use Carbon\Carbon;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Section;
@@ -19,19 +18,108 @@ class InterviewForm
     }
 
     /**
-     * Genera los horarios disponibles de 8:00 a 23:00 en intervalos de 30min
+     * Genera los horarios disponibles para una fecha dada,
+     * excluyendo horarios ocupados por reuniones o bloqueos.
      */
-    protected static function generateTimeSlots(): array
+    protected static function getAvailableTimeSlots(?string $date): array
     {
-        $slots = [];
-        for ($hour = 8; $hour <= 23; $hour++) {
-            $slots[sprintf('%02d:00', $hour)] = sprintf('%02d:00', $hour);
-            if ($hour < 23) { // No agregar 23:30
-                $slots[sprintf('%02d:30', $hour)] = sprintf('%02d:30', $hour);
+        if (! $date) {
+            return [];
+        }
+
+        // 1. Generar todos los slots base (16:00 - 21:00)
+        $allSlots = [];
+        for ($hour = 16; $hour <= 21; $hour++) {
+            $allSlots[sprintf('%02d:00', $hour)] = sprintf('%02d:00', $hour);
+            if ($hour < 21) {
+                $allSlots[sprintf('%02d:30', $hour)] = sprintf('%02d:30', $hour);
             }
         }
 
-        return $slots;
+        $carbonDate = Carbon::parse($date);
+        $startOfDay = $carbonDate->copy()->startOfDay();
+        $endOfDay = $carbonDate->copy()->endOfDay();
+
+        // 2. Obtener eventos que ocupan tiempo ese día
+
+        // Reuniones existentes (excluyendo canceladas)
+        $interviews = \App\Models\Interview::query()
+            ->where('status', '!=', 'cancelled')
+            ->where(function ($query) use ($startOfDay, $endOfDay) {
+                $query->whereBetween('start_at', [$startOfDay, $endOfDay])
+                    ->orWhereBetween('end_at', [$startOfDay, $endOfDay])
+                    ->orWhere(function ($q) use ($startOfDay, $endOfDay) {
+                        $q->where('start_at', '<', $startOfDay)
+                            ->where('end_at', '>', $endOfDay);
+                    });
+            })
+            ->get();
+
+        // Bloqueos de calendario
+        $blocks = \App\Models\CalendarBlock::query()
+            ->where(function ($query) use ($startOfDay, $endOfDay) {
+                $query->whereBetween('starts_at', [$startOfDay, $endOfDay])
+                    ->orWhereBetween('ends_at', [$startOfDay, $endOfDay])
+                    ->orWhere(function ($q) use ($startOfDay, $endOfDay) {
+                        $q->where('starts_at', '<', $startOfDay)
+                            ->where('ends_at', '>', $endOfDay);
+                    });
+            })
+            ->get();
+
+        // 3. Filtrar slots ocupados
+        return array_filter($allSlots, function ($time) use ($date, $interviews, $blocks) {
+            $slotStart = Carbon::parse("$date $time");
+            $slotEnd = $slotStart->copy()->addHour(); // Asumimos duración mínima de 1h
+
+            // Verificar colisión con Reuniones
+            foreach ($interviews as $interview) {
+                // Si el slot se solapa con la reunión
+                if ($slotStart->lt($interview->end_at) && $slotEnd->gt($interview->start_at)) {
+                    return false;
+                }
+            }
+
+            // Verificar colisión con Bloqueos
+            foreach ($blocks as $block) {
+                if ($slotStart->lt($block->ends_at) && $slotEnd->gt($block->starts_at)) {
+                    return false;
+                }
+            }
+
+            return true;
+        });
+    }
+
+    /**
+     * Retorna lista de fechas totalmente bloqueadas (Feriados o Bloqueos Manuales 'All Day')
+     * para pintar en el calendario.
+     */
+    protected static function getFullyBlockedDates(): array
+    {
+        $ownerId = (int) env('OWNER_CAL_USER_ID', 1);
+
+        return \App\Models\CalendarBlock::query()
+            ->whereNull('canceled_at')
+            ->where('owner_user_id', $ownerId)
+            ->where('is_all_day', true)
+            ->where('starts_at', '>=', now()->subMonths(1))
+            ->get()
+            ->map(function ($block) {
+                $dates = [];
+                $start = Carbon::parse($block->starts_at);
+                $end = Carbon::parse($block->ends_at);
+
+                for ($date = $start; $date->lte($end); $date->addDay()) {
+                    $dates[] = $date->toDateString();
+                }
+
+                return $dates;
+            })
+            ->flatten()
+            ->unique()
+            ->values()
+            ->toArray();
     }
 
     public static function schema(): array
@@ -76,7 +164,7 @@ class InterviewForm
                         ->hiddenLabel()
                         ->relationship()
                         ->reorderable(false)
-                        ->deletable(false) // Desactivar borrado estándar para quitar cabecera
+                        ->deletable(false)
                         ->schema([
                             TextInput::make('name')
                                 ->hiddenLabel()
@@ -103,19 +191,10 @@ class InterviewForm
                                     ->label(null)
                                     ->tooltip('Eliminar')
                                     ->action(function ($component, $livewire) {
-                                        // Strategy: Manipulate Livewire state directly using the absolute path.
-                                        // This bypasses component tree issues (ActionContainer) and scope issues.
-
                                         $path = $component->getStatePath();
-                                        // Path format: mountedActionsData.0.items.UUID...
-                                        // We want to remove the item with that UUID from the items array.
-
                                         $uuid = \Illuminate\Support\Str::afterLast($path, '.');
                                         $itemsPath = \Illuminate\Support\Str::beforeLast($path, '.');
-
-                                        // fetch the current items array from the Livewire component
                                         $currentItems = data_get($livewire, $itemsPath);
-
                                         if (is_array($currentItems) && isset($currentItems[$uuid])) {
                                             unset($currentItems[$uuid]);
                                             data_set($livewire, $itemsPath, $currentItems);
@@ -134,32 +213,20 @@ class InterviewForm
 
             Section::make('Fecha y Hora')
                 ->schema([
-                    \Filament\Forms\Components\Grid::make(4)
+                    \Filament\Forms\Components\Grid::make(2)
                         ->schema([
-                            DatePicker::make('start_date')
-                                ->label('Fecha Inicio')
+                            \Filament\Forms\Components\ViewField::make('start_date')
+                                ->view('filament.forms.components.blocked-date-picker')
+                                ->viewData([
+                                    'blockedDates' => self::getFullyBlockedDates(),
+                                ])
+                                ->label('Fecha')
                                 ->required()
-                                ->live()
-                                ->afterStateUpdated(function ($state, callable $set, callable $get, \Filament\Forms\Components\DatePicker $component) {
-                                    if ($state) {
-                                        // Auto-set End Date to same day
-                                        $set('end_date', $state);
-
-                                        // Update hidden full datetimes
-                                        if ($get('start_time')) {
-                                            try {
-                                                $start = \Carbon\Carbon::parse($state)->setTimeFromTimeString($get('start_time'));
-                                                $set('start_at', $start->toDateTimeString());
-
-                                                // Recalculate end_at based on new start date + existing end time logic or default +1h
-                                                $end = $start->copy()->addHour();
-                                                $set('end_time', $end->format('H:i'));
-                                                $set('end_date', $end->toDateString());
-                                                $set('end_at', $end->toDateTimeString());
-                                            } catch (\Exception $e) {
-                                            }
-                                        }
-                                    }
+                                ->live() // Important to trigger start_time update
+                                ->afterStateUpdated(function ($state, callable $set) {
+                                    $set('start_time', null);
+                                    $set('start_at', null);
+                                    $set('end_at', null);
                                 })
                                 ->afterStateHydrated(function ($component, $state, $record) {
                                     if ($record && $record->start_at) {
@@ -174,7 +241,7 @@ class InterviewForm
                                             }
 
                                             $date = \Carbon\Carbon::parse($value);
-                                            // Check strict "All Day" blocks that cover this date
+                                            // Validate again backend-side just in case
                                             $ownerId = (int) env('OWNER_CAL_USER_ID', 1);
 
                                             $blockedDay = \App\Models\CalendarBlock::query()
@@ -190,192 +257,39 @@ class InterviewForm
                                                 });
 
                                             if ($blockedDay) {
-                                                $fail('Esta fecha está bloqueada por un evento de día completo (Feriado/Google).');
+                                                $fail('Esta fecha está bloqueada.');
                                             }
                                         };
                                     },
                                 ]),
 
-                            DatePicker::make('end_date')
-                                ->label('Fecha Fin')
-                                ->required()
-                                ->live()
-                                ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                                    if ($state && $get('end_time')) {
-                                        $set('end_at', Carbon::parse($state)->setTimeFromTimeString($get('end_time')));
-                                    }
-                                })
-                                ->afterStateHydrated(function ($component, $state, $record) {
-                                    if ($record && $record->end_at) {
-                                        $component->state($record->end_at->toDateString());
-                                    }
-                                }),
-
                             Select::make('start_time')
                                 ->label('Hora Inicio')
-                                ->placeholder('00:00')
-                                ->options(self::generateTimeSlots())
+                                ->placeholder('Seleccionar hora...')
+                                ->options(function (\Filament\Forms\Get $get) {
+                                    return self::getAvailableTimeSlots($get('start_date'));
+                                })
                                 ->required()
-                                ->searchable()
                                 ->live()
-                                ->afterStateUpdated(function ($state, callable $set, callable $get, \Filament\Forms\Components\Select $component) {
-                                    if ($state) {
-                                        // Auto-set End Time (+1 hour)
-                                        try {
-                                            $startTime = \Carbon\Carbon::createFromFormat('H:i', $state);
-                                            $endTime = $startTime->copy()->addHour();
-                                            $set('end_time', $endTime->format('H:i'));
+                                ->disabled(fn (\Filament\Forms\Get $get) => ! $get('start_date'))
+                                ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                    if ($state && $get('start_date')) {
+                                        $start = Carbon::parse($get('start_date'))->setTimeFromTimeString($state);
+                                        $end = $start->copy()->addHour();
 
-                                            // Recalculate full datetimes
-                                            if ($get('start_date')) {
-                                                $startFull = \Carbon\Carbon::parse($get('start_date'))->setTimeFromTimeString($state);
-                                                $set('start_at', $startFull->toDateTimeString());
-
-                                                // Sync end date too if empty or if logic requires
-                                                $endFull = $startFull->copy()->addHour();
-                                                $set('end_date', $endFull->toDateString());
-                                                $set('end_at', $endFull->toDateTimeString());
-                                            }
-                                        } catch (\Exception $e) {
-                                            // Ignore parsing errors
-                                        }
+                                        $set('start_at', $start->toDateTimeString());
+                                        $set('end_at', $end->toDateTimeString());
                                     }
                                 })
                                 ->afterStateHydrated(function ($component, $state, $record) {
                                     if ($record && $record->start_at) {
                                         $component->state($record->start_at->format('H:i'));
                                     }
-                                })
-                                ->rules([
-                                    fn ($get) => function (string $attribute, $value, \Closure $fail) use ($get) {
-                                        if (! $value || ! $get('start_date')) {
-                                            return;
-                                        }
-
-                                        try {
-                                            $date = \Carbon\Carbon::parse($get('start_date'));
-                                            $start = $date->copy()->setTimeFromTimeString($value);
-
-                                            // Default 1h duration for validation if end_time not set yet?
-                                            // Or stick to checking strict Point-in-Time?
-                                            // User requirement: "si esta bloqueado el horario que se esta por comenzar"
-                                            // Let's assume standard 1 hour overlap check or just "Is this Start Time inside a Block?"
-                                            // Better: Check standard overlap (Start to Start+1h)
-                                            $end = $start->copy()->addHour();
-
-                                            // 1. Check Blocks
-                                            $ownerId = (int) env('OWNER_CAL_USER_ID', 1);
-                                            $overlapBlock = \App\Models\CalendarBlock::query()
-                                                ->whereNull('canceled_at')
-                                                ->where('owner_user_id', $ownerId)
-                                                ->where('is_all_day', false)
-                                                ->where('starts_at', '<', $end)
-                                                ->where('ends_at', '>', $start)
-                                                ->exists();
-
-                                            if ($overlapBlock) {
-                                                $fail('Horario Bloqueado: coincide con un bloqueo existente.');
-                                            }
-                                        } catch (\Exception $e) {
-                                            // Fail silently or log
-                                        }
-                                    },
-                                ]),
-
-                            Select::make('end_time')
-                                ->label('Hora Fin')
-                                ->placeholder('00:00')
-                                ->options(self::generateTimeSlots())
-                                ->required()
-                                ->searchable()
-                                ->live()
-                                ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                                    if ($state) {
-                                        // Auto-set End Time (+1 hour)
-                                        try {
-                                            $startTime = \Carbon\Carbon::createFromFormat('H:i', $state);
-                                            // ... logic remains for auto-set ...
-                                        } catch (\Exception $e) {
-                                        }
-                                    }
-                                    if ($state && $get('end_date')) {
-                                        $set('end_at', Carbon::parse($get('end_date'))->setTimeFromTimeString($state));
-                                    }
-                                })
-                                ->afterStateHydrated(function ($component, $state, $record) {
-                                    if ($record && $record->end_at) {
-                                        $component->state($record->end_at->format('H:i'));
-                                    }
-                                })
-                                // Move Validation Here (Visible Field)
-                                ->rules([
-                                    fn ($get) => function (string $attribute, $value, \Closure $fail) use ($get) {
-                                        $startStr = $get('start_at');
-                                        $endStr = $get('end_at');
-
-                                        if (! $startStr || ! $endStr) {
-                                            return;
-                                        }
-
-                                        $start = Carbon::parse($startStr);
-                                        $end = Carbon::parse($endStr);
-                                        $ownerId = (int) env('OWNER_CAL_USER_ID', 1);
-
-                                        // 1. Check Blocks
-                                        $overlapsBlock = \App\Models\CalendarBlock::query()
-                                            ->whereNull('canceled_at')
-                                            ->where('owner_user_id', $ownerId)
-                                            ->where('starts_at', '<', $end)
-                                            ->where('ends_at', '>', $start)
-                                            ->get();
-
-                                        // Refined All-Day check
-                                        $realBlockConflict = $overlapsBlock->contains(function ($block) use ($start, $end) {
-                                            $bStart = Carbon::parse($block->starts_at);
-                                            $bEnd = Carbon::parse($block->ends_at);
-                                            if ($block->is_all_day) {
-                                                $bEnd = $bEnd->endOfDay();
-                                            }
-
-                                            return $bStart->lt($end) && $bEnd->gt($start);
-                                        });
-
-                                        if ($realBlockConflict) {
-                                            $fail('Horario Bloqueado: No se puede agendar en este rango (Google/Manual).');
-
-                                            return;
-                                        }
-
-                                        // 2. Check Interviews (NoOverlapRule logic)
-                                        // Normally NoOverlapRule logic:
-                                        // $q->where('start_at', '<', $bufEnd)->where('end_at', '>', $bufStart)...
-                                        // We'll stick to strict overlap for now or use the Rule class if we want buffer.
-                                        // Let's use strict intersection for simplicity and consistency with CalendarWidget
-                                        $interviewConflict = \App\Models\Interview::query()
-                                            ->where('status', '!=', 'cancelled')
-                                            ->where('start_at', '<', $end)
-                                            ->where('end_at', '>', $start)
-                                            ->when($get('id'), fn ($q, $id) => $q->where('id', '!=', $id)) // Ignore self if editing (need to pass record id?)
-                                            // Need to access record ID. $get('id') might not work in Repeater context, but this is main form.
-                                            // Actually, CreateAction has no ID. EditAction does.
-                                            ->exists();
-
-                                        /*
-                                           NOTE: To support excluding current record, we usually need $record.
-                                           Filament 'rules' closure doesn't pass $record easily in simple closure.
-                                           But 'NoOverlapRule' handles it via constructor.
-                                           Let's keep it simple for BLOCKING first.
-                                        */
-                                    },
-                                    // Also apply the strict NoOverlapRule class just in case for Interviews, adapted?
-                                    // Actually, let's trust the closure above for Blocks, and maybe re-add Interview rule if needed.
-                                    // But user complained about Blocks.
-                                ]),
+                                }),
                         ]),
                 ])
                 ->compact(),
 
-            // Campos ocultos
             \Filament\Forms\Components\Hidden::make('start_at')
                 ->dehydrated()
                 ->default(fn ($record) => $record?->start_at),

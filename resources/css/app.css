@@ -20,6 +20,7 @@
 
 /* ================== CALENDARIO / MODALES ================== */
 @layer components {
+
     /* Eventos del calendario */
     .fc-event {
         cursor: pointer !important;
@@ -76,4 +77,91 @@
         font-size: 1.25rem;
         font-weight: 600;
     }
+}
+
+/* Blocked Dates in Flatpickr */
+.admin-blocked,
+.admin-blocked:hover {
+    background-color: #ef4444 !important;
+    /* red-500 */
+    color: white !important;
+    text-decoration: line-through;
+    opacity: 0.7;
+    cursor: not-allowed !important;
+}
+
+/* Fix Flatpickr Transparency */
+body .flatpickr-calendar,
+body .flatpickr-calendar.open,
+body .flatpickr-calendar.inline,
+body .flatpickr-innerContainer,
+body .flatpickr-rContainer,
+body .flatpickr-current-month,
+body .flatpickr-months .flatpickr-month,
+body .flatpickr-weekdays {
+    background-color: rgba(15, 23, 42, 0.95) !important;
+    /* Solid Zinc-950 */
+    opacity: 1 !important;
+}
+
+body .flatpickr-calendar {
+    border: 1px solid #27272a !important;
+    /* Zinc-800 */
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5) !important;
+}
+
+.flatpickr-calendar.arrowTop:before,
+.flatpickr-calendar.arrowTop:after {
+    border-bottom-color: #ffffff !important;
+}
+
+.flatpickr-calendar.arrowBottom:before,
+.flatpickr-calendar.arrowBottom:after {
+    border-top-color: #ffffff !important;
+}
+
+.flatpickr-day {
+    color: inherit !important;
+}
+
+/* Navigation Arrows (Prev/Next Month) */
+.flatpickr-prev-month,
+.flatpickr-next-month {
+    color: #e4e4e7 !important;
+    /* Zinc-200 */
+    fill: #e4e4e7 !important;
+}
+
+.flatpickr-prev-month:hover svg,
+.flatpickr-next-month:hover svg {
+    fill: #22d3ee !important;
+    /* Cyan hover */
+}
+
+/* Year Navigation Arrows (Up/Down) */
+.flatpickr-current-month .numInputWrapper span.arrowUp:after {
+    border-bottom-color: #e4e4e7 !important;
+    /* Zinc-200 */
+}
+
+.flatpickr-current-month .numInputWrapper span.arrowDown:after {
+    border-top-color: #e4e4e7 !important;
+    /* Zinc-200 */
+}
+
+.flatpickr-current-month .numInputWrapper span.arrowUp:hover:after {
+    border-bottom-color: #22d3ee !important;
+    /* Cyan hover */
+}
+
+.flatpickr-current-month .numInputWrapper span.arrowDown:hover:after {
+    border-top-color: #22d3ee !important;
+    /* Cyan hover */
+}
+
+/* Ensure current month text is visible */
+.flatpickr-current-month .flatpickr-monthDropdown-months,
+.flatpickr-current-month input.cur-year {
+    background-color: rgba(15, 23, 42, 0.95) !important;
+    color: inherit !important;
 }
