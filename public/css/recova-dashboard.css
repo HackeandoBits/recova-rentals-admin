@@ -32,12 +32,16 @@ body.fi-body .fi-topbar>nav {
     /* Degradado intermedio: ni tan claro como el primero
        ni tan oscuro como el último */
     background-image: linear-gradient(120deg,
-        #3a1340 0%,    /* fucsia más oscuro pero visible */
-        #5a1c5d 25%,
-        #7c2d78 50%,   /* tu fucsia principal */
-        #2a2152 75%,   /* violeta azulado */
-        #040b1e 100%   /* azul muy oscuro al final */
-    ) !important;
+            #3a1340 0%,
+            /* fucsia más oscuro pero visible */
+            #5a1c5d 25%,
+            #7c2d78 50%,
+            /* tu fucsia principal */
+            #2a2152 75%,
+            /* violeta azulado */
+            #040b1e 100%
+            /* azul muy oscuro al final */
+        ) !important;
     background-size: 200% 100%;
     animation: rr-topbar-wave 18s ease-in-out infinite;
     border-bottom: 1px solid rgba(15, 23, 42, 0.9) !important;
@@ -162,10 +166,10 @@ body.fi-body .fi-wi-stats-overview-stat::before {
     left: -2px;
     right: -2px;
     bottom: -2px;
-    background: linear-gradient(45deg, 
-        transparent 30%, 
-        rgba(34, 211, 238, 0.3) 50%, 
-        transparent 70%);
+    background: linear-gradient(45deg,
+            transparent 30%,
+            rgba(34, 211, 238, 0.3) 50%,
+            transparent 70%);
     border-radius: 20px;
     opacity: 0;
     z-index: -1;
@@ -173,8 +177,15 @@ body.fi-body .fi-wi-stats-overview-stat::before {
 }
 
 @keyframes borderGlow {
-    0%, 100% { opacity: 0; }
-    50% { opacity: 1; }
+
+    0%,
+    100% {
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 1;
+    }
 }
 
 /* Hover state más impresionante */
@@ -444,7 +455,8 @@ body.fi-body .fi-topbar .fi-input-wrp {
     position: relative !important;
     background: rgba(15, 23, 42, 0.5) !important;
     border: 1px solid #22d3ee !important;
-    border-radius: 8px !important;           /* ← igual que Reuniones */
+    border-radius: 8px !important;
+    /* ← igual que Reuniones */
     box-shadow: 0 0 8px rgba(34, 211, 238, 0.3) !important;
     transition: all 0.2s ease !important;
     overflow: hidden !important;
@@ -455,10 +467,11 @@ body.fi-body .fi-topbar .fi-input-wrp::before {
     content: "";
     position: absolute;
     inset: 1px;
-    border-radius: 8px;                      /* ← coincide con el wrapper */
+    border-radius: 8px;
+    /* ← coincide con el wrapper */
     background: radial-gradient(circle at top left,
-        rgba(34, 211, 238, 0.18),
-        transparent 55%);
+            rgba(34, 211, 238, 0.18),
+            transparent 55%);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s ease;
@@ -1470,19 +1483,19 @@ body.fi-body .fi-main [class*="interviews"] .fi-ta-row:hover,
 body.fi-body .fi-main table tbody tr:hover {
     background: rgba(34, 211, 238, 0.04) !important;
     border-left: 2px solid #22d3ee !important;
-    box-shadow: 
+    box-shadow:
         inset 0 0 15px rgba(34, 211, 238, 0.06),
         0 0 8px rgba(34, 211, 238, 0.1) !important;
 }
 
 /* Badge de Canal - WhatsApp (verde) */
 body.fi-body .fi-badge[class*="success"] {
-    background: linear-gradient(135deg, 
-        rgba(34, 197, 94, 0.25), 
-        rgba(22, 163, 74, 0.15)) !important;
+    background: linear-gradient(135deg,
+            rgba(34, 197, 94, 0.25),
+            rgba(22, 163, 74, 0.15)) !important;
     color: #86efac !important;
     border: 1px solid rgba(34, 197, 94, 0.5) !important;
-    box-shadow: 
+    box-shadow:
         0 0 8px rgba(34, 197, 94, 0.3),
         0 0 15px rgba(34, 197, 94, 0.15) !important;
     text-shadow: 0 0 4px rgba(34, 197, 94, 0.4) !important;
@@ -1490,12 +1503,12 @@ body.fi-body .fi-badge[class*="success"] {
 
 /* Badge de Canal - Reunión Física (púrpura/primary) */
 body.fi-body .fi-badge[class*="primary"] {
-    background: linear-gradient(135deg, 
-        rgba(168, 85, 247, 0.25), 
-        rgba(147, 51, 234, 0.15)) !important;
+    background: linear-gradient(135deg,
+            rgba(168, 85, 247, 0.25),
+            rgba(147, 51, 234, 0.15)) !important;
     color: #c4b5fd !important;
     border: 1px solid rgba(168, 85, 247, 0.5) !important;
-    box-shadow: 
+    box-shadow:
         0 0 8px rgba(168, 85, 247, 0.3),
         0 0 15px rgba(168, 85, 247, 0.15) !important;
     text-shadow: 0 0 4px rgba(168, 85, 247, 0.4) !important;
@@ -1503,12 +1516,12 @@ body.fi-body .fi-badge[class*="primary"] {
 
 /* Badge de Canal - Reunión Virtual (azul/info) */
 body.fi-body .fi-badge[class*="info"] {
-    background: linear-gradient(135deg, 
-        rgba(59, 130, 246, 0.25), 
-        rgba(37, 99, 235, 0.15)) !important;
+    background: linear-gradient(135deg,
+            rgba(59, 130, 246, 0.25),
+            rgba(37, 99, 235, 0.15)) !important;
     color: #93c5fd !important;
     border: 1px solid rgba(59, 130, 246, 0.5) !important;
-    box-shadow: 
+    box-shadow:
         0 0 8px rgba(59, 130, 246, 0.3),
         0 0 15px rgba(59, 130, 246, 0.15) !important;
     text-shadow: 0 0 4px rgba(59, 130, 246, 0.4) !important;
@@ -1577,7 +1590,7 @@ body.fi-body .fi-main [class*="bloqueos"] .fi-ta-row {
 body.fi-body .fi-main [class*="bloqueos"] .fi-ta-row:hover {
     background: rgba(34, 211, 238, 0.04) !important;
     border-left: 2px solid #22d3ee !important;
-    box-shadow: 
+    box-shadow:
         inset 0 0 15px rgba(34, 211, 238, 0.06),
         0 0 8px rgba(34, 211, 238, 0.1) !important;
 }
@@ -1586,12 +1599,12 @@ body.fi-body .fi-main [class*="bloqueos"] .fi-ta-row:hover {
 
 /* Badge de Tipo - Mantenimiento (warning/amarillo) */
 body.fi-body .fi-badge[class*="warning"] {
-    background: linear-gradient(135deg, 
-        rgba(251, 191, 36, 0.25), 
-        rgba(234, 179, 8, 0.15)) !important;
+    background: linear-gradient(135deg,
+            rgba(251, 191, 36, 0.25),
+            rgba(234, 179, 8, 0.15)) !important;
     color: #fde047 !important;
     border: 1px solid rgba(251, 191, 36, 0.5) !important;
-    box-shadow: 
+    box-shadow:
         0 0 8px rgba(251, 191, 36, 0.3),
         0 0 15px rgba(251, 191, 36, 0.15) !important;
     text-shadow: 0 0 4px rgba(251, 191, 36, 0.4) !important;
@@ -1602,12 +1615,12 @@ body.fi-body .fi-badge[class*="warning"] {
 /* Badge de Tipo - Otro (secondary/gray) */
 body.fi-body .fi-badge[class*="secondary"],
 body.fi-body .fi-badge[class*="gray"] {
-    background: linear-gradient(135deg, 
-        rgba(148, 163, 184, 0.2), 
-        rgba(100, 116, 139, 0.1)) !important;
+    background: linear-gradient(135deg,
+            rgba(148, 163, 184, 0.2),
+            rgba(100, 116, 139, 0.1)) !important;
     color: #cbd5e1 !important;
     border: 1px solid rgba(148, 163, 184, 0.4) !important;
-    box-shadow: 
+    box-shadow:
         0 0 8px rgba(148, 163, 184, 0.2),
         0 0 15px rgba(148, 163, 184, 0.1) !important;
 }
@@ -1618,9 +1631,12 @@ body.fi-body .fi-main [class*="bloqueos"] .fi-badge[class*="gray"] {
 }
 
 @keyframes subtle-pulse {
-    0%, 100% {
+
+    0%,
+    100% {
         opacity: 1;
     }
+
     50% {
         opacity: 0.7;
     }
@@ -1630,12 +1646,12 @@ body.fi-body .fi-main [class*="bloqueos"] .fi-badge[class*="gray"] {
 
 /* Badge de Sync Status - Falló (danger/rojo) */
 body.fi-body .fi-badge[class*="danger"] {
-    background: linear-gradient(135deg, 
-        rgba(239, 68, 68, 0.25), 
-        rgba(220, 38, 38, 0.15)) !important;
+    background: linear-gradient(135deg,
+            rgba(239, 68, 68, 0.25),
+            rgba(220, 38, 38, 0.15)) !important;
     color: #fca5a5 !important;
     border: 1px solid rgba(239, 68, 68, 0.5) !important;
-    box-shadow: 
+    box-shadow:
         0 0 8px rgba(239, 68, 68, 0.3),
         0 0 15px rgba(239, 68, 68, 0.15) !important;
     text-shadow: 0 0 4px rgba(239, 68, 68, 0.4) !important;
@@ -1740,7 +1756,7 @@ body.fi-body .fi-main input[type="search"]:focus {
 /* Icono de búsqueda (lupa) en cyan */
 body.fi-body .fi-main .fi-ta-search svg,
 body.fi-body .fi-main .fi-global-search svg,
-body.fi-body .fi-main input[type="search"] + svg,
+body.fi-body .fi-main input[type="search"]+svg,
 body.fi-body .fi-main .fi-input-wrp svg,
 body.fi-body .fi-main .fi-input-wrp-prefix svg,
 body.fi-body .fi-main [class*="search"] svg {
@@ -1766,9 +1782,9 @@ body.fi-body .fi-main button[type="button"]:hover svg {
 
 /* Badge de notificación (el "0" morado) */
 body.fi-body .fi-main .fi-badge-notification {
-    background: linear-gradient(135deg, 
-        rgba(168, 85, 247, 0.3), 
-        rgba(147, 51, 234, 0.2)) !important;
+    background: linear-gradient(135deg,
+            rgba(168, 85, 247, 0.3),
+            rgba(147, 51, 234, 0.2)) !important;
     color: #c4b5fd !important;
     border: 1px solid rgba(168, 85, 247, 0.5) !important;
 }
@@ -1789,7 +1805,7 @@ body.fi-body .rr-profile-save-btn-wrapper {
 
 /* Forzar centrado del contenedor directo si podemos identificarlo */
 body.fi-body .fi-profile-page .fi-fo-actions-ctn {
-     justify-content: center !important;
+    justify-content: center !important;
 }
 
 /* Estilo específico para NUESTRO botón de guardar (clase custom) */
@@ -1811,21 +1827,21 @@ button#rr-profile-save-btn-id {
     justify-content: center !important;
     padding: 0.7rem 2.5rem !important;
     border-radius: 9999px !important;
-    
+
     /* Restaurando gradiente Neon Correcto */
     background: linear-gradient(90deg, #06b6d4 0%, #9333ea 50%, #db2777 100%) !important;
     background-size: 200% auto !important;
     border: none !important;
-    
+
     color: #ffffff !important;
     font-weight: 700 !important;
     text-transform: uppercase !important;
     letter-spacing: 0.08em !important;
-    
+
     box-shadow:
         0 0 20px rgba(6, 182, 212, 0.5),
         0 10px 30px rgba(15, 23, 42, 0.6) !important;
-        
+
     transition: all 0.3s ease !important;
 }
 
@@ -1871,12 +1887,10 @@ body.fi-body .fi-btn::before {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(
-        120deg,
-        transparent,
-        rgba(255, 255, 255, 0.3),
-        transparent
-    );
+    background: linear-gradient(120deg,
+            transparent,
+            rgba(255, 255, 255, 0.3),
+            transparent);
     transition: 0.6s;
     pointer-events: none;
     z-index: 1;
@@ -1889,8 +1903,8 @@ body.fi-body .fi-btn:hover::before {
 }
 
 /* Asegurar que el texto esté por encima del brillo */
-body.fi-body button.fi-btn > *,
-body.fi-body .fi-btn > * {
+body.fi-body button.fi-btn>*,
+body.fi-body .fi-btn>* {
     position: relative;
     z-index: 2;
 }
@@ -1920,7 +1934,7 @@ body.fi-body .fi-btn[disabled]::before {
 body.fi-body button.fi-btn-primary:active,
 body.fi-body .fi-btn-primary:active {
     transform: translateY(0) !important;
-    box-shadow: 
+    box-shadow:
         0 2px 8px 0 rgba(34, 211, 238, 0.3),
         0 1px 3px 0 rgba(0, 0, 0, 0.15) !important;
 }
@@ -1932,7 +1946,7 @@ html body.fi-body .fi-btn-primary.fi-btn-primary {
     background: linear-gradient(135deg, #06b6d4 0%, #9333ea 100%) !important;
     border: none !important;
     color: #ffffff !important;
-    box-shadow: 
+    box-shadow:
         0 4px 14px 0 rgba(6, 182, 212, 0.39),
         0 2px 4px 0 rgba(0, 0, 0, 0.12) !important;
 }
@@ -1943,7 +1957,7 @@ body.fi-body .fi-btn-danger {
     background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
     border: none !important;
     color: #ffffff !important;
-    box-shadow: 
+    box-shadow:
         0 4px 14px 0 rgba(239, 68, 68, 0.39),
         0 2px 4px 0 rgba(0, 0, 0, 0.12) !important;
 }
@@ -1951,7 +1965,7 @@ body.fi-body .fi-btn-danger {
 body.fi-body button.fi-btn-danger:hover,
 body.fi-body .fi-btn-danger:hover {
     background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
-    box-shadow: 
+    box-shadow:
         0 8px 20px 0 rgba(239, 68, 68, 0.5),
         0 4px 8px 0 rgba(220, 38, 38, 0.3) !important;
     transform: translateY(-2px) !important;
@@ -1960,7 +1974,7 @@ body.fi-body .fi-btn-danger:hover {
 body.fi-body button.fi-btn-danger:active,
 body.fi-body .fi-btn-danger:active {
     transform: translateY(0) !important;
-    box-shadow: 
+    box-shadow:
         0 2px 8px 0 rgba(239, 68, 68, 0.3),
         0 1px 3px 0 rgba(0, 0, 0, 0.15) !important;
 }
@@ -1973,7 +1987,7 @@ body.fi-body button.fi-btn-outline {
     border: 1.5px solid rgba(34, 211, 238, 0.5) !important;
     color: #22d3ee !important;
     backdrop-filter: blur(8px) !important;
-    box-shadow: 
+    box-shadow:
         0 2px 8px 0 rgba(34, 211, 238, 0.15),
         inset 0 1px 0 0 rgba(255, 255, 255, 0.05) !important;
 }
@@ -1984,7 +1998,7 @@ body.fi-body button.fi-btn-outline:hover {
     background: rgba(34, 211, 238, 0.15) !important;
     border-color: #22d3ee !important;
     color: #a5f3fc !important;
-    box-shadow: 
+    box-shadow:
         0 4px 14px 0 rgba(34, 211, 238, 0.35),
         inset 0 1px 0 0 rgba(255, 255, 255, 0.1) !important;
     transform: translateY(-1px) !important;
@@ -2022,8 +2036,8 @@ body.fi-body .fi-btn:hover svg {
 }
 
 /* Grupos de botones - mejor espaciado */
-body.fi-body .fi-btn-group button.fi-btn + button.fi-btn,
-body.fi-body .fi-btn-group .fi-btn + .fi-btn {
+body.fi-body .fi-btn-group button.fi-btn+button.fi-btn,
+body.fi-body .fi-btn-group .fi-btn+.fi-btn {
     margin-left: 0.75rem !important;
 }
 
@@ -2032,7 +2046,7 @@ body.fi-body button.fi-btn:focus-visible,
 body.fi-body .fi-btn:focus-visible {
     outline: 2px solid #22d3ee !important;
     outline-offset: 2px !important;
-    box-shadow: 
+    box-shadow:
         0 0 0 4px rgba(34, 211, 238, 0.2),
         0 4px 14px 0 rgba(34, 211, 238, 0.4) !important;
 }
@@ -2043,18 +2057,23 @@ body.fi-body .fi-btn:focus-visible {
 .fc .fc-button-primary {
     background-color: transparent !important;
     border: 1px solid transparent !important;
-    color: #9ca3af !important; /* Gray-400 */
+    color: #9ca3af !important;
+    /* Gray-400 */
     font-weight: 600;
     box-shadow: none !important;
 }
+
 .fc .fc-button-primary:hover {
     background-color: rgba(255, 255, 255, 0.05) !important;
     color: #ffffff !important;
 }
+
 .fc .fc-button-primary:not(:disabled).fc-button-active,
 .fc .fc-button-primary:not(:disabled):active {
-    background-color: rgba(139, 92, 246, 0.1) !important; /* Violet-500 low opacity */
-    color: #a855f7 !important; /* Violet-500 */
+    background-color: rgba(139, 92, 246, 0.1) !important;
+    /* Violet-500 low opacity */
+    color: #a855f7 !important;
+    /* Violet-500 */
     font-weight: 700;
 }
 
@@ -2064,6 +2083,7 @@ body.fi-body .fi-btn:focus-visible {
     background-color: transparent !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
+
 .fc-event-ghost .fc-event-main {
     color: #9ca3af !important;
 }
