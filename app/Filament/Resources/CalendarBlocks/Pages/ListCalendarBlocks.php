@@ -37,9 +37,7 @@ class ListCalendarBlocks extends ListRecords
                 ->modalSubmitAction(fn (\Filament\Actions\StaticAction $action) => $action->label('Enviar')->extraAttributes([
                     'wire:target' => 'callMountedAction',
                 ]))
-                ->modalCancelAction(fn (\Filament\Actions\StaticAction $action) => $action->label('Cancelar')->color('danger')->extraAttributes([
-                    'wire:target' => 'callMountedAction',
-                ]))
+                ->modalCancelAction(fn (\Filament\Actions\StaticAction $action) => $action->label('Cancelar')->color('danger'))
                 ->form([
                     // Selector de modo (mutuamente excluyente)
                     Radio::make('mode')
@@ -207,6 +205,10 @@ class ListCalendarBlocks extends ListRecords
                     $now = now();
                     $rows = [];
 
+                    // Variables para calcular el rango global de los nuevos bloques
+                    $minDate = null;
+                    $maxDate = null;
+
                     if ($data['mode'] === 'range') {
                         // —— MODO RANGO ——
                         $today = now()->startOfDay();
@@ -214,7 +216,6 @@ class ListCalendarBlocks extends ListRecords
                         $hasta = Carbon::parse($data['hasta'])->endOfDay();
                         $allDay = (bool) ($data['all_day_r'] ?? false);
 
-                        // Asegurarnos de no generar bloques antes de hoy
                         if ($desde->lt($today)) {
                             $desde = $today->copy();
                         }
@@ -231,7 +232,7 @@ class ListCalendarBlocks extends ListRecords
                                 $rows[] = [
                                     'title' => 'Bloqueo',
                                     'kind' => 'manual',
-                                    'is_all_day' => $allDay,
+                                    'is_all_day' => $allDay ? 1 : 0,
                                     'starts_at' => $start,
                                     'ends_at' => $end,
                                     'reason' => $data['reason'] ?? null,
@@ -240,35 +241,27 @@ class ListCalendarBlocks extends ListRecords
                                     'created_at' => $now,
                                     'updated_at' => $now,
                                 ];
+
+                                // Actualizar rango global
+                                if (is_null($minDate) || $start->lt($minDate)) {
+                                    $minDate = $start->copy();
+                                }
+                                if (is_null($maxDate) || $end->gt($maxDate)) {
+                                    $maxDate = $end->copy();
+                                }
                             }
                         }
                     } else {
-                        // —— MODO DÍAS (PRÓXIMAS N SEMANAS) ——
+                        // —— MODO DÍAS ——
                         $semanas = (int) ($data['semanas'] ?? 4);
                         $allDay = (bool) ($data['all_day_d'] ?? false);
-
-                        // UI usa: 1=Lun, 2=Mar, 3=Mié, 4=Jue, 5=Vie, 6=Sáb, 7=Dom
-                        // Carbon usa: 0=Dom, 1=Lun, 2=Mar, 3=Mié, 4=Jue, 5=Vie, 6=Sáb
-                        // Conversión correcta:
-                        // UI 1 (Lun) → Carbon 1 (Lun): se queda igual
-                        // UI 2-6 (Mar-Sáb) → Carbon 2-6: se quedan igual
-                        // UI 7 (Dom) → Carbon 0 (Dom): convertir a 0
-
-                        // DEBUG: Ver qué días vienen del formulario
-                        \Log::info('GENERAR BLOQUEOS - Días recibidos:', ['dias_raw' => $data['dias'] ?? []]);
 
                         $diasElegidos = collect($data['dias'] ?? [])
                             ->map(fn ($d) => $d == 7 ? 0 : (int) $d)
                             ->values();
 
-                        \Log::info('GENERAR BLOQUEOS - Días convertidos:', ['dias_carbon' => $diasElegidos->toArray()]);
-
                         if ($diasElegidos->isEmpty()) {
-                            Notification::make()
-                                ->title('Elegí al menos un día.')
-                                ->warning()
-                                ->duration(4000)
-                                ->send();
+                            Notification::make()->title('Elegí al menos un día.')->warning()->send();
 
                             return;
                         }
@@ -292,7 +285,7 @@ class ListCalendarBlocks extends ListRecords
                                 $rows[] = [
                                     'title' => 'Bloqueo',
                                     'kind' => 'manual',
-                                    'is_all_day' => $allDay,
+                                    'is_all_day' => $allDay ? 1 : 0,
                                     'starts_at' => $start,
                                     'ends_at' => $end,
                                     'reason' => $data['reason'] ?? null,
@@ -301,6 +294,13 @@ class ListCalendarBlocks extends ListRecords
                                     'created_at' => $now,
                                     'updated_at' => $now,
                                 ];
+                                // Actualizar rango global
+                                if (is_null($minDate) || $start->lt($minDate)) {
+                                    $minDate = $start->copy();
+                                }
+                                if (is_null($maxDate) || $end->gt($maxDate)) {
+                                    $maxDate = $end->copy();
+                                }
                             }
                         }
                     }
@@ -309,30 +309,86 @@ class ListCalendarBlocks extends ListRecords
                         Notification::make()
                             ->title('No se generaron bloques (verificá la selección).')
                             ->warning()
-                            ->duration(4000)
                             ->send();
 
                         return;
                     }
 
-                    // Insert masivo sin observers + dedupe por unique (si lo tenés)
+                    // --- VALIDACIÓN DE SOLAPAMIENTOS ---
+                    // Buscamos bloques existentes en el rango total de los nuevos bloques
+                    $existingBlocks = CalendarBlock::query()
+                        ->whereNull('canceled_at') // Solo activos
+                        ->where('ends_at', '>', $minDate)
+                        ->where('starts_at', '<', $maxDate)
+                        ->get();
+
+                    $conflicts = [];
+
+                    foreach ($rows as $newBlock) {
+                        $newStart = $newBlock['starts_at'];
+                        $newEnd = $newBlock['ends_at'];
+                        $newIsAllDay = (bool) $newBlock['is_all_day'];
+
+                        foreach ($existingBlocks as $existing) {
+                            // Verifica solapamiento de tiempo básico: (StartA < EndB) y (EndA > StartB)
+                            // Nota: starts_at y ends_at en $existing son Carbon instances gracias al cast del modelo
+                            if ($existing->starts_at < $newEnd && $existing->ends_at > $newStart) {
+                                // Hay solapamiento de tiempo.
+                                // Si es el mismo día y uno es all_day, es conflicto directo.
+                                // Si ambos son parciales y se tocan, es conflicto.
+
+                                $dateStr = $newStart->format('d/m/Y');
+                                $timeStr = $newIsAllDay ? 'Día completo' : ($newStart->format('H:i').' - '.$newEnd->format('H:i'));
+
+                                $conflicts[] = "{$dateStr} ({$timeStr})";
+                                break; // Ya encontramos conflicto para este bloque nuevo, pasamos al siguiente
+                            }
+                        }
+
+                        // Optimización: Si ya tenemos demasiados conflictos, paramos para no llenar la pantalla
+                        if (count($conflicts) >= 5) {
+                            break;
+                        }
+                    }
+
+                    if (count($conflicts) > 0) {
+                        Notification::make()
+                            ->title('No se pudieron crear los bloqueos')
+                            ->body('Las siguientes fechas/horas ya están ocupadas o se solapan: <br>• '.implode('<br>• ', $conflicts))
+                            ->danger()
+                            ->persistent()
+                            ->send();
+
+                        return; // ABORTAR: No insertamos nada
+                    }
+
+                    // --- INSERTAR (Ahora es seguro usar insert normal porque validamos antes) ---
+                    // Convertimos fechas a string para el insert masivo (aunque DB::insert suele manejar Carbon, mejor asegurar)
+                    $insertData = array_map(function ($row) {
+                        return array_merge($row, [
+                            'starts_at' => $row['starts_at']->toDateTimeString(),
+                            'ends_at' => $row['ends_at']->toDateTimeString(),
+                            'created_at' => $row['created_at']->toDateTimeString(),
+                            'updated_at' => $row['updated_at']->toDateTimeString(),
+                        ]);
+                    }, $rows);
+
                     $inserted = 0;
-                    CalendarBlock::withoutEvents(function () use (&$inserted, $rows) {
-                        foreach (array_chunk($rows, 500) as $chunk) {
-                            $inserted += DB::table('calendar_blocks')->insertOrIgnore($chunk);
+                    CalendarBlock::withoutEvents(function () use (&$inserted, $insertData) {
+                        foreach (array_chunk($insertData, 500) as $chunk) {
+                            // Usamos insert() estándar, compatible con SQL Server
+                            if (DB::table('calendar_blocks')->insert($chunk)) {
+                                $inserted += count($chunk);
+                            }
                         }
                     });
 
-                    // Sync en 2° plano (ahora síncrono por pedido del usuario)
+                    // Sync
                     $minStart = (string) collect($rows)->min('starts_at');
-
-                    // Usamos dispatchSync para que se ejecute YA, sin workers
                     SyncBlocksRangeJob::dispatchSync($minStart);
 
-                    // (Código de worker eliminado)
-
                     Notification::make()
-                        ->title("Bloques creados: {$inserted}. La sincronización está en curso.")
+                        ->title("Bloques creados: {$inserted}. Sincronización en curso.")
                         ->success()
                         ->duration(4000)
                         ->send();
@@ -345,18 +401,19 @@ class ListCalendarBlocks extends ListRecords
                 ->action(function () {
                     $svc = app(\App\Services\GoogleCalendarService::class);
                     // Sincronizar año actual y el siguiente completo (para traer todos los feriados)
-                    $count = $svc->syncFromGoogle(now()->startOfYear(), now()->addYear()->endOfYear());
+                    $result = $svc->syncFromGoogle(now()->startOfYear(), now()->addYear()->endOfYear());
+                    $count = $result['count'];
 
                     // Limpiar caché de la API para que el cliente vea los cambios inmediatamente
                     \Illuminate\Support\Facades\Cache::forget('blocked_dates_global');
 
                     Notification::make()
                         ->title('Sincronización completada')
-                        ->body("Se importaron {$count} eventos nuevos (feriados y eventos) desde Enero " . now()->format('Y') . " hasta Diciembre " . now()->addYear()->format('Y') . ".")
+                        ->body("Se importaron {$count} eventos nuevos (feriados y eventos) desde Enero ".now()->format('Y').' hasta Diciembre '.now()->addYear()->format('Y').'.')
                         ->success()
                         ->send();
-                    
-                    // No hace falta redirect porque Filament recarga la tabla solo, 
+
+                    // No hace falta redirect porque Filament recarga la tabla solo,
                     // pero porsi acaso forzamos refresh o dejamos que livewire actúe.
                 }),
         ];
