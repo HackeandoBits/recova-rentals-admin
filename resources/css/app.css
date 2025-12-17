@@ -20,6 +20,7 @@
 
 /* ================== CALENDARIO / MODALES ================== */
 @layer components {
+
     /* Eventos del calendario */
     .fc-event {
         cursor: pointer !important;
@@ -76,4 +77,15 @@
         font-size: 1.25rem;
         font-weight: 600;
     }
+}
+
+/* Blocked Dates in Flatpickr */
+.admin-blocked,
+.admin-blocked:hover {
+    background-color: #ef4444 !important;
+    /* red-500 */
+    color: white !important;
+    text-decoration: line-through;
+    opacity: 0.7;
+    cursor: not-allowed !important;
 }
