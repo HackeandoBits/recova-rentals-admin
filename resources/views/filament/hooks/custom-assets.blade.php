@@ -1,5 +1,5 @@
 <link rel="stylesheet" href="{{ asset('css/recova-dashboard.css') }}?v={{ time() }}">
-@vite(['resources/js/app.js'])
+@vite(['resources/css/app.css', 'resources/js/app.js'])
 
 <script>
     // Force Dark Mode & Persist

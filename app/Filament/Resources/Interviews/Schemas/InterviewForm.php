@@ -146,8 +146,41 @@ class InterviewForm
                         ->schema([
                             TextInput::make('customer_phone')
                                 ->label('Teléfono'),
-                            DatePicker::make('event_date')
-                                ->label('Fecha del Evento'),
+                            \Filament\Forms\Components\ViewField::make('event_date')
+                                ->view('filament.forms.components.blocked-date-picker')
+                                ->viewData([
+                                    'blockedDates' => self::getFullyBlockedDates(),
+                                ])
+                                ->label('Fecha del Evento')
+                                ->rules([
+                                    function () {
+                                        return function (string $attribute, $value, \Closure $fail) {
+                                            if (! $value) {
+                                                return;
+                                            }
+
+                                            $date = \Carbon\Carbon::parse($value);
+                                            // Validate again backend-side just in case
+                                            $ownerId = (int) env('OWNER_CAL_USER_ID', 1);
+
+                                            $blockedDay = \App\Models\CalendarBlock::query()
+                                                ->whereNull('canceled_at')
+                                                ->where('owner_user_id', $ownerId)
+                                                ->where('is_all_day', true)
+                                                ->get()
+                                                ->contains(function ($block) use ($date) {
+                                                    $start = \Carbon\Carbon::parse($block->starts_at)->startOfDay();
+                                                    $end = \Carbon\Carbon::parse($block->ends_at)->endOfDay();
+
+                                                    return $date->betweenIncluded($start, $end);
+                                                });
+
+                                            if ($blockedDay) {
+                                                $fail('Esta fecha está bloqueada.');
+                                            }
+                                        };
+                                    },
+                                ]),
                         ]),
 
                     Textarea::make('order_notes')
